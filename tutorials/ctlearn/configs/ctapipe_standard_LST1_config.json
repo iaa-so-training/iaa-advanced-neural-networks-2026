@@ -1,0 +1,36 @@
+{
+    "DataWriter": {
+        "Contact": {
+            "name": "IAA-AI-School-Participant",
+            "email": "your@email.com",
+            "organization": "CTAO"
+        },
+        "overwrite": true,
+        "write_dl1_images": true,
+        "write_dl1_parameters": true,
+        "write_dl2": false,
+        "transform_image": true,
+        "transform_peak_time": true
+    },
+    "CameraCalibrator": {
+        "image_extractor_type": "LocalPeakWindowSum"
+    },
+    "ImageProcessor": {
+        "image_cleaner_type": "TailcutsImageCleaner",
+        "TailcutsImageCleaner": {
+            "picture_threshold_pe": [
+                ["type", "*", 8.0]
+            ],
+            "boundary_threshold_pe": [
+                ["type", "*", 4]
+            ],
+            "min_picture_neighbors": [["type", "*", 2]]
+        },
+        "ImageQualityQuery": {
+            "quality_criteria": [
+                ["enough_pixels", "np.count_nonzero(image) > 2"],
+                ["enough_charge", "image.sum() > 50"]
+            ]
+        }
+    }
+}
