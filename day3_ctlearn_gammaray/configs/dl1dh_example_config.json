@@ -1,0 +1,13 @@
+
+{
+    "TableQualityQuery": {
+        "quality_criteria": [
+            ["> 50000 phe", "hillas_intensity > 50000"]
+        ]
+    },
+    "DLImageReader": {
+        "allowed_tel_types": "LST_LST_LSTCam",
+        "channels": ["image", "relative_peak_time"],
+        "image_mapper_type": "BilinearMapper"
+    }
+}
