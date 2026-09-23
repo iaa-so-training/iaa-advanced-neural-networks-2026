@@ -9,5 +9,12 @@
         "allowed_tel_types": "LST_LST_LSTCam",
         "channels": ["image", "relative_peak_time"],
         "image_mapper_type": "BilinearMapper"
+    },
+    "DLWaveformReader": {
+        "allowed_tels": [3, 4],
+        "sequence_length": 5,
+        "sequence_position": "center",
+        "cleaning_type": null,
+        "image_mapper_type": "BilinearMapper"
     }
 }
