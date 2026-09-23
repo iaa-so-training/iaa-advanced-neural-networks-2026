@@ -1,5 +1,6 @@
 {
     "TrainCTLearnModel": {
+        "dl1dh_reader_type": "DLImageReader",
         "n_epochs": 10,
         "batch_size": 64,
         "validation_split": 0.1,
