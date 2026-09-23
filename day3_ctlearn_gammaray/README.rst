@@ -22,6 +22,7 @@ Tutor
    * - `Tjark Miener <https://github.com/tjarkmiener>`_
 
 with the help of:
+
 .. list-table::
    :header-rows: 1
 
