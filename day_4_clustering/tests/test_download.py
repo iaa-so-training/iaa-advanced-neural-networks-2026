@@ -8,7 +8,7 @@ import subprocess
 import threading
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, override
 
 import click
 import pytest
@@ -46,6 +46,7 @@ class _RangeHandler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    @override
     def log_message(self, format: str, *args: Any) -> None:   # noqa: A002 (http.server API)
         return
 
