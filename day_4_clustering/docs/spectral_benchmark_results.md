@@ -7,6 +7,11 @@
 > head-to-head). Both are now measured, and the corrected numbers — not the
 > originals — are the ones to quote.
 
+> **Running these:** the commands below are written in the native form. In the
+> Docker setup (the default — see `docs/docker.md`) drop `uv run cluster` and use
+> `./run.sh` instead, e.g. `./run.sh baseline --kinematics`; scripts become
+> `./run.sh python scripts/…` and `CLUSTER_*` variables pass straight through.
+
 ## Uniform DR19 re-run (the numbers to quote now)
 
 The product mismatch below was fixed at the source. On the desktop RTX 5090,

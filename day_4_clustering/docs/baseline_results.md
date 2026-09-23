@@ -20,6 +20,11 @@ uv run cluster baseline                # abundances only (the 2019 setup)
 uv run cluster baseline --kinematics   # abundances + parallax/PM/RV
 ```
 
+> **Running these:** the commands below are written in the native form. In the
+> Docker setup (the default — see `docs/docker.md`) drop `uv run cluster` and use
+> `./run.sh` instead, e.g. `./run.sh baseline --kinematics`; scripts become
+> `./run.sh python scripts/…` and `CLUSTER_*` variables pass straight through.
+
 ## Setup
 
 APOGEE DR17 allStar · Gaia EDR3 astrometry · `SNR ≥ 100` ·

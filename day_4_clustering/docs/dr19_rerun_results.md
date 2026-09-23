@@ -1,5 +1,10 @@
 # DR19/DR4/DR3 full re-run results
 
+> **Running these:** the commands below are written in the native form. In the
+> Docker setup (the default — see `docs/docker.md`) drop `uv run cluster` and use
+> `./run.sh` instead, e.g. `./run.sh baseline --kinematics`; scripts become
+> `./run.sh python scripts/…` and `CLUSTER_*` variables pass straight through.
+
 ## Spectral embeddings (masked AE, self-supervised)
 
 Added after the abundance re-run: a **masked spectral autoencoder** (no

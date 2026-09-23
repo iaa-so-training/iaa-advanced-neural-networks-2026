@@ -11,31 +11,42 @@ and get better numbers for *your* cluster. Your cluster is assigned in
 
 ## 0 · Setup (do this first, before the session if you can)
 
+You need **Docker** (section B of the School Software Installation Guide) and
+`git`. Nothing else is installed on your machine.
+
 ```bash
 git clone https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026.git
 cd iaa-advanced-neural-networks-2026/day_4_clustering
-uv sync
 
 # both downloads at once: the 1.17 GB SDSS-V DR19 catalogue + the ~1.0 GB
 # embeddings/checkpoint bundle from Hugging Face (hotel wifi tonight, not now)
-uv run cluster download --all
+./run.sh download --all
 ```
 
-Resumable, and `hf_hub` skips whatever is already on disk, so a dropped wifi
-connection costs nothing — just re-run it. Check what you have:
+On Windows use `.\run.ps1 download --all` — every command in this document takes
+the same arguments (`. \run.ps1 …` instead of `./run.sh …`).
+
+The first `./run.sh` also pulls the workshop image (~1.5 GB) — or builds it from
+this folder if the published one is not reachable. Downloads are resumable and
+skip whatever is already on disk, so a dropped wifi connection costs nothing —
+just re-run it. Check what you have:
 
 ```bash
-uv run cluster download --assets --check     # sha256-verify the bundle
+./run.sh download --assets --check     # sha256-verify the bundle
 ```
 
 Verify it runs (~2 min with the field cap):
 
 ```bash
-uv run cluster run --fast
+./run.sh run --fast
 ```
 
-**Only have Docker?** Skip all of the above — `docs/docker.md` has the
-one-command path: pull the public multi-arch image, mount a `data/` folder, done.
+**Environment knobs** (e.g. `CLUSTER_USE_ELEMENT_WEIGHTS=1`) are forwarded into
+the container: `CLUSTER_USE_ELEMENT_WEIGHTS=1 ./run.sh run …` works as written.
+
+**Prefer native Python?** Replace `./run.sh` with `uv run cluster` (or
+`uv run python` for a script) after `uv sync` — same flags, same results. Python
+≥ 3.13 required; see the README. Everything below is shown in the Docker form.
 
 `--fast` caps the field at 25 000 stars (measured 1 m 51 s on a laptop).
 `--full` drops the cap — at DR19 quality cuts that is 358 058 stars, so budget
@@ -49,13 +60,13 @@ number.
 Run the sweep for **your cluster only**, in the paper's region mode:
 
 ```bash
-uv run cluster run --cluster "M 67" --region-scaled
+./run.sh run --cluster "M 67" --region-scaled
 ```
 
 Or use the tuning notebook — same loop, with widgets:
 
 ```bash
-uv run marimo edit notebooks/tuning_template.py
+./run.sh marimo notebooks/tuning_template.py
 ```
 
 Open `docs/region_sweep_results.md` and find your cluster's row. Your numbers
@@ -86,7 +97,7 @@ Pick **one** lever, change it, re-run, and watch your row move. Log what you
 tried in a scratch file. The full map is `docs/experiment_results.md`.
 
 Every lever is also an env var (prefix `CLUSTER_`), e.g.
-`CLUSTER_USE_ELEMENT_WEIGHTS=1 uv run cluster run --cluster "M 67" --region-scaled`.
+`CLUSTER_USE_ELEMENT_WEIGHTS=1 ./run.sh run --cluster "M 67" --region-scaled`.
 
 **Rule of the game**: change one thing at a time, and know *why* it moved.
 A recall jump with a precision collapse is a lesson, not a win.
@@ -103,7 +114,7 @@ A CNN-LSTM-Attention network trained on the raw 8575-pixel spectrum gives a
 256-d latent that beats the 16 abundances on every benchmark.
 
 ```bash
-uv run cluster run --cluster "M 67" --region-scaled \
+./run.sh run --cluster "M 67" --region-scaled \
     --spectral data/embeddings/attention_broad_merged.parquet
 ```
 
@@ -117,8 +128,8 @@ Cleaner membership → better cluster parameters. Fit a PARSEC isochrone to your
 cluster's members and measure the red-clump distance:
 
 ```bash
-uv run python scripts/red_clump.py --clusters "NGC 6819"
-uv run python scripts/sweet_spot.py --clusters "NGC 2243"
+./run.sh python scripts/red_clump.py --clusters "NGC 6819"
+./run.sh python scripts/sweet_spot.py --clusters "NGC 2243"
 ```
 
 Compare the recovered age + distance to `src/cluster/literature.py`. The red
@@ -130,8 +141,8 @@ age. Open clusters with ≥ 20 member giants are the clean cases.
 APOGEE sees giants, GALAH sees the main sequence. Cross-match them:
 
 ```bash
-uv run python scripts/build_galah_apogee.py --clusters "M 67"
-uv run python scripts/rerun_combined.py
+./run.sh python scripts/build_galah_apogee.py --clusters "M 67"
+./run.sh python scripts/rerun_combined.py
 ```
 
 GALAH covers DEC ≲ +25°, so this works for the southern clusters (M 67,

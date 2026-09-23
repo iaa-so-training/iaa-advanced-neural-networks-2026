@@ -33,7 +33,16 @@ COPY src ./src
 COPY notebooks ./notebooks
 COPY scripts ./scripts
 COPY hf ./hf
-RUN uv sync --frozen --no-dev --no-cache
+# The default image is the workshop core. `--build-arg WITH_TORCH=1` adds the
+# optional torch extra (CPU wheels, ~200 MB) for the re-embedding extension —
+# it is left out by default so the pull 30 students do stays ~1.5 GB.
+ARG WITH_TORCH=""
+RUN uv sync --frozen --no-dev ${WITH_TORCH:+--extra torch} --no-cache
+
+# Scratch HOME dirs so `run.sh` can run the container as *your* uid (files you
+# create come out owned by you) without tools failing on an unwritable HOME.
+# /workspace must also be writable by that uid: tools write to the cwd.
+RUN install -d -m 777 /tmp/day4-home /tmp/day4-mpl /tmp/day4-marimo /workspace
 
 # run from a clean workspace where students mount data/ and results/
 WORKDIR /workspace

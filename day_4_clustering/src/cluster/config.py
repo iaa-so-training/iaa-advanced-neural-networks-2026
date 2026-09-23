@@ -8,6 +8,7 @@ All values can also be overridden with environment variables
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -68,7 +69,24 @@ ALLSTAR_BYTES = ASTRA_ASPCAP_BYTES
 # ``python hf/make_manifest.py`` after any change to the artifacts.
 HF_REPO_ID: str = env("HF_REPO", "garciadias/iaa-chemical-tagging-2026")
 HF_REPO_TYPE: str = env("HF_REPO_TYPE", "dataset")
-ASSETS_MANIFEST: str = env("HF_MANIFEST", "MANIFEST.json")
+
+
+def _default_manifest() -> str:
+    """Locate ``hf/MANIFEST.json`` relative to the *code*, not the cwd.
+
+    The manifest ships with the checkout and with the container image
+    (``/app/hf/MANIFEST.json``), so ``download --list`` and ``--check`` work
+    offline from any working directory. Falls back to a cwd-relative name,
+    which is fetched from the Hub if it is not on disk.
+    """
+    for parent in Path(__file__).resolve().parents:
+        shipped = parent / "hf" / "MANIFEST.json"
+        if shipped.is_file():
+            return str(shipped)
+    return "MANIFEST.json"
+
+
+ASSETS_MANIFEST: str = env("HF_MANIFEST", _default_manifest())
 
 
 def astra_h_col(element: str) -> str:

@@ -5,7 +5,9 @@ One file replaces the old ``allStar-dr17-synspec_rev1.fits``:
 * ``astraAllStarASPCAP-0.6.0.fits.gz`` (1.17 GB) — stellar params + [X/H]
   abundances, Gaia DR3 astrometry/photometry, quality flags.
 
-Uses ``wget -c`` so interrupted transfers resume.
+Uses ``requests`` with HTTP range requests, so interrupted transfers resume and
+the download also works where no ``wget``/``curl`` binary exists — notably
+inside the workshop container (``python:*-slim`` ships neither).
 """
 
 from __future__ import annotations
@@ -26,9 +28,58 @@ from .config import (
     HF_REPO_TYPE,
 )
 
+DOWNLOAD_CHUNK = 8 << 20      # 8 MB per write
+PROGRESS_STEPS = 10           # ~10 progress lines per download
+
 
 def _already_downloaded(path: Path) -> bool:
     return path.exists() and path.stat().st_size == ALLSTAR_BYTES
+
+
+def stream_to_file(url: str, destination: Path, expected_bytes: int | None = None) -> Path:
+    """Resumable download: HTTP range request, append, verify the final size.
+
+    A server that ignores ``Range`` (answering 200 instead of 206) makes us
+    start over rather than corrupt the file.
+    """
+    import requests  # imported here so `import cluster` stays cheap
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    offset = destination.stat().st_size if destination.exists() else 0
+    mode = "ab" if offset else "wb"
+
+    with requests.get(
+        url,
+        headers={"Range": f"bytes={offset}-"} if offset else {},
+        stream=True,
+        timeout=60,
+    ) as response:
+        if response.status_code == 416:          # nothing left to fetch
+            return destination
+        if offset and response.status_code != 206:
+            click.echo("   (server ignored the resume request — starting over)")
+            offset, mode = 0, "wb"
+        response.raise_for_status()
+
+        declared = int(response.headers.get("Content-Length") or 0)
+        total = expected_bytes or (offset + declared) or None
+        written = offset
+        next_mark = 0
+
+        with destination.open(mode) as handle:
+            for chunk in response.iter_content(chunk_size=DOWNLOAD_CHUNK):
+                if not chunk:
+                    continue
+                handle.write(chunk)
+                written += len(chunk)
+                if total and written >= next_mark:
+                    click.echo(
+                        f"   {written / 1e6:7.0f} / {total / 1e6:.0f} MB"
+                        f"  ({100 * written / total:3.0f}%)"
+                    )
+                    next_mark = written + max(total // PROGRESS_STEPS, DOWNLOAD_CHUNK)
+
+    return destination
 
 
 def download_allstar(destination: str | Path, url: str = ALLSTAR_URL) -> Path:
@@ -42,14 +93,13 @@ def download_allstar(destination: str | Path, url: str = ALLSTAR_URL) -> Path:
 
     click.echo(f"🌐 Downloading {url} → {destination}")
     click.echo("   (resumable; 1.17 GB)")
-    cmd = ["wget", "-c", "--no-check-certificate", "-O", str(destination), url]
-    result = subprocess.run(cmd)
-    if result.returncode != 0:
-        raise click.ClickException("Download failed — rerun to resume.")
+    stream_to_file(url, destination, expected_bytes=ALLSTAR_BYTES)
+
     if not _already_downloaded(destination):
+        size = destination.stat().st_size if destination.exists() else 0
         raise click.ClickException(
-            f"Download incomplete: {destination.stat().st_size} bytes "
-            f"(expected {ALLSTAR_BYTES}). Delete the file and rerun."
+            f"Download incomplete: {size} bytes (expected {ALLSTAR_BYTES}). "
+            "Rerun to resume; delete the file to start over."
         )
     click.echo("✓ Download complete.")
     return destination
@@ -89,13 +139,45 @@ def _hf_download(repo_id: str, filename: str, repo_type: str) -> Path:
     return Path(hf_hub_download(repo_id=repo_id, filename=filename, repo_type=repo_type))
 
 
+def _hub_hint(repo_id: str, repo_type: str, exc: Exception) -> click.ClickException:
+    """Turn any Hub failure into something a student can act on."""
+    return click.ClickException(
+        f"could not reach the asset bundle at "
+        f"https://huggingface.co/{'datasets/' if repo_type == 'dataset' else ''}{repo_id}\n"
+        f"  reason: {exc}\n"
+        "  • check your connection — the download resumes, just re-run it\n"
+        "  • the bundle must be published there by the workshop organisers\n"
+        "  • point elsewhere with CLUSTER_HF_REPO=<owner/name> (no retraining needed)"
+    )
+
+
 def load_manifest(
-    repo_id: str = HF_REPO_ID,
-    repo_type: str = HF_REPO_TYPE,
-    manifest_name: str = ASSETS_MANIFEST,
+    repo_id: str | None = None,
+    repo_type: str | None = None,
+    manifest_name: str | None = None,
 ) -> dict:
-    """Read ``MANIFEST.json`` from the published bundle."""
-    return json.loads(_hf_download(repo_id, manifest_name, repo_type).read_text())
+    """Read ``MANIFEST.json``.
+
+    The manifest ships with the code (``hf/MANIFEST.json``, and inside the
+    container image), so this is normally an offline file read — ``--list``
+    works before any download. Only a manifest that is not on disk is fetched
+    from the Hub, which is what lets someone verify a bundle they found
+    elsewhere.
+    """
+    repo_id = repo_id or HF_REPO_ID
+    repo_type = repo_type or HF_REPO_TYPE
+    manifest_name = manifest_name or ASSETS_MANIFEST
+    local = Path(manifest_name)
+    if local.is_file():
+        return json.loads(local.read_text())
+    try:
+        fetched = _hf_download(repo_id, manifest_name, repo_type)
+    except Exception as exc:  # RepositoryNotFoundError, HfHubHTTPError, offline, …
+        raise click.ClickException(
+            f"asset manifest '{manifest_name}' not found on disk and not fetchable "
+            f"from the Hub ({exc})"
+        ) from exc
+    return json.loads(fetched.read_text())
 
 
 def target_path(root: str | Path, entry_path: str) -> Path:
@@ -189,7 +271,10 @@ def download_assets(
             continue
 
         click.echo(f"🌐 {entry['path']} → {dest} ({entry['bytes'] / 1e6:.1f} MB)")
-        cached = _hf_download(repo_id, entry["path"], repo_type)
+        try:
+            cached = _hf_download(repo_id, entry["path"], repo_type)
+        except Exception as exc:
+            raise _hub_hint(repo_id, repo_type, exc) from exc
         dest.parent.mkdir(parents=True, exist_ok=True)
         if dest.resolve() != cached.resolve():
             dest.write_bytes(cached.read_bytes())

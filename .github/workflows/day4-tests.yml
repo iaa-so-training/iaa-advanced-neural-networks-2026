@@ -1,6 +1,6 @@
 name: day4 tests
 
-# The Day 4 package has 197 tests (5 need the optional torch extra, 2 the PARSEC
+# The Day 4 package has 206 tests (5 need the optional torch extra, 2 the PARSEC
 # grid) that need no real data — synthetic fixtures only — so this is a cheap gate
 # on every change under day_4_clustering/. Cold JIT caches make a first run ~7 min.
 

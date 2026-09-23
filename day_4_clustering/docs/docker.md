@@ -1,64 +1,81 @@
-# Run the workshop in Docker
+# Docker: running the workshop in a container
 
-Only requirement: **Docker**. No Python, no `uv`, no dependency pain.
+Requirement: **Docker** — section B of the School Software Installation Guide.
+No Python, no `uv`, no dependency installs on your machine, and nothing to keep
+in sync with what we tested.
 
-## Pull (one time)
+## The short version
 
-The image is published for **linux/amd64** and **linux/arm64** (Apple silicon) and is public —
-no login needed:
+The repo ships a wrapper that does the mount/flags/pull dance for you:
 
 ```bash
-docker pull ghcr.io/iaa-so-training/day4-clustering:latest
-docker tag ghcr.io/iaa-so-training/day4-clustering:latest chemical-tagging
+./run.sh download --all                 # 1.17 GB catalogue + ~1.0 GB embeddings (one time)
+./run.sh download --assets --list       # what is in the bundle
+./run.sh download --assets --check      # sha256-verify what you downloaded
+./run.sh run --fast                     # M 67 demo, ~2 min
+./run.sh run --cluster "M 67" --region-scaled
+./run.sh marimo                         # notebook → http://localhost:2718
+./run.sh shell                          # a bash prompt inside the image
+./run.sh python scripts/red_clump.py --clusters "NGC 6819"
 ```
 
-Or build it yourself:
+Windows: `.\run.ps1` with exactly the same arguments. If the prebuilt image is
+not reachable it builds one from the folder you cloned — same result, a few
+minutes once.
+
+## What the wrapper does (the long form)
+
+`run.sh` pulls `ghcr.io/iaa-so-training/day4-clustering:latest` on first use —
+published for **linux/amd64** and **linux/arm64** (Apple silicon), public, no
+login — then runs the container as *your* uid with this folder mounted:
 
 ```bash
-docker build -t chemical-tagging .
-```
+docker pull ghcr.io/iaa-so-training/day4-clustering:latest      # once
+docker tag  ghcr.io/iaa-so-training/day4-clustering:latest day4-clustering
 
-## Run
+# data, results and notebooks live on your machine, not in the image
+mkdir -p data results notebooks
 
-The image contains the code and every dependency, but **not** the data (the 1.17 GB
-catalogue and the ~1 GB embedding bundle live outside so the image stays small). Fetch
-both once into a host folder, then mount that folder for every run:
-
-```bash
-mkdir -p data results
-
-# 1. catalogue + embeddings/checkpoints (one time, ~2.2 GB total)
-docker run -it --rm -v "$PWD/data:/workspace/data" chemical-tagging cluster download --all
-
-# 1b. what is inside the bundle, and verify it afterwards
-docker run --rm -v "$PWD/data:/workspace/data" chemical-tagging cluster download --assets --list
-docker run --rm -v "$PWD/data:/workspace/data" chemical-tagging cluster download --assets --check
-
-# 2. run the fast benchmark (M 67 demo, ~1 min)
-docker run -it --rm \
-  -v "$PWD/data:/workspace/data" \
-  -v "$PWD/results:/workspace/results" \
-  chemical-tagging cluster run --fast
-
-# 3. your cluster, scaled region
-docker run -it --rm \
+docker run -it --rm -u "$(id -u):$(id -g)" \
+  -e HOME=/tmp/day4-home -e MPLCONFIGDIR=/tmp/day4-mpl -e MARIMO_HOME=/tmp/day4-marimo \
+  -e MLFLOW_TRACKING_URI=file:///workspace/results/mlruns \
   -v "$PWD/data:/workspace/data" -v "$PWD/results:/workspace/results" \
-  chemical-tagging cluster run --cluster "M 67" --region-scaled
+  -v "$PWD/notebooks:/workspace/notebooks" \
+  -w /workspace day4-clustering cluster download --all
 
-# 4. the marimo notebook (open http://localhost:2718)
-docker run -it --rm \
+docker run -it --rm -u "$(id -u):$(id -g)" \
+  -e HOME=/tmp/day4-home -e MPLCONFIGDIR=/tmp/day4-mpl -e MARIMO_HOME=/tmp/day4-marimo \
+  -e MLFLOW_TRACKING_URI=file:///workspace/results/mlruns \
   -v "$PWD/data:/workspace/data" -v "$PWD/results:/workspace/results" \
-  -p 2718:2718 \
-  chemical-tagging marimo edit notebooks/chemical_tagging.py --host 0.0.0.0 --no-token
+  -v "$PWD/notebooks:/workspace/notebooks" \
+  -w /workspace day4-clustering cluster run --fast
+
+# the marimo notebook (open http://localhost:2718), edits saved in your checkout
+docker run -it --rm -p 2718:2718 -u "$(id -u):$(id -g)" \
+  -e HOME=/tmp/day4-home -e MARIMO_HOME=/tmp/day4-marimo \
+  -v "$PWD/data:/workspace/data" -v "$PWD/results:/workspace/results" \
+  -v "$PWD/notebooks:/workspace/notebooks" \
+  -w /workspace day4-clustering \
+  sh -c 'for f in /app/notebooks/*.py; do [ -e "notebooks/$(basename "$f")" ] || cp "$f" notebooks/; done; \
+         exec marimo edit notebooks/chemical_tagging.py --host 0.0.0.0 --no-token'
 ```
 
-The frontier scripts work the same way — any `cluster` command or script is
-available inside the image:
+MLflow records every run under `results/mlruns/` (that is what the wrapper sets
+`MLFLOW_TRACKING_URI` to), so the tracking data is on your disk next to the plots
+and survives the `--rm`.
+
+Build it yourself instead (a few minutes), if you prefer — or to add the optional
+torch extra for the re-embedding extension, which is left out of the published
+image to keep the pull small:
 
 ```bash
-docker run -it --rm -v "$PWD/data:/workspace/data" -v "$PWD/results:/workspace/results" \
-  chemical-tagging python scripts/red_clump.py --clusters "NGC 6819"
+docker build -t day4-clustering .
+docker build -t day4-clustering --build-arg WITH_TORCH=1 .   # + ~200 MB, CPU wheels
 ```
+
+Running as your own uid is what keeps `data/` and `results/` writable by you;
+the image pre-creates the scratch HOME paths (`/tmp/day4-*`) that matplotlib,
+numba and marimo want, so nothing needs `sudo` afterwards.
 
 ## Performance
 
@@ -74,13 +91,21 @@ are timing something.
   (astropy, scikit-learn, umap-learn, hdbscan, EVoC, marimo, asteca, emcee,
   astroquery, huggingface_hub…), pinned by `uv.lock`.
 - **Not in** (keeps it small): the 1.17 GB catalogue, the ~1 GB embedding
-  bundle, docs, tests, and dev tooling.
+  bundle, docs, tests, dev tooling, and the optional `torch` extra for the
+  re-embedding extension — add that with
+  `docker build -t day4-clustering --build-arg WITH_TORCH=1 .` (~200 MB, CPU
+  wheels; the default image stays lean for the pull 30 people do at once).
 
 Track A needs `data/embeddings/attention_broad_merged.parquet`, which arrives with
 `cluster download --assets` (or `--all` above) — see
 `docs/spectral_embeddings_plan.md`.
 
 ## Troubleshooting
+
+**Downloads** resume where they stopped (HTTP range requests inside the image —
+no `wget`/`curl` needed, and none installed); re-run the same command after a
+dropped connection. The catalogue is verified against its exact byte size, the
+bundle against per-file sha256 (`./run.sh download --assets --check`).
 
 **The run dies with `exit 139` after "Running benchmark (t-SNE / UMAP / EVoC)"** — numba picked
 its *workqueue* threading layer, which is not threadsafe; EVoC's nested parallel regions then
@@ -101,7 +126,7 @@ pip install tbb && export NUMBA_THREADING_LAYER=tbb
 To check which layer is live inside the container:
 
 ```bash
-docker run --rm chemical-tagging python -c "
+./run.sh python -c "
 import numba, pynndescent; from numba import njit, prange
 @njit(parallel=True)
 def f(n):
@@ -114,7 +139,12 @@ f(100); print('layer:', numba.threading_layer())"   # want: omp (or tbb), never 
 
 - **"device or resource busy" / permission errors** — mount the folder with
   `:Z` (SELinux) or run from a fresh dir.
+- **Files in `data/`/`results/` belong to root** — the wrapper runs as your uid;
+  only hand-written `docker run` commands without `-u` hit this. Fix once with
+  `sudo chown -R "$USER" data results`.
 - **marimo doesn't open** — the `--host 0.0.0.0 --no-token` flags are
   required inside the container; browse to `http://localhost:2718`.
+- **`./run.sh` says "permission denied"** — `chmod +x run.sh` (git preserves the
+  bit, but zip downloads may not), or run `bash run.sh …`.
 - **Out of disk** — the image (~1.5 GB) + the catalogue (1.17 GB) + embeddings
   (~0.3 GB) ≈ 5.5 GB total. Delete `data/` to reclaim the catalogue.

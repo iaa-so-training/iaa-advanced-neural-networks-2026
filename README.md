@@ -7,16 +7,22 @@ Hands-on session: benchmark **t-SNE / UMAP / EVoC** on the 16-D APOGEE abundance
 space and decide which stars in a field belong to a star cluster, scored against
 kinematic ground truth.
 
+Everything runs in Docker — section B of the School Software Installation Guide,
+so it is already on your laptop:
+
 ```bash
 git clone https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026.git
 cd iaa-advanced-neural-networks-2026/day_4_clustering
-uv sync && uv run cluster download --all && uv run cluster run --fast
+./run.sh download --all     # catalogue + embeddings, ~2.2 GB, one time, resumable
+./run.sh run --fast         # ~2 min smoke test
 ```
+
+Windows: `.\run.ps1 download --all`, same arguments. Prefer native Python?
+`uv sync && uv run cluster …` — flags are identical.
 
 - Instructions and full walk-through: [`day_4_clustering/README.md`](day_4_clustering/README.md)
 - Student activities: [`day_4_clustering/docs/student_activities.md`](day_4_clustering/docs/student_activities.md)
-- No Python install? Public container image:
-  `docker pull ghcr.io/iaa-so-training/day4-clustering:latest`
+- Container details (image, mounts, performance): [`day_4_clustering/docs/docker.md`](day_4_clustering/docs/docker.md)
 
 # Day 1 — Downloading the workshop materials
 

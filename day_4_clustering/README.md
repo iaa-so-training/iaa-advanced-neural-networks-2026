@@ -12,20 +12,42 @@ Garcia-Dias et al. (2019, A&A 629, A34) — 23 from the paper, plus the Pleiades
 (Kos et al. 2017) and the two southern sweet-spots NGC 2243 and Collinder 261 —
 and scores each method's cluster recovery against **kinematic ground truth**.
 
-## Quick start
+## Quick start (Docker — all you need is Docker and git)
+
+Docker is section B of the School Software Installation Guide, so it is already
+on every laptop in the room. Nothing else gets installed on your machine.
 
 ```bash
 git clone https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026.git
 cd iaa-advanced-neural-networks-2026/day_4_clustering
 
-uv sync                          # Python ≥ 3.13 (uv builds .venv for you)
-uv run cluster download --all    # 1.17 GB DR19 catalogue + ~1.0 GB embeddings, resumable
-uv run cluster run --fast        # smoke test: ~2 min, needs no GPU
+./run.sh download --all     # 1.17 GB DR19 catalogue + ~1.0 GB embeddings (resumable)
+./run.sh run --fast         # smoke test: ~2 min on a laptop CPU, no GPU
+./run.sh marimo             # the notebook, http://localhost:2718
 ```
 
-Everything below assumes you are inside `day_4_clustering/`.
-**No Python?** `docs/docker.md` is the container path — pull the public image, mount a
-`data/` folder, done.
+`./run.sh` (Linux/macOS) and `.\run.ps1` (Windows — same arguments) pull
+`ghcr.io/iaa-so-training/day4-clustering:latest`, build it from this folder if
+that is not reachable, mount `./data` and `./results`, and hand their arguments
+to the `cluster` command inside the container. The files you produce land in
+`results/` owned by you, not by root.
+
+**Reading the rest of this README:** every example is written as
+`uv run cluster <flags>`. In Docker the same command is `./run.sh <flags>` — drop
+`uv run cluster`, keep the flags. Both paths take identical options.
+
+## Alternative: native Python with uv
+
+You need Python ≥ 3.13 on your machine (`uv` builds the virtualenv for you):
+
+```bash
+uv sync                     # add --extra torch for the re-embedding extension
+uv run cluster download --all
+uv run cluster run --fast
+```
+
+The two paths are interchangeable; the container adds nothing except that it
+cannot fall out of sync with the environment we tested.
 
 ## How it works
 
@@ -53,6 +75,9 @@ with HDBSCAN/PLSCAN-style density clustering and returns labels directly.
 t-SNE and UMAP only *embed*; a separate clustering step (HDBSCAN) is needed.
 
 ## Install
+
+With Docker there is nothing to install — see **Quick start** above.
+Natively:
 
 ```bash
 uv sync            # or: python -m venv .venv && . .venv/bin/activate && pip install -e .
@@ -130,14 +155,23 @@ uv run marimo edit notebooks/chemical_tagging.py   # edit
 uv run marimo run notebooks/chemical_tagging.py    # read-only app
 ```
 
+In Docker the wrapper opens the port for you:
+
+```bash
+./run.sh marimo                                     # → http://localhost:2718
+./run.sh marimo notebooks/tuning_template.py        # any notebook in notebooks/
+```
+
 ## Development
 
 ```bash
 uv run pyrefly check            # strict type checking (currently reports errors — see below)
-uv run pytest                   # 197 tests (5 need `--extra torch`, 2 need the PARSEC grid)
+uv run pytest                   # 206 tests (5 need `--extra torch`, 2 need the PARSEC grid)
 uv run coverage run -m pytest && uv run coverage report   # 90% (branch coverage)
 uv run mlflow ui                # inspect experiment runs (mlruns/)
 ```
+
+In Docker: `./run.sh pytest`, `./run.sh uv run pyrefly check`, `./run.sh python …`.
 
 Data contracts are enforced at runtime: pydantic `Settings`/`Cluster` models
 + pandera `ALLSTAR_SCHEMA` / `ABUNDANCE_SCHEMA` (see `src/cluster/schemas.py`).

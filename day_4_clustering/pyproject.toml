@@ -33,9 +33,20 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Only the spectral re-embedding / figure scripts need torch (CPU wheels are fine):
+# Only the spectral re-embedding / figure scripts need torch:
 #   uv sync --extra torch
 torch = ["torch>=2.6"]
+
+# PyPI's default torch wheel for Linux bundles ~3 GB of CUDA libraries; the
+# workshop needs none of it. Pinning the extra to the CPU wheel index keeps the
+# install ~200 MB on Linux, macOS and Windows alike.
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
 
 [project.scripts]
 cluster = "cluster.cli:main"
