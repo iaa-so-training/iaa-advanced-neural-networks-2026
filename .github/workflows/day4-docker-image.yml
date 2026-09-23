@@ -1,0 +1,109 @@
+name: day4 docker image
+
+# Builds the Day 4 workshop image for both laptop architectures and publishes it
+# to GHCR. Because this repository is public and the image is pushed with the
+# workflow's own GITHUB_TOKEN, the package inherits public visibility — students
+# can `docker pull` with no GitHub account and no login.
+#
+#   manual:  Actions -> "day4 docker image" -> Run workflow
+#   release: push a tag like day4-v1
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "day_4_clustering/**"
+      - ".github/workflows/day4-docker-image.yml"
+    tags: ["day4-v*"]
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/day4-clustering
+
+jobs:
+  build:
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04        # linux/amd64 (Windows/WSL, Intel macs, Linux)
+            platform: linux/amd64
+          - runner: ubuntu-24.04-arm    # linux/arm64 (Apple silicon)
+            platform: linux/arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: day_4_clustering
+          file: day_4_clustering/Dockerfile
+          platforms: ${{ matrix.platform }}
+          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
+          cache-from: type=gha,scope=${{ matrix.platform }}
+          cache-to: type=gha,scope=${{ matrix.platform }},mode=max
+
+      - name: export digest
+        run: |
+          mkdir -p /tmp/digests
+          touch "/tmp/digests/${DIGEST#sha256:}"
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ strategy.job-index }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge:
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-*
+          merge-multiple: true
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=raw,value=latest
+            type=ref,event=tag
+
+      - name: create manifest list
+        working-directory: /tmp/digests
+        run: |
+          docker buildx imagetools create \
+            $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ env.IMAGE }}@sha256:%s ' *)
+
+      - name: inspect
+        run: docker buildx imagetools inspect ${{ env.IMAGE }}:latest

@@ -1,0 +1,278 @@
+{
+  "dataset": "chemical tagging of star clusters \u2014 IAA-SO school 2026",
+  "generated_from": "iaa-advanced-neural-networks-2026-draft",
+  "total_bytes": 1289150679,
+  "n_files": 32,
+  "files": [
+    {
+      "path": "embeddings/attention_all.parquet",
+      "source": "data/embeddings/attention_all.parquet",
+      "bytes": 52475572,
+      "sha256": "1a5cabb3fb8d90a77467428ee4c9b2aa2a00c89d2d4931a38df5024e1e7f7455",
+      "consumer": "DR17 supervised arm (all)",
+      "rows": 33756,
+      "columns": 257
+    },
+    {
+      "path": "embeddings/attention_broad_merged.parquet",
+      "source": "data/embeddings/attention_broad_merged.parquet",
+      "bytes": 106937182,
+      "sha256": "42aba065ee8f43927aa8a78f7ee3edd62a1e6fbd1cc8d0e67bd01b8322c55a57",
+      "consumer": "Track A: cluster run --spectral  (student_activities.md:87-99)",
+      "rows": 67532,
+      "columns": 257
+    },
+    {
+      "path": "embeddings/attention_dr19.parquet",
+      "source": "data/embeddings/attention_dr19.parquet",
+      "bytes": 45462638,
+      "sha256": "4821f09cc6310781d90f8eabb7c5d83c75917800c8d86b0eaa3c1674e549abc9",
+      "consumer": "supervised DR19 attention latent (31 506 stars)",
+      "rows": 31506,
+      "columns": 257
+    },
+    {
+      "path": "embeddings/attention_dr19_convpool.parquet",
+      "source": "data/embeddings/attention_dr19_convpool.parquet",
+      "bytes": 11747678,
+      "sha256": "c76d85ecc710dc47f51d86d0f9c953b56dc4d2306b14cffdae15d39df045d4f3",
+      "consumer": "supervised CNN 64-d arm in cluster head-to-head",
+      "rows": 31506,
+      "columns": 65
+    },
+    {
+      "path": "embeddings/attention_dr19_long.parquet",
+      "source": "data/embeddings/attention_dr19_long.parquet",
+      "bytes": 45426479,
+      "sha256": "dc5e881361d6ebdc6df5bf7bf45c042601af4abd2267582df1303111fcba36e7",
+      "consumer": "supervised DR19 long re-train: scripts/spectral_dr19_analysis.py",
+      "rows": 31506,
+      "columns": 257
+    },
+    {
+      "path": "embeddings/attention_merged.parquet",
+      "source": "data/embeddings/attention_merged.parquet",
+      "bytes": 53800512,
+      "sha256": "0d8cd11c206d4a8b88d7df96a20acd6a66b78eb53e4ff5273e67d1d0a3b46ce1",
+      "consumer": "DR17 supervised arm",
+      "rows": 34611,
+      "columns": 257
+    },
+    {
+      "path": "embeddings/attention_norm_merged.parquet",
+      "source": "data/embeddings/attention_norm_merged.parquet",
+      "bytes": 22519664,
+      "sha256": "0e7698cb86952b4c8c40eb50a58ef5f5e2b721875bd05977870256b11f819b0f",
+      "consumer": "normalised-input ablation arm",
+      "rows": 15047,
+      "columns": 257
+    },
+    {
+      "path": "embeddings/broad_star_list.csv",
+      "source": "data/embeddings/broad_star_list.csv",
+      "bytes": 18250175,
+      "sha256": "c2be7284873624747c3e7a9dab6132babe364894459e1043e15cedb2383f8d5d",
+      "consumer": "star list behind the DR17 broad spectra download"
+    },
+    {
+      "path": "embeddings/cluster_members.csv",
+      "source": "data/embeddings/cluster_members.csv",
+      "bytes": 40905,
+      "sha256": "c6d593e00d0d1253acc8c4e22de9de8c069fa7f3032adb8efbc0648bfe3a0371",
+      "consumer": "member list used by the embedding exports"
+    },
+    {
+      "path": "embeddings/disentangled_64_merged.parquet",
+      "source": "data/embeddings/disentangled_64_merged.parquet",
+      "bytes": 2248923,
+      "sha256": "e5f8ea18dd061da474b5ed264ff8c752eca3573c82b5fef286d104b48ee7d814",
+      "consumer": "Phase-B disentangled AE arm (64-d)",
+      "rows": 34611,
+      "columns": 65
+    },
+    {
+      "path": "embeddings/disentangled_merged.parquet",
+      "source": "data/embeddings/disentangled_merged.parquet",
+      "bytes": 635915,
+      "sha256": "2780cc7d6cb0b3679532834ee9faed1e8836f1b3941af0efd51748d2fc1a6e73",
+      "consumer": "Phase-B disentangled AE arm (16-d)",
+      "rows": 34611,
+      "columns": 17
+    },
+    {
+      "path": "embeddings/masked_latent.parquet",
+      "source": "data/embeddings/masked_latent.parquet",
+      "bytes": 63498332,
+      "sha256": "0b4f4c1f5ae755be201fd644ee08052d98335477aa41a66b8f9622d78ed388c0",
+      "consumer": "uniform DR19 masked-AE arm: head-to-head, ablate, provenance",
+      "rows": 40879,
+      "columns": 257
+    },
+    {
+      "path": "embeddings/masked_latent_all.parquet",
+      "source": "data/embeddings/masked_latent_all.parquet",
+      "bytes": 63498332,
+      "sha256": "0b4f4c1f5ae755be201fd644ee08052d98335477aa41a66b8f9622d78ed388c0",
+      "consumer": "same rows as masked_latent.parquet (alias kept for provenance)",
+      "rows": 40879,
+      "columns": 257
+    },
+    {
+      "path": "embeddings/masked_latent_all_mixed_v1.parquet",
+      "source": "data/embeddings/masked_latent_all_mixed_v1.parquet",
+      "bytes": 57562892,
+      "sha256": "4234b57a27cf8866dc1365a2222a233762a62266faabb5df7000452063e03d1f",
+      "consumer": "mixed-product arm (superseded by the uniform re-run)",
+      "rows": 39645,
+      "columns": 257
+    },
+    {
+      "path": "embeddings/masked_latent_combined.parquet",
+      "source": "data/embeddings/masked_latent_combined.parquet",
+      "bytes": 108663319,
+      "sha256": "19d9c722892fa45de1df9f7cacef3c0c54bb83606208c65042387a6b798b1093",
+      "consumer": "member+field combined set (72 410 stars)",
+      "rows": 72410,
+      "columns": 257
+    },
+    {
+      "path": "embeddings/masked_latent_dr17.parquet",
+      "source": "data/embeddings/masked_latent_dr17.parquet",
+      "bytes": 52487588,
+      "sha256": "9ff18e503f28347c3fcb1913fa8876d9da36d0e3342bba24435790d746994106",
+      "consumer": "DR17 arm: cluster provenance (DR17-vs-DR19 batch effect)",
+      "rows": 33756,
+      "columns": 257
+    },
+    {
+      "path": "embeddings/masked_latent_dr17_missing.parquet",
+      "source": "data/embeddings/masked_latent_dr17_missing.parquet",
+      "bytes": 1134119,
+      "sha256": "211051f8db2757200d32b0c4bba2e1adcfee364c3ce7bb956cb21886564b9c79",
+      "consumer": "738 DR17 backfill latents: cluster provenance",
+      "rows": 738,
+      "columns": 257
+    },
+    {
+      "path": "embeddings/masked_latent_dr19_apstar_v1.parquet",
+      "source": "data/embeddings/masked_latent_dr19_apstar_v1.parquet",
+      "bytes": 57057598,
+      "sha256": "17ace4d844b11d225d01aecf74dc79ce36965fefb4924877b0fd6978d0b02866",
+      "consumer": "pre-uniform DR19 arm (superseded; the product-mismatch artifact)",
+      "rows": 38907,
+      "columns": 257
+    },
+    {
+      "path": "embeddings/masked_latent_field.parquet",
+      "source": "data/embeddings/masked_latent_field.parquet",
+      "bytes": 61417972,
+      "sha256": "5fd0d614f421b4723152637e67597c6bb7a413d25c4fca72f5f23c320392e66a",
+      "consumer": "field-only intermediate arm",
+      "rows": 39945,
+      "columns": 257
+    },
+    {
+      "path": "embeddings/masked_latent_members.parquet",
+      "source": "data/embeddings/masked_latent_members.parquet",
+      "bytes": 1482617,
+      "sha256": "2918803f2dc8e54b487ea2e9eca5dc213c0fa788fb0e5b2960333650a1c0dc75",
+      "consumer": "member-only intermediate arm",
+      "rows": 994,
+      "columns": 257
+    },
+    {
+      "path": "embeddings/members_dense_0.parquet",
+      "source": "data/embeddings/members_dense_0.parquet",
+      "bytes": 47005,
+      "sha256": "0b1a572a2835c830a7ecc361b8a3ce3683fe331694417f92db9394948de9466e",
+      "consumer": "supervised dense-tap arm (20-d)",
+      "rows": 1034,
+      "columns": 21
+    },
+    {
+      "path": "embeddings/members_dense_1.parquet",
+      "source": "data/embeddings/members_dense_1.parquet",
+      "bytes": 37141,
+      "sha256": "56f0fa4c7a498f6184431c28661bff32d5cd4f84f1d579ff39dacf3e87f96b24",
+      "consumer": "supervised dense-tap arm (8-d)",
+      "rows": 1034,
+      "columns": 9
+    },
+    {
+      "path": "embeddings/members_rawflux.parquet",
+      "source": "data/embeddings/members_rawflux.parquet",
+      "bytes": 39563664,
+      "sha256": "702498b8bd25b19592ac33fbc1aa4a515ac812c4873eea06254b434c7a92482c",
+      "consumer": "raw 8 575-px flux control arm (1 034 member spectra)",
+      "rows": 1034,
+      "columns": 8576
+    },
+    {
+      "path": "embeddings/pca_256.parquet",
+      "source": "data/embeddings/pca_256.parquet",
+      "bytes": 62899073,
+      "sha256": "1edbdcd27d7efed14fc7ce3b955c4aef461c7064cd915046089d03283408f89a",
+      "consumer": "PCA 256-d linear baseline",
+      "rows": 40939,
+      "columns": 257
+    },
+    {
+      "path": "embeddings/pca_64.parquet",
+      "source": "data/embeddings/pca_64.parquet",
+      "bytes": 16146502,
+      "sha256": "d664387fe31899443f9c9bf61f90f8ff2beeac359950c6cd82a608303f78806d",
+      "consumer": "PCA 64-d linear baseline (competes with the AE \u2014 key result)",
+      "rows": 40939,
+      "columns": 65
+    },
+    {
+      "path": "models/masked_ae.pt",
+      "source": "data/embeddings/masked_ae.pt",
+      "bytes": 34591641,
+      "sha256": "dec3d9e70035d2fde2d1c1e571b3c8f24ddd66cae26e27eb4a65d5c46c3f417f",
+      "consumer": "released masked-AE checkpoint (same architecture as masked_ae_rerun.pt)"
+    },
+    {
+      "path": "models/masked_ae_rerun.pt",
+      "source": "data/embeddings/masked_ae_rerun.pt",
+      "bytes": 34592193,
+      "sha256": "971e280dfbc9f227e01535ad584e35ea704e940f682461a7825c1b06d0bf58ce",
+      "consumer": "masked autoencoder used to produce masked_latent.parquet: scripts/embed_dr19_rerun.py (--model default), deck walkthrough figures"
+    },
+    {
+      "path": "models/model.pt",
+      "source": "data/embeddings/model.pt",
+      "bytes": 9762919,
+      "sha256": "57dc45f6126290a73eae538ecccc1becb56c5340235f99b123e61c4b0f4e2bb1",
+      "consumer": "supervised attention model (DR19, 31 506 stars)"
+    },
+    {
+      "path": "models/model_convpool.pt",
+      "source": "data/embeddings/model_convpool.pt",
+      "bytes": 8424245,
+      "sha256": "e11206dfd0145301e0d0615767266ed5c2a536b030fce460130f4382836552f7",
+      "consumer": "supervised conv-pool model (64-d arm)"
+    },
+    {
+      "path": "models/model_dr19.pt",
+      "source": "data/embeddings/model_dr19.pt",
+      "bytes": 9762919,
+      "sha256": "8529a6a4b350c6274f6f5fa4374f5bb7b6081c3097abb14288b98c0b5b5324ec",
+      "consumer": "supervised CNN-LSTM-attention checkpoint (DR19) \u2014 load with cluster.models.CnnLstmAttention, NOT the masked AE"
+    },
+    {
+      "path": "models/model_long.pt",
+      "source": "data/embeddings/model_long.pt",
+      "bytes": 9765365,
+      "sha256": "752d96eb011709f240064d8fe53c544282b571d4cb3dab09d790b152775245bf",
+      "consumer": "supervised attention model, long re-train"
+    },
+    {
+      "path": "optional/mwmstar.tar",
+      "source": "data/mwmstar.tar",
+      "bytes": 237209600,
+      "sha256": "a454e9034ebaf7bab53c5dcba40cc334413d04fc1bd179f8f00a33612eea30e2",
+      "consumer": "736 DR19 mwmStar FITS (re-embed / masked-AE figure regeneration)"
+    }
+  ]
+}

@@ -1,6 +1,23 @@
 # iaa-advanced-neural-networks-2026
 SO-IAA school on Advanced Neural Networks 
 
+# Day 4 — Clustering and chemical tagging
+
+Hands-on session: benchmark **t-SNE / UMAP / EVoC** on the 16-D APOGEE abundance
+space and decide which stars in a field belong to a star cluster, scored against
+kinematic ground truth.
+
+```bash
+git clone https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026.git
+cd iaa-advanced-neural-networks-2026/day_4_clustering
+uv sync && uv run cluster download --all && uv run cluster run --fast
+```
+
+- Instructions and full walk-through: [`day_4_clustering/README.md`](day_4_clustering/README.md)
+- Student activities: [`day_4_clustering/docs/student_activities.md`](day_4_clustering/docs/student_activities.md)
+- No Python install? Public container image:
+  `docker pull ghcr.io/iaa-so-training/day4-clustering:latest`
+
 # Day 1 — Downloading the workshop materials
 
 You will need:
