@@ -15,12 +15,26 @@ Tutor
 .. list-table::
    :header-rows: 1
 
-   * - .. image:: https://github.com/TjarkMiener.png?size=100
-        :target: https://github.com/TjarkMiener
+   * - .. image:: https://github.com/tjarkmiener.png?size=100
+        :target: https://github.com/tjarkmiener
         :alt: Tjark Miener
      
-   * - `Tjark Miener <https://github.com/TjarkMiener>`_
+   * - `Tjark Miener <https://github.com/tjarkmiener>`_
 
+with the help of:
+.. list-table::
+   :header-rows: 1
+
+   * - .. image:: https://github.com/cpozogonzalez.png?size=100
+        :target: https://github.com/cpozogonzalez
+        :alt: Cristian Pozo González
+
+     - .. image:: https://github.com/rlopezcoto.png?size=100
+        :target: https://github.com/rlopezcoto
+        :alt: Rubén López-Coto
+
+   * - `Cristian Pozo González <https://github.com/cpozogonzalez>`_
+     - `Rubén López-Coto <https://github.com/rlopezcoto>`_
 
 CTLearn: Deep Learning for IACT Event Reconstruction
 ====================================================
