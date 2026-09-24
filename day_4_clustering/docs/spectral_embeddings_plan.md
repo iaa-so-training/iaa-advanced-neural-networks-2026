@@ -1,5 +1,11 @@
 # Plan: spectral-RNN embeddings for chemical tagging
 
+> Paths such as `scripts/export_embeddings.py`, `scripts/fetch_spectra.py` and
+> `src/lightsurf/…` below belong to the **upstream** `lightsurf` repository (a
+> separate, private checkout — see `docs/spectral_gpu_runbook.md`), not to this
+> tree. This repository ships the CPU-side code and the artifacts those scripts
+> produced; the names are kept so the plan can be read against that history.
+
 ## Goal
 
 Train the **lightsurf** CNN-LSTM-Attention network to regress APOGEE chemical

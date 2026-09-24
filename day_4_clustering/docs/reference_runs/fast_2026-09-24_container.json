@@ -16,8 +16,8 @@
         "sidecar_sha256": "5324bf39baeede7553b0a3c8a50bea1760f47eb67a95a8a84e6db303aa2edb04"
       }
     },
-    "git_sha": "b68054041a7c6d0c89e37e83ff6e4af5f97a64f9",
-    "image": "ghcr.io/iaa-so-training/day4-clustering:day4-v5",
+    "git_sha": "bcd97e4f81db74e26f4f8b93686789a208531518",
+    "image": "ghcr.io/iaa-so-training/day4-clustering:day4-v6",
     "platform": "linux/x86_64",
     "python": "3.13.15",
     "seed": 42,
@@ -67,7 +67,7 @@
       "recall": 0.4828157474300587
     }
   ],
-  "measured_utc": "2026-09-24T15:01:54+00:00",
+  "measured_utc": "2026-09-24T15:36:06+00:00",
   "name": "fast",
   "per_cluster_recall": {
     "EVoC": {
