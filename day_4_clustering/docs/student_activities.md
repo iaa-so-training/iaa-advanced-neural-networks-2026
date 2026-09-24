@@ -132,6 +132,18 @@ Compare your cluster's precision/recall to the abundance baseline. Metal-poor
 globulars (M 15, M 92) are where the latent wins hardest — abundances
 collapse, spectra don't.
 
+For the cluster-only version of the same question with seed error bars, score the
+two feature sets on the stars they share:
+
+```bash
+docker run --rm -it $DAY4 $IMG uv run cluster head-to-head \
+    --arm "abundances (16-d)=abundances" \
+    --arm "masked AE 256-d=data/embeddings/masked_latent.parquet"
+```
+
+§0c of `notebooks/chemical_tagging.py` runs that comparison interactively and
+explains why the shared-population rule matters.
+
 ### Track B — Isochrone + red-clump distance
 
 Cleaner membership → better cluster parameters. Fit a PARSEC isochrone to your

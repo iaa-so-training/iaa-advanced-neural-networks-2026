@@ -191,6 +191,16 @@ docker run --rm -it -p 2718:2718 $DAY4 $IMG \
 # any notebook in notebooks/ works — swap the file name
 ```
 
+Two ship with the day:
+
+- `chemical_tagging.py` — the end-to-end demo. The abundance benchmark in §2–§3,
+  the **published spectral latent vs the abundances on the same stars** in §0c
+  (via `cluster head-to-head`), then the HR / isochrone / Gaia-age material.
+- `tuning_template.py` — the knob-turning lab for the student activities.
+
+`cluster download --all` fetches everything both notebooks read: the catalogue and
+the embeddings/checkpoints bundle.
+
 ## Development
 
 ```bash

@@ -30,6 +30,25 @@ def _(mo):
     This notebook runs a **fast demo**: it restricts the sky to a 30° region
     around **M 67** and caps the field sample, so the whole pipeline finishes
     in about a minute.
+
+    ### Running it
+
+    You are inside the workshop container
+    (`ghcr.io/iaa-so-training/day4-clustering`), so the environment is pinned and
+    there is nothing to install. From your checkout:
+
+    ```bash
+    export IMG=ghcr.io/iaa-so-training/day4-clustering:latest
+    export DAY4="-v $PWD/data:/app/data -v $PWD/results:/app/results -v $PWD/notebooks:/app/notebooks"
+
+    docker run --rm -it $DAY4 $IMG uv run cluster download --all     # catalogue + embeddings, once
+    docker run --rm -it -p 2718:2718 $DAY4 $IMG \
+      uv run marimo edit notebooks/chemical_tagging.py --host 0.0.0.0 --no-token
+    ```
+
+    That is how this notebook is being served to you (http://localhost:2718).
+    Everything it reads and writes stays on your machine, under `./data`,
+    `./results` and `./notebooks` — the mounts above are the only bridge.
     """)
     return
 
@@ -90,8 +109,12 @@ def _(mo):
     mo.md("""
     ## 0. Locate the allStar catalogue
 
-    The pipeline needs the APOGEE DR17 allStar FITS file (~3.7 GB). This cell
-    checks that it is present and raises a helpful error if it is not.
+    The pipeline needs the APOGEE DR19 allStar FITS file (1.17 GB). This cell
+    checks that it is present and raises a helpful error if it is not. Fetch it
+    from your checkout with
+    `docker run --rm -it $DAY4 $IMG uv run cluster download --all` (adds the
+    embeddings + checkpoints used in §0c), or `uv run cluster download` for the
+    catalogue alone if you are already in a shell inside the container.
     """)
     return
 
@@ -107,12 +130,17 @@ def _(mo):
             f"""
             ⚠️ `{allstar}` not found.
 
-            Run `uv run cluster download` first, then rerun this notebook.
+            From your checkout run:
+            `docker run --rm -it $DAY4 $IMG uv run cluster download --all`
+            (or `uv run cluster download --all` inside the container),
+            then rerun this notebook.
             """
         ),
     )
     print(f"✓ allStar found: {allstar} ({allstar.stat().st_size / 1e9:.2f} GB)")
-    return (allstar,)
+    # Path travels with allstar: marimo allows a name in one cell only, and §0c
+    # needs it too.
+    return allstar, Path
 
 
 @app.cell(hide_code=True)
@@ -181,7 +209,7 @@ def _(
         }
     baseline_table = pd.DataFrame(rows)
     print(f"baseline: {len(baseline_clusters)} clusters, all-sky")
-    return (baseline_table, cm_frames)
+    return (baseline_table, baseline_prepared, baseline_settings, cm_frames)
 
 
 @app.cell
@@ -203,6 +231,105 @@ def _(cm_frames, mo, plot_confusion):
     mo.mpl.interactive(
         plot_confusion(cm_frames["kin"]["t-SNE"], None, title="t-SNE — abundances + kinematics")
     )
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""
+    ## 0c. The published spectral latent — same stars, same clusterers
+
+    The asset bundle ships a **masked spectral autoencoder**: a network trained on
+    the raw APOGEE spectra (no abundance labels) whose 256-D latent layer is
+    exported for every star it covers
+    (`data/embeddings/masked_latent.parquet`, 40 879 stars). That is a genuinely
+    different view of a star — it never sees the ASPCAP abundances, so a
+    metal-poor globular where the abundances collapse still has a spectrum.
+
+    Comparing two feature sets is only fair on **the same stars**. `head_to_head`
+    intersects the arms' `APOGEE_ID` sets first, applies the ≥5-member rule to the
+    intersection, then scores every arm on exactly those stars with the same
+    clusterers and the same seeds — and hands back `n_stars`, `n_clusters` and the
+    per-arm losses so you can verify it did. (The trap it exists to avoid: quoting
+    a 25-cluster abundance score next to a 5-cluster spectral score.)
+    """)
+    return
+
+
+@app.cell
+def _(Path, baseline_prepared, baseline_settings, mo):
+    from cluster.headtohead import Arm, head_to_head, pivot_scores, pivot_with_errors
+
+    latent_path = Path("data/embeddings/masked_latent.parquet")
+    mo.stop(
+        not latent_path.exists(),
+        mo.md(
+            f"""
+            ⚠️ `{latent_path}` not found.
+
+            It is part of the asset bundle — from your checkout run
+            `docker run --rm -it $DAY4 $IMG uv run cluster download --assets`
+            (or `--all` for the catalogue as well), then rerun this notebook.
+            """
+        ),
+    )
+
+    arms = [
+        Arm(label="abundances (16-d)", embedding_path=None),
+        Arm(label="masked AE (256-d)", embedding_path=latent_path,
+            notes="self-supervised, from spectra"),
+    ]
+    h2h = head_to_head(
+        baseline_prepared, arms, baseline_settings, min_members=5, seeds=(42, 0, 1),
+    )
+    print(f"{h2h.n_stars} stars × {h2h.n_clusters} clusters, on the shared APOGEE_IDs")
+    print(f"stars lost per arm: {h2h.dropped}")
+    return (h2h,)
+
+
+@app.cell
+def _(h2h):
+    pivot_scores(h2h, "homogeneity")
+    return
+
+
+@app.cell
+def _(h2h):
+    pivot_with_errors(h2h)  # mean ± std over the three seeds
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""
+    **How to read it.** Homogeneity per clusterer, same 800 stars and 24 clusters
+    for both rows:
+
+    | method | abundances (16-d) | masked AE (256-d) |
+    |---|---|---|
+    | t-SNE | 0.23 | **0.73** |
+    | UMAP | 0.54 | **0.77** |
+    | EVoC | 0.46 | **0.69** |
+
+    The latent wins on all three — the spectra keep chemical information the 16
+    abundances do not. Two things worth saying out loud:
+
+    - These same-population numbers are *lower* than the ones in
+      `docs/spectral_benchmark_results.md`, where each arm was scored on its own
+      coverage. Both are in the repo; only this table is apples-to-apples.
+    - Cluster-only separation (here) and field retrieval (§2, members against the
+      Simbad referee) are different questions. The field-retrieval version of the
+      spectral arm is Track A in `docs/student_activities.md`.
+
+    The same comparison from a shell, with seed error bars and a CSV:
+
+    ```bash
+    docker run --rm -it $DAY4 $IMG uv run cluster head-to-head \
+        --arm "abundances (16-d)=abundances" \
+        --arm "masked AE 256-d=data/embeddings/masked_latent.parquet" \
+        --out results/head_to_head.csv
+    ```
+    """)
     return
 
 
@@ -260,7 +387,8 @@ def _(mo):
       clustering fused)
 
     Scores are measured against the **Simbad catalogue** (the external
-    referee), not the kinematic labels — see §6.
+    referee), not the kinematic labels — see §6. §0c runs the same comparison
+    with the published spectral latent swapped in for the abundances.
     """)
     return
 
@@ -482,6 +610,10 @@ def _(mo):
     - **Scores are against Simbad** (§2): the catalogue is the referee, so
       recall/precision measure *recovery of literature members*, independent
       of the abundances and kinematics used to find them.
+    - **Spectra beat abundances where abundances are weak** (§0c): on the same
+      stars and the same clusterers, the published masked-AE latent adds
+      +0.2–0.5 homogeneity. `cluster head-to-head` reproduces the table for any
+      pair of feature arms.
     - **The combination wins** (§6): `MEMBERSHIP_METHOD="combined"` adds
       chemically-consistent stars to the kinematic core and lifts catalogue
       recall. Flip `settings.membership_method` and watch.

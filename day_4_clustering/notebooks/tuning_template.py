@@ -4,6 +4,13 @@ __generated_with = "0.24.0"
 app = marimo.App()
 
 
+@app.cell
+def _():
+    import marimo as mo
+
+    return (mo,)
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -17,6 +24,19 @@ def _(mo):
 
     The three frontier tracks live in `docs/student_activities.md`
     (spectral latent · isochrone+red-clump · GALAH cross-match).
+
+    ### Running it
+
+    Inside the workshop container, like `chemical_tagging.py`:
+
+    ```bash
+    export IMG=ghcr.io/iaa-so-training/day4-clustering:latest
+    export DAY4="-v $PWD/data:/app/data -v $PWD/results:/app/results -v $PWD/notebooks:/app/notebooks"
+
+    docker run --rm -it $DAY4 $IMG uv run cluster download --all     # once
+    docker run --rm -it -p 2718:2718 $DAY4 $IMG \
+      uv run marimo edit notebooks/tuning_template.py --host 0.0.0.0 --no-token
+    ```
     """)
     return
 
@@ -40,24 +60,27 @@ def _(mo):
         mo.hstack([region, perplexity, min_cluster]),
         mo.hstack([use_weights, normalize]),
     ])
-    return cluster_dropdown, region, use_weights, normalize, perplexity, min_cluster
+    return CLUSTERS, cluster_dropdown, region, use_weights, normalize, perplexity, min_cluster
 
 
 @app.cell
-def _(cluster_dropdown, region, use_weights, normalize, perplexity, min_cluster, mo):
+def _(CLUSTERS, cluster_dropdown, region, use_weights, normalize, perplexity, min_cluster, mo):
     from pathlib import Path
 
     import pandas as pd
 
     from cluster import config
     from cluster.benchmark import run_benchmark
-    from cluster.clusters import CLUSTERS
     from cluster.data import prepare
 
     allstar = Path("data/astraAllStarASPCAP-0.6.0.fits.gz")
     mo.stop(
         not allstar.exists(),
-        mo.md("⚠️ `data/astraAllStarASPCAP-0.6.0.fits.gz` not found — run `cluster download` first."),
+        mo.md(
+            "⚠️ `data/astraAllStarASPCAP-0.6.0.fits.gz` not found — from your checkout run "
+            "`docker run --rm -it $DAY4 $IMG uv run cluster download --all`, "
+            "or `uv run cluster download --all` inside the container."
+        ),
     )
 
     settings = config.Settings()
