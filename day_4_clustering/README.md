@@ -153,8 +153,15 @@ Everything is driven by `src/cluster/config.py` — a single file of flags.
 - `FAST = False` → drop the cap; the DR19 quality cuts leave **358 058** stars
   (16 elements), not the ~183 000 of the DR17 era. The full all-sky run takes
   **≈57 minutes** on the reference laptop (3418 s, measured 2026-09-24 — see
-  `docs/dr19_rerun_results.md`); sklearn's Barnes-Hut t-SNE is single-threaded,
-  so budget for it rather than running it in a coffee break.
+  `docs/dr19_rerun_results.md`), so budget for it rather than running it in a
+  coffee break.
+
+Whichever sample you use, the catalogue read is cached on disk
+(`results/cache/prepared/`, keyed by data + settings + seed): the first call is
+~20 s of single-core gzip decompression, the next ones ~0.04 s, bit-identical.
+`cluster run --no-cache` forces a real read. Where the rest of the time goes,
+and why the machine looks idle while it runs, is in
+`docs/docker.md#why-it-is-slow-even-though-the-machine-looks-idle`.
 
 Flip the flag, or override on the command line:
 

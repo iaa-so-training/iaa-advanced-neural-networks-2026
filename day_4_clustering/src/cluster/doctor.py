@@ -16,6 +16,7 @@ import importlib.metadata
 import os
 import platform
 import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -162,6 +163,24 @@ def mlflow_params(**extra: Any) -> dict[str, str]:
     return params
 
 
+def cache_report() -> dict[str, Any]:
+    """State of the prepared-sample cache (on by default; see ``data.prepare``)."""
+    from .data import cache_dir
+
+    directory = cache_dir()
+    if directory is None:
+        return {"status": "disabled", "detail": "CLUSTER_NO_CACHE is set"}
+    entries = sorted(directory.glob("*.parquet")) if directory.is_dir() else []
+    newest = max((p.stat().st_mtime for p in entries), default=None)
+    return {
+        "status": "on" if entries else "empty",
+        "dir": str(directory),
+        "entries": len(entries),
+        "bytes": sum(p.stat().st_size for p in entries),
+        "newest": datetime.fromtimestamp(newest, tz=timezone.utc).isoformat(timespec="seconds") if newest else None,
+    }
+
+
 def fingerprint(*, deep: bool = False) -> dict[str, Any]:
     """Everything a quoted number depends on, as a JSON-ready dict."""
     return {
@@ -173,6 +192,7 @@ def fingerprint(*, deep: bool = False) -> dict[str, Any]:
         "git_sha": git_sha(),
         "image": image_ref(),
         "data": data_report(deep=deep),
+        "cache": cache_report(),
     }
 
 
@@ -192,6 +212,14 @@ def format_fingerprint(fp: dict[str, Any]) -> str:
         lines.append(f"absent: {', '.join(absent)}")
     lines.append(f"platform={fp['platform']}  git={fp['git_sha']}")
     lines.append(f"image={fp['image']}")
+
+    cache = fp.get("cache", {})
+    if cache.get("status") == "disabled":
+        lines.append(f"cache: off ({cache.get('detail')})")
+    elif cache:
+        lines.append(
+            f"cache: {cache['entries']} prepared sample(s), {cache['bytes'] / 1e6:.1f} MB in {cache['dir']}"
+        )
 
     cat = fp["data"].get("catalogue", {})
     if "bytes" in cat:

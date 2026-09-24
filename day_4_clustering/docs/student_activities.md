@@ -58,7 +58,8 @@ by `docker run -e`: `docker run --rm -it -e CLUSTER_USE_ELEMENT_WEIGHTS=1 $DAY4 
 with `uv run cluster` (and `uv run python` for a script) after `uv sync` — same
 flags, same results. Python ≥ 3.13 required; see the README.
 
-`--fast` caps the field at 25 000 stars (≈2 minutes natively, ≈3 in the container, on the reference laptop).
+`--fast` caps the field at 25 000 stars (≈2 minutes natively, ≈3 in the container, on the reference laptop; the catalogue read is
+cached on disk, so a re-run of the same configuration is seconds).
 `--full` drops the cap — at DR19 quality cuts that is 358 058 stars, so budget
 well over 10 minutes; measure it on your own machine before believing any
 number.

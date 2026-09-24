@@ -123,6 +123,32 @@ workshop.
 `cluster doctor` prints all of them, so no number in an issue or a slide has to
 be anonymous.
 
+## Caching (and why it is tier 1)
+
+The prepared sample — 1.17 GB of gzipped FITS read, quality cuts, membership,
+subsample, standardisation — is cached on disk
+(`results/cache/prepared/`) and restored on the next call. This belongs to the
+**exact** tier, not to a hurry:
+
+- the key is `sha256(cache format · catalogue identity · full settings · cluster
+  list · seed arguments)`, where the catalogue identity is its size + mtime plus
+  the sha256 recorded in the downloader's sidecar. Change the data, a knob or the
+  seed and you get a different entry;
+- the restored frame and matrix are **bit-identical** to a cold computation, and
+  the suite pins that (`tests/test_data_cache.py`, 9 tests, including one that
+  booby-traps the FITS reader and still gets a sample);
+- `cluster doctor` reports what is in the cache; `cluster run --no-cache` /
+  `cluster baseline --no-cache` / `CLUSTER_NO_CACHE=1` recompute regardless;
+  `CLUSTER_CACHE_DIR=<dir>` moves the directory;
+- the *benchmark* is not cached on disk — a new configuration is always a real
+  computation. The notebooks memoise their own calls with `mo.cache` (keyed by
+  argument values, in memory), which changes only how often work is done, never
+  what a number is.
+
+The same file mounted at a different path shares an entry: the identity uses the
+file name and bytes, not the mount path, so `./data/...` on the host and
+`/app/data/...` in the container hit one cache.
+
 ## Where the seeds live (audit)
 
 - field subsample and data prep — `settings.random_state` (`src/cluster/data.py`;

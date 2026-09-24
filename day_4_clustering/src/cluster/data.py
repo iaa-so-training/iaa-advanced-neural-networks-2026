@@ -12,6 +12,9 @@ canonical internal schema, so the rest of the pipeline is release-agnostic.
 
 from __future__ import annotations
 
+import hashlib
+import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -258,6 +261,100 @@ class PreparedData:
     elements: list[str]
 
 
+# --- the prepared-sample cache ------------------------------------------------
+#
+# `prepare` dominates the wall clock of every notebook session and of every
+# re-run: it reads the 1.17 GB gzipped catalogue and lands the sample in ~20 s
+# **on exactly one core** (gzip decompression is serial and astropy cannot
+# memmap a .gz), which is why the machine looks idle while the notebook feels
+# slow. The sample is a pure function of the catalogue's bytes, the settings and
+# the seed arguments, so it is cached on disk keyed by all three. The cached
+# frame is bit-identical to a fresh read (`tests/test_data_cache.py`), and
+# `CLUSTER_NO_CACHE=1` opts out.
+
+CACHE_FORMAT = 1  # bump when the cached payload's meaning changes
+
+
+def cache_dir(*, enabled: bool = True) -> Path | None:
+    """Where prepared samples live, or ``None`` when caching is off."""
+    if not enabled:
+        return None
+    flag = os.environ.get("CLUSTER_NO_CACHE", "").strip().lower()
+    if flag in {"1", "true", "yes", "on"}:
+        return None
+    return Path(os.environ.get("CLUSTER_CACHE_DIR", "results/cache/prepared"))
+
+
+def _catalogue_identity(path: Path) -> dict[str, object]:
+    """What the cache key must move with: the bytes, not just the name.
+
+    The downloader writes a ``.sha256`` sidecar, so the identity is a real
+    content hash when it is available, and size + mtime otherwise.
+    """
+    stat = path.stat()
+    sidecar = path.with_name(path.name + ".sha256")
+    recorded = sidecar.read_text().split()[0].strip() if sidecar.is_file() else None
+    # the basename, not the mount path: the same file at /app/data/... and
+    # ./data/... must share one entry (the container and the host both run this)
+    return {
+        "file": path.name,
+        "bytes": stat.st_size,
+        "mtime_ns": stat.st_mtime_ns,
+        "sha256": recorded,
+    }
+
+
+def prepare_cache_key(
+    allstar_path: str | Path,
+    settings: Settings,
+    clusters: list[Cluster],
+    seed_kwargs: dict[str, object],
+) -> str:
+    """A short, stable key for one prepared sample."""
+    payload = {
+        "format": CACHE_FORMAT,
+        "catalogue": _catalogue_identity(Path(allstar_path)),
+        "settings": settings.model_dump(mode="json"),
+        "clusters": [c.model_dump(mode="json") for c in clusters],
+        "seed": seed_kwargs,
+    }
+    blob = json.dumps(payload, sort_keys=True, default=str)
+    return hashlib.sha256(blob.encode()).hexdigest()[:16]
+
+
+def _load_prepared(key: str, directory: Path) -> PreparedData | None:
+    frame_path = directory / f"{key}.parquet"
+    meta_path = directory / f"{key}.json"
+    if not (frame_path.is_file() and meta_path.is_file()):
+        return None
+    try:
+        frame = pd.read_parquet(frame_path)
+        meta = json.loads(meta_path.read_text())
+    except Exception as exc:  # a torn/corrupt cache must never break a run
+        print(f"⚠ ignoring unreadable cache entry {key} ({exc})")
+        return None
+    matrix_cols = [c for c in frame.columns if c.startswith("__x")]
+    if not matrix_cols:
+        return None
+    X = frame[matrix_cols].to_numpy(dtype=float)
+    return PreparedData(df=frame.drop(columns=matrix_cols), X=X, elements=list(meta["elements"]))
+
+
+def _store_prepared(key: str, directory: Path, prepared: PreparedData, meta: dict[str, object]) -> None:
+    try:
+        directory.mkdir(parents=True, exist_ok=True)
+        frame = prepared.df.copy()
+        for i, element in enumerate(prepared.elements):
+            frame[f"__x{i:02d}"] = prepared.X[:, i]
+        frame.to_parquet(directory / f"{key}.parquet", index=False)
+        (directory / f"{key}.json").write_text(
+            json.dumps({**meta, "elements": list(prepared.elements)}, indent=2, sort_keys=True, default=str)
+        )
+        print(f"💾 cached the prepared sample ({prepared.X.shape[0]} × {prepared.X.shape[1]}, key {key})")
+    except Exception as exc:  # read-only results/, full disk, parquet quirk — not fatal
+        print(f"⚠ could not cache the prepared sample ({exc})")
+
+
 def prepare(
     allstar_path: str | Path,
     settings: Settings,
@@ -269,14 +366,39 @@ def prepare(
     seed_rv_tol: float,
     n_refine_passes: int,
     refine_sigma: float,
+    no_cache: bool = False,
 ) -> PreparedData:
     """load -> cuts -> region -> complete-case -> label -> sample -> matrix.
 
     The abundance matrix is built before labelling so that the "combined"
     membership method (kinematics + chemistry) can use it, then rebuilt on
     the sampled frame so rows stay aligned.
+
+    The result is cached on disk (see ``prepare_cache_key``) because the read it
+    replaces is ~20 s of single-core gzip decompression; set
+    ``CLUSTER_NO_CACHE=1`` to always compute.
     """
     from .membership import angular_separation, label_clusters
+
+    seed_kwargs = {
+        "seed_position_radius_deg": seed_position_radius_deg,
+        "seed_parallax_frac": seed_parallax_frac,
+        "seed_pm_tol": seed_pm_tol,
+        "seed_rv_tol": seed_rv_tol,
+        "n_refine_passes": n_refine_passes,
+        "refine_sigma": refine_sigma,
+    }
+    directory = cache_dir(enabled=not no_cache)
+    key = None
+    if directory is not None and Path(allstar_path).is_file():
+        key = prepare_cache_key(allstar_path, settings, clusters, seed_kwargs)
+        cached = _load_prepared(key, directory)
+        if cached is not None:
+            print(
+                f"✓ prepared sample from cache ({cached.X.shape[0]} × {cached.X.shape[1]}, "
+                f"key {key}) — CLUSTER_NO_CACHE=1 recomputes"
+            )
+            return cached
 
     df = load_allstar(allstar_path, settings.elements)
     df = apply_quality_cuts(df, settings)
@@ -320,4 +442,21 @@ def prepare(
 
     df = stratified_field_sample(df, settings.max_stars, settings.random_state)
     X = make_matrix(df, settings)
-    return PreparedData(df=df, X=X, elements=list(settings.elements))
+    prepared = PreparedData(df=df, X=X, elements=list(settings.elements))
+
+    if directory is not None and key is not None:
+        _store_prepared(
+            key, directory, prepared,
+            {
+                "key": key,
+                "cache_format": CACHE_FORMAT,
+                "catalogue": _catalogue_identity(Path(allstar_path)),
+                "population": {
+                    "stars": int(X.shape[0]),
+                    "features": int(X.shape[1]),
+                    "members": int((df["cluster"] != "field").sum()),
+                    "field": int((df["cluster"] == "field").sum()),
+                },
+            },
+        )
+    return prepared

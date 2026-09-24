@@ -122,6 +122,10 @@ def download(
     "--seed", type=int, default=None,
     help="Override the seed (default: CLUSTER_RANDOM_STATE, 42).",
 )
+@click.option(
+    "--no-cache", "no_cache", is_flag=True,
+    help="Ignore the prepared-sample cache and re-read the catalogue.",
+)
 def run(
     fast: bool | None,
     max_stars: int | None,
@@ -132,6 +136,7 @@ def run(
     spectral_path: str | None,
     region_scaled: bool = False,
     seed: int | None = None,
+    no_cache: bool = False,
 ) -> None:
     """Prepare the data, run the benchmark, print the score table."""
     from .benchmark import knn_purity, run_benchmark
@@ -201,6 +206,7 @@ def run(
             seed_rv_tol=config.SEED_RV_TOL,
             n_refine_passes=config.N_REFINE_PASSES,
             refine_sigma=config.REFINE_SIGMA,
+            no_cache=no_cache,
         )
 
         if spectral_path is not None:
@@ -269,9 +275,13 @@ def run(
     "--seed", type=int, default=None,
     help="Override the seed (default: CLUSTER_RANDOM_STATE, 42).",
 )
+@click.option(
+    "--no-cache", "no_cache", is_flag=True,
+    help="Ignore the prepared-sample cache and re-read the catalogue.",
+)
 def baseline(
     kinematics: bool, min_members: int, allstar: str, outdir: str | None,
-    spectral_path: str | None, seed: int | None = None,
+    spectral_path: str | None, seed: int | None = None, no_cache: bool = False,
 ) -> None:
     """Paper baseline: cluster-only multiclass separation (Garcia-Dias 2019)."""
     import numpy as np
@@ -318,6 +328,7 @@ def baseline(
         seed_rv_tol=config.SEED_RV_TOL,
         n_refine_passes=config.N_REFINE_PASSES,
         refine_sigma=config.REFINE_SIGMA,
+        no_cache=no_cache,
     )
     if spectral_path is not None:
         from .spectral import spectral_prepared
@@ -429,7 +440,7 @@ def hr(
     click.echo(f"\n🖼  HR diagram saved to {out}")
 
 
-def _prepared_for(allstar: str, settings: config.Settings):
+def _prepared_for(allstar: str, settings: config.Settings, *, no_cache: bool = False):
     """Shared loader for the audit commands."""
     from .clusters import CLUSTERS
     from .data import prepare
@@ -449,6 +460,7 @@ def _prepared_for(allstar: str, settings: config.Settings):
         seed_rv_tol=config.SEED_RV_TOL,
         n_refine_passes=config.N_REFINE_PASSES,
         refine_sigma=config.REFINE_SIGMA,
+        no_cache=no_cache,
     )
 
 

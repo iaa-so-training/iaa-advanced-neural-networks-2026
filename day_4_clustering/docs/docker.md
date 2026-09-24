@@ -94,6 +94,49 @@ away — that tolerance, and the readings behind it, are in
 
 Use Docker for convenience and `uv` when you are timing something.
 
+### Why it is slow even though the machine looks idle
+
+The heavy stages of this pipeline are **serial by design**, so a 16-core laptop
+shows a load average near 1 while the notebook feels stuck. Measured
+2026-09-24 in this image (`scripts/phase_profile.py`, `cluster run --fast`
+sampling, 25 000 stars × 16 elements):
+
+| stage | wall | CPU time | cores used |
+| --- | --- | --- | --- |
+| `prepare` — read the 1.17 GB `.fits.gz`, cuts, membership | 20.6 s | 20.6 s | **1.00 / 16** |
+| t-SNE (sklearn Barnes-Hut, 1000 iters) | 42.7 s | 259.1 s | 6.06 |
+| UMAP (`random_state` ⇒ `n_jobs=1`) | 50.1 s | 80.9 s | **1.62** |
+| HDBSCAN | 1.9 s | 0.3 s | 0.14 |
+| EVoC | 75.5 s | 82.0 s | **1.09** |
+| UMAP again with `n_jobs=-1, random_state=None` (not reproducible) | **3.2 s** | 32.5 s | 10.19 |
+
+Three of the six stages cannot use more than one core:
+
+- **gzip** decompression is serial and astropy cannot `memmap` a `.gz`, so the
+  catalogue read is ~20 s on one core no matter how many cores you have.
+- **UMAP forces `n_jobs=1` whenever `random_state` is set** — it prints
+  `n_jobs value 1 overridden to 1 by setting random_state` on every run. This
+  project seeds every stochastic step on purpose (see
+  `docs/reproducibility.md`), so the parallel path is the *unseeded* one.
+- **EVoC** builds its tree on one core; it has no threading option.
+
+The two levers that keep iteration cheap, both on by default:
+
+- the **prepared sample is cached on disk** (`results/cache/prepared/`, keyed by
+  catalogue bytes + settings + seed + cache format): first call ≈20 s, later
+  calls **≈0.04 s**, and the restored frame is bit-identical to a fresh read
+  (`tests/test_data_cache.py`). `cluster doctor` reports the cache;
+  `cluster run --no-cache` (or `CLUSTER_NO_CACHE=1`) forces a real read;
+  `CLUSTER_CACHE_DIR=<dir>` moves it.
+- the **notebooks memoise their expensive calls with `mo.cache`**, so re-running
+  a cell whose arguments have not changed returns instantly instead of
+  recomputing minutes.
+
+Deliberately *not* cached: the benchmark itself. A new configuration means a
+real computation — say so in your report, and remember that scores move ~±0.02
+across machines anyway. `CLUSTER_TSNE_N_ITER=250` shortens t-SNE (43 s → 14 s on
+the same sample) when you are exploring rather than quoting.
+
 ## What's inside / not inside
 
 - **In**: the code (`src/`, `scripts/`, `notebooks/`, `hf/`), all runtime deps

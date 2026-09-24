@@ -50,23 +50,40 @@ def _(mo):
     That is how this notebook is being served to you (http://localhost:2718).
     Everything it reads and writes stays on your machine, under `./data`,
     `./results` and `./notebooks` — the mounts above are the only bridge.
+
+    ### Why it can feel slow, even on an idle machine
+
+    The heavy cells are **serial by design**, so nothing saturates: reading the
+    gzipped 1.17 GB catalogue is ~20 s on *one* core, UMAP drops to `n_jobs=1`
+    whenever a `random_state` is set (it warns about this on every run), and EVoC
+    builds its tree on one core — only t-SNE uses several. Measured on this
+    16-core host: prepare 20.6 s at 1.0 core, UMAP 50 s, EVoC 75 s, t-SNE 43 s
+    at 6.1 cores.
+
+    Two things keep iteration cheap: the prepared sample is **cached on disk**
+    (first call ~20 s, later ~0.04 s — same bytes, same settings, same seed; the
+    key is printed), and the benchmark cells are **memoised per argument set**,
+    so re-running them without changing knobs returns instantly. Need it faster
+    still? `CLUSTER_TSNE_N_ITER=250` cuts t-SNE to ~14 s, `CLUSTER_NO_CACHE=1`
+    (or `cluster run --no-cache`) forces a fresh read, and
+    `CLUSTER_CACHE_DIR=<dir>` moves the cache.
     """)
     return
 
 
 @app.cell
-def _():
+def _(mo):
     from cluster import config, seeding
     from cluster.baseline import (
-        baseline_labels,
+        baseline_labels as _baseline_labels,
         confusion_matrix_frame,
         plot_confusion,
         separation_scores,
     )
-    from cluster.benchmark import run_benchmark
+    from cluster.benchmark import run_benchmark as _run_benchmark
     from cluster.catalog import attach_referee, cluster_panels_cell, hr_cell
     from cluster.clusters import CLUSTERS
-    from cluster.data import prepare
+    from cluster.data import prepare as _prepare
     from cluster.isochrone import gaia_age_cell, isochrone_cell
     from cluster.literature import literature_table
     from cluster.plots import (
@@ -74,6 +91,17 @@ def _():
         embedding_interactive,
         method_comparison_bar,
     )
+
+    # Memoise the expensive entry points at the marimo level: re-running a cell
+    # with the same arguments reuses the previous result instead of recomputing
+    # minutes of work. `prepare` additionally hits a disk cache
+    # (cluster.data.prepare_cache_key), so even a fresh kernel skips the 20 s
+    # single-core catalogue read. Nothing about the numbers changes — the cache
+    # key covers the data, the settings and the seed, and tests pin the result
+    # as bit-identical to a cold computation.
+    prepare = mo.cache(_prepare)
+    run_benchmark = mo.cache(_run_benchmark)
+    baseline_labels = mo.cache(_baseline_labels)
 
     settings = config.Settings()
     settings.region_radius_deg = 30.0
@@ -101,6 +129,7 @@ def _():
         isochrone_cell,
         literature_table,
         method_comparison_bar,
+        mo,
         plot_confusion,
         prepare,
         run_benchmark,
@@ -263,7 +292,9 @@ def _(mo):
 
 @app.cell
 def _(Path, baseline_prepared, baseline_settings, mo):
-    from cluster.headtohead import Arm, head_to_head, pivot_scores, pivot_with_errors
+    from cluster.headtohead import Arm, head_to_head as _head_to_head, pivot_scores, pivot_with_errors
+
+    head_to_head = mo.cache(_head_to_head)  # seeds x methods x arms: the slowest cell in the notebook
 
     latent_path = Path("data/embeddings/masked_latent.parquet")
     mo.stop(

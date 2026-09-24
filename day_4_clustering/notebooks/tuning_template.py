@@ -25,6 +25,12 @@ def _(mo):
     The three frontier tracks live in `docs/student_activities.md`
     (spectral latent · isochrone+red-clump · GALAH cross-match).
 
+    **Iterating fast:** changing a widget recomputes only what depends on it, and
+    unchanged arguments come back from the cache — the prepared sample is on disk
+    (`prepare` ≈ 0.04 s after the first ~20 s read) and the benchmark cells are
+    memoised per argument set. Re-running the same configuration is instant;
+    a genuinely new configuration means a real computation, as it should.
+
     ### Running it
 
     Inside the workshop container, like `chemical_tagging.py`:
@@ -70,8 +76,14 @@ def _(CLUSTERS, cluster_dropdown, region, use_weights, normalize, perplexity, mi
     import pandas as pd
 
     from cluster import config
-    from cluster.benchmark import run_benchmark
-    from cluster.data import prepare
+    from cluster.benchmark import run_benchmark as _run_benchmark
+    from cluster.data import prepare as _prepare
+
+    # Memoise at the marimo level (see the note above): editing this cell without
+    # changing the widget values reuses the previous result. `prepare` is also
+    # disk-cached, so re-running it is ~0.04 s instead of a ~20 s catalogue read.
+    prepare = mo.cache(_prepare)
+    run_benchmark = mo.cache(_run_benchmark)
 
     allstar = Path("data/astraAllStarASPCAP-0.6.0.fits.gz")
     mo.stop(

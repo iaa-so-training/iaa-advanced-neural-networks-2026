@@ -16,6 +16,17 @@ from astropy.io import fits
 from cluster.config import ELEMENTS, astra_h_col
 
 
+@pytest.fixture(autouse=True)
+def _prepared_cache_off_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep the suite hermetic: tests that exercise the cache opt back in.
+
+    The prepared-sample cache is on for real runs (it saves a ~20 s single-core
+    catalogue read); in tests it would otherwise scatter entries next to the
+    checkout and quietly speed up the "did prepare run?" assertions.
+    """
+    monkeypatch.setenv("CLUSTER_NO_CACHE", "1")
+
+
 def make_allstar_frame(n: int = 8) -> pd.DataFrame:
     """Build a minimal, schema-valid allStar frame.
 
