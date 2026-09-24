@@ -119,7 +119,10 @@ uv run cluster download --all      # both — the one-liner for a fresh checkout
 ```
 
 The catalogue comes from SDSS, the embeddings/checkpoints from the published
-Hugging Face dataset; both land under `data/`. Useful flags:
+Hugging Face dataset
+[`RafaelDias/iaa-chemical-tagging-2026`](https://huggingface.co/datasets/RafaelDias/iaa-chemical-tagging-2026)
+(public — no account needed; the dataset card documents every file's provenance);
+both land under `data/`. Useful flags:
 
 ```bash
 uv run cluster download --assets --list    # what is inside, with sizes + consumers

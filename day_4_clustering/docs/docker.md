@@ -39,6 +39,12 @@ flags — `./run.sh run --fast` is exactly the `docker run … uv run cluster ru
 --fast` above, and if the published image is not reachable they build it from the
 folder you cloned.
 
+The embedding/checkpoint bundle is public on the Hub —
+[`RafaelDias/iaa-chemical-tagging-2026`](https://huggingface.co/datasets/RafaelDias/iaa-chemical-tagging-2026)
+— so you can browse the files, sizes and provenance without an account; the
+`download --assets` commands above fetch the same files into `./data` and verify
+them against the sha256 recorded in the dataset's `MANIFEST.json`.
+
 ## Why `uv run` inside the container
 
 The image is built with `uv` from the same `pyproject.toml` + `uv.lock` that the
