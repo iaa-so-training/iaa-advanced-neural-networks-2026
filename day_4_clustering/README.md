@@ -40,9 +40,10 @@ container, on the pinned environment we tested. Data, results and notebooks stay
 on your machine in `./data`, `./results` and `./notebooks`; the image starts as
 root but drops to your own uid, so the files it writes belong to you.
 
-`:latest` currently points at the `day4-v6` release (manifest list digest
+`The guide was verified against the `day4-v6` release (manifest list digest
 `sha256:d3f6231e…`); `docker pull …@sha256:d3f6231e…` freezes that exact image if
-you want the environment recorded in `docs/reproducibility.md` to the byte.
+you want the environment recorded in `docs/reproducibility.md` to the byte, and
+`:latest` follows the newest workshop tag.
 
 **Windows (PowerShell)** — same commands, different mount syntax:
 
