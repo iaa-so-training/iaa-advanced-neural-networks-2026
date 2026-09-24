@@ -23,7 +23,9 @@ Data artifacts behind the **Unsupervised & Semi-Supervised Learning** session of
 benchmarking **t-SNE / UMAP / EVoC** on **chemical tagging** of star clusters
 (APOGEE + Gaia + GALAH), reproducing and extending Kos et al. (2017).
 
-The code lives in the workshop repository. These files have **no public upstream** — they were
+The code lives in the workshop repository
+[`iaa-so-training/iaa-advanced-neural-networks-2026`](https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026/tree/main/day_4_clustering)
+(run it with `docker run … ghcr.io/iaa-so-training/day4-clustering uv run cluster …`, or natively with `uv`). These files have **no public upstream** — they were
 produced on a GPU machine from public survey data and are published here so students can
 reproduce the published tables without retraining.
 
@@ -40,7 +42,7 @@ cluster download --assets --check    # verify what is already on disk
 **Or straight from the Hub:**
 
 ```bash
-hf download REPO_ID --repo-type dataset --local-dir data
+hf download RafaelDias/iaa-chemical-tagging-2026 --repo-type dataset --local-dir data
 ```
 
 Both routes land the files where the code expects them: parquets in `data/embeddings/`,
@@ -111,7 +113,7 @@ loads every `.pt` in this bundle strictly, architecture-checked.
 
 ```bash
 # masked-AE latents from raw spectra (needs the checkpoint + torch)
-python scripts/embed_dr19_rerun.py --model models/model_dr19.pt --out data/embeddings/masked_latent_dr19_rerun.parquet
+python scripts/embed_dr19_rerun.py --model data/embeddings/masked_ae_rerun.pt --out data/embeddings/masked_latent_dr19_rerun.parquet
 
 # everything else: the published tables
 cluster head-to-head --out results/head_to_head/scores.csv
