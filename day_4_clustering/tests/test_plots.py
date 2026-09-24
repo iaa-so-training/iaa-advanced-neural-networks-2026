@@ -266,3 +266,97 @@ def test_cluster_panels_three_panels() -> None:
     fig = cluster_panels(df_a, df_g, "T", m_a, m_g)
     # 3 panels x 2 traces (field + member)
     assert len(fig.data) == 6
+
+
+# --- render budget: the notebook stays interactive, and stays reproducible ---
+
+
+def test_thin_field_ignores_misaligned_masks() -> None:
+    """A mask that does not match the frame must not break the figure."""
+    member = np.zeros(4, dtype=bool)
+    assert plots.thin_field(member, max_field=1).sum() == 1
+
+
+def test_thin_field_keeps_members_and_caps_field() -> None:
+    member = np.zeros(30_000, dtype=bool)
+    member[:137] = True  # members are few and must all survive
+    keep = plots.thin_field(member, max_field=1_000)
+    assert keep.sum() == 137 + 1_000
+    assert keep[member].all()
+    # deterministic: the same figure twice is the same figure
+    assert np.array_equal(keep, plots.thin_field(member, max_field=1_000))
+    # a cap larger than the field is a no-op
+    assert plots.thin_field(member, max_field=50_000).all()
+
+
+def _hr_frame(n: int) -> pd.DataFrame:
+    rng = np.random.default_rng(0)
+    return pd.DataFrame({
+        "APOGEE_ID": [f"2M{i:012d}" for i in range(n)],
+        "GAIAEDR3_PHOT_G_MEAN_MAG": rng.normal(15.0, 2.0, n),
+        "GAIAEDR3_PHOT_BP_MEAN_MAG": rng.normal(15.5, 2.0, n),
+        "GAIAEDR3_PHOT_RP_MEAN_MAG": rng.normal(14.5, 2.0, n),
+        "GAIAEDR3_PARALLAX": rng.uniform(0.5, 5.0, n),
+        "TEFF": rng.normal(4800.0, 300.0, n),
+        "LOGG": rng.normal(3.0, 0.8, n),
+    })
+
+
+def test_hr_interactive_payload_is_bounded() -> None:
+    """A 30-degree cone is ~25 000 stars; the figure must stay small.
+
+    marimo ships every trace to the browser, so the guard is on the serialised
+    figure (what the page carries), not on the point count alone.
+    """
+    n = 30_000
+    df = _hr_frame(n)
+    masks = {
+        "catalog": np.array([i % 97 == 0 for i in range(n)]),
+        "kinematic": np.array([i % 131 == 0 for i in range(n)]),
+        "combined": np.array([i % 197 == 0 for i in range(n)]),
+    }
+    fig = hr_interactive(df, masks, "T", highlight="combined")
+    assert len(fig.data) == 4
+    # fig.to_json() is the payload marimo hands to the browser
+    payload = len(fig.to_json())
+    assert payload < 400_000, f"{payload:,} bytes of figure JSON"
+    # every highlighted member is still drawn (both panels), with hover text
+    members = sum(len(t.x) for t in fig.data if t.name and "combined" in t.name)
+    assert members == 2 * masks["combined"].sum()
+    assert any(t.text is not None and len(t.text) == len(t.x) for t in fig.data)
+    # the grey trace holds the cap of unlabelled field plus the few stars the
+    # other two sources flag (those are drawn grey but are not noise)
+    flagged = int((masks["catalog"] | masks["kinematic"] | masks["combined"]).sum())
+    field_points = max(len(t.x) for t in fig.data if t.name and "field" in t.name)
+    assert field_points <= plots.PLOT_MAX_FIELD_POINTS + flagged
+
+
+def test_embedding_interactive_payload_is_bounded() -> None:
+    n = 25_000
+    rng = np.random.default_rng(1)
+    df = pd.DataFrame({
+        "APOGEE_ID": [f"2M{i:012d}" for i in range(n)],
+        "TEFF": rng.normal(4800.0, 300.0, n),
+        "LOGG": rng.normal(3.0, 0.8, n),
+        "cluster": np.where([i % 211 == 0 for i in range(n)], "M 67", "field"),
+        "referee": np.where([i % 211 == 0 for i in range(n)], "M 67", "field"),
+    })
+    result = BenchmarkResult(
+        results={
+            "UMAP": MethodResult(
+                name="UMAP",
+                embedding=rng.normal(0.0, 3.0, (n, 2)),
+                labels=np.where([i % 211 == 0 for i in range(n)], 0, -1),
+                scores=pd.DataFrame(),
+            ),
+        },
+        df=df,
+    )
+    fig = embedding_interactive(result, "UMAP")
+    assert len(fig.data) == 2
+    payload = len(fig.to_json())
+    assert payload < 400_000, f"{payload:,} bytes of figure JSON"
+    member_trace = [t for t in fig.data if t.name == "member"][0]
+    assert len(member_trace.x) == int(df["referee"].ne("field").sum())
+    field_trace = [t for t in fig.data if t.name == "field"][0]
+    assert len(field_trace.x) <= plots.PLOT_MAX_FIELD_POINTS

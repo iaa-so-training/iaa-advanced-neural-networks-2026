@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +10,39 @@ import numpy as np
 import pandas as pd
 
 from .benchmark import BenchmarkResult, knn_purity
+
+#: Field points drawn per panel. Every trace — and every hover string — is
+#: shipped to the browser, so a 25 000-star scatter with per-star hover text is
+#: ~2.5 MB of figure JSON and the notebook stops responding to the mouse long
+#: before the machine is busy. Members are never dropped; only *unlabelled
+#: field* stars are subsampled — the same budget ``abundance_violins`` already
+#: applies on the data side, and the same idea as ``config.MAX_STARS``.
+#: ``CLUSTER_PLOT_MAX_POINTS`` overrides it.
+PLOT_MAX_FIELD_POINTS = int(os.environ.get("CLUSTER_PLOT_MAX_POINTS", "3000"))
+
+
+def thin_field(
+    member: np.ndarray,
+    *,
+    max_field: int | None = None,
+    random_state: int = 42,
+) -> np.ndarray:
+    """Row mask that keeps **every** member and caps the field stars.
+
+    Deterministic for a given seed, so a figure is reproducible: the same
+    sample is drawn twice, and the JSON a student sends to a helper is the same
+    one their classmate sees.
+    """
+    member = np.asarray(member, dtype=bool)
+    limit = PLOT_MAX_FIELD_POINTS if max_field is None else max_field
+    field_index = np.flatnonzero(~member)
+    if 0 <= limit < field_index.size:
+        rng = np.random.default_rng(random_state)
+        field_index = np.sort(rng.choice(field_index, size=limit, replace=False))
+    keep = np.zeros(member.size, dtype=bool)
+    keep[np.flatnonzero(member)] = True
+    keep[field_index] = True
+    return keep
 
 
 _CLUSTER_COLORS = {
@@ -321,11 +355,26 @@ def hr_interactive(
     def _yn(b: bool) -> str:
         return "yes" if b else "no"
 
-    hover = np.array([
-        f"{apid[i]}<br>Teff {teff[i]:.0f} K &nbsp; logg {logg[i]:.2f}"
-        f"<br>catalog {_yn(cat[i])} &nbsp; kinematic {_yn(kin[i])} &nbsp; combined {_yn(comb[i])}"
-        for i in range(len(df))
-    ], dtype=object)
+    # Only highlighted stars are drawn with hover text (the field traces set
+    # hoverinfo="skip"), so only their strings are built — the rest never reach
+    # the browser, and the figure JSON stays small enough to stay interactive.
+    hover = np.empty(len(df), dtype=object)
+    hover[:] = ""
+    for i in np.flatnonzero(hl):
+        hover[i] = (
+            f"{apid[i]}<br>Teff {teff[i]:.0f} K &nbsp; logg {logg[i]:.2f}"
+            f"<br>catalog {_yn(cat[i])} &nbsp; kinematic {_yn(kin[i])} &nbsp; combined {_yn(comb[i])}"
+        )
+
+    # every star any source flags is a member; only unlabelled field is thinned.
+    # (masks are row-aligned in the notebook; skip any that is not, so a stray
+    # hand-made mask cannot take the whole figure down)
+    any_label = np.zeros(len(df), dtype=bool)
+    for m in (cat, kin, comb):
+        m = np.asarray(m, dtype=bool)
+        if m.shape == (len(df),):
+            any_label |= m
+    keep = thin_field(any_label)
 
     fig = make_subplots(
         rows=1, cols=2,
@@ -339,7 +388,7 @@ def hr_interactive(
     def _add(panel_x: np.ndarray, panel_y: np.ndarray, mask: np.ndarray, row: int, col: int, name: str) -> None:
         fig.add_trace(
             go.Scatter(
-                x=panel_x[mask & ~hl], y=panel_y[mask & ~hl],
+                x=panel_x[mask & ~hl & keep], y=panel_y[mask & ~hl & keep],
                 mode="markers", name=f"{name}: field",
                 marker=dict(size=3, color="#c9c9c9", opacity=0.35),
                 hoverinfo="skip",
@@ -389,6 +438,9 @@ def cluster_panels(
 
     apogee_mask = np.asarray(apogee_mask, dtype=bool) if apogee_mask is not None else np.zeros(len(df_apogee), dtype=bool)
     gaia_mask = np.asarray(gaia_mask, dtype=bool) if gaia_mask is not None else np.zeros(len(df_gaia), dtype=bool)
+    # cap the grey field in every panel; members are never dropped
+    keep_apogee = thin_field(apogee_mask)
+    keep_gaia = thin_field(gaia_mask)
 
     fig = make_subplots(
         rows=1, cols=3,
@@ -400,7 +452,7 @@ def cluster_panels(
     teff = df_apogee["TEFF"].to_numpy(dtype=float)
     logg = df_apogee["LOGG"].to_numpy(dtype=float)
     ok = np.isfinite(teff) & np.isfinite(logg)
-    fig.add_trace(go.Scatter(x=teff[ok & ~apogee_mask], y=logg[ok & ~apogee_mask],
+    fig.add_trace(go.Scatter(x=teff[ok & ~apogee_mask & keep_apogee], y=logg[ok & ~apogee_mask & keep_apogee],
                              mode="markers", marker=dict(size=3, color="#c9c9c9", opacity=0.3),
                              name="field", hoverinfo="skip"), row=1, col=1)
     fig.add_trace(go.Scatter(x=teff[ok & apogee_mask], y=logg[ok & apogee_mask],
@@ -412,7 +464,7 @@ def cluster_panels(
     k = df_apogee["K"].to_numpy(dtype=float)
     jk = j - k
     ok2 = np.isfinite(jk) & np.isfinite(k)
-    fig.add_trace(go.Scatter(x=jk[ok2 & ~apogee_mask], y=k[ok2 & ~apogee_mask],
+    fig.add_trace(go.Scatter(x=jk[ok2 & ~apogee_mask & keep_apogee], y=k[ok2 & ~apogee_mask & keep_apogee],
                              mode="markers", marker=dict(size=3, color="#c9c9c9", opacity=0.3),
                              name="field", hoverinfo="skip", showlegend=False), row=1, col=2)
     fig.add_trace(go.Scatter(x=jk[ok2 & apogee_mask], y=k[ok2 & apogee_mask],
@@ -425,7 +477,7 @@ def cluster_panels(
     rp = df_gaia["phot_rp_mean_mag"].to_numpy(dtype=float)
     bprp = bp - rp
     ok3 = np.isfinite(bprp) & np.isfinite(g)
-    fig.add_trace(go.Scatter(x=bprp[ok3 & ~gaia_mask], y=g[ok3 & ~gaia_mask],
+    fig.add_trace(go.Scatter(x=bprp[ok3 & ~gaia_mask & keep_gaia], y=g[ok3 & ~gaia_mask & keep_gaia],
                              mode="markers", marker=dict(size=3, color="#c9c9c9", opacity=0.3),
                              name="field", hoverinfo="skip", showlegend=False), row=1, col=3)
     fig.add_trace(go.Scatter(x=bprp[ok3 & gaia_mask], y=g[ok3 & gaia_mask],
@@ -479,15 +531,21 @@ def embedding_interactive(benchmark: BenchmarkResult, method: str) -> Any:
     logg = df["LOGG"].to_numpy(dtype=float)
     labels = df["cluster"].astype(str).to_numpy()
 
-    hover = np.array([
-        f"{apid[i]}<br>Teff {teff[i]:.0f} K &nbsp; logg {logg[i]:.2f}"
-        f"<br>cluster={labels[i]} &nbsp; referee={color_by}={df[color_by].to_numpy()[i]}"
-        for i in range(len(df))
-    ], dtype=object)
+    # members carry hover text; the field trace skips it, so only member
+    # strings are built (see hr_interactive for why this matters)
+    hover = np.empty(len(df), dtype=object)
+    hover[:] = ""
+    for i in np.flatnonzero(member):
+        hover[i] = (
+            f"{apid[i]}<br>Teff {teff[i]:.0f} K &nbsp; logg {logg[i]:.2f}"
+            f"<br>cluster={labels[i]} &nbsp; referee={color_by}={df[color_by].to_numpy()[i]}"
+        )
+
+    keep = thin_field(member)
 
     fig = go.Figure()
     fig.add_trace(go.Scatter(
-        x=Z[~member, 0], y=Z[~member, 1], mode="markers", name="field",
+        x=Z[~member & keep, 0], y=Z[~member & keep, 1], mode="markers", name="field",
         marker=dict(size=3, color="#c9c9c9", opacity=0.3), hoverinfo="skip",
     ))
     fig.add_trace(go.Scatter(

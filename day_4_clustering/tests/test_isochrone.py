@@ -63,6 +63,34 @@ def test_plot_isochrone_fit_has_three_traces() -> None:
     assert len(fig.data) == 3
 
 
+def test_plot_isochrone_fit_caps_the_field() -> None:
+    """The grey field is thinned; the members and the curve are not."""
+    from cluster import plots
+
+    n = 20_000
+    df = pd.DataFrame({
+        "GAIAEDR3_PHOT_G_MEAN_MAG": np.linspace(9.0, 18.0, n),
+        "GAIAEDR3_PHOT_BP_MEAN_MAG": np.linspace(9.8, 19.0, n),
+        "GAIAEDR3_PHOT_RP_MEAN_MAG": np.linspace(8.2, 17.0, n),
+        "GAIAEDR3_PARALLAX": np.full(n, 1.0),
+    })
+    members = np.zeros(n, dtype=bool)
+    members[:120] = True
+    masks = {"catalog": members, "kinematic": members, "combined": members}
+    fit = IsochroneFit(
+        best={"met": 0.015, "loga": 9.0, "dm": 5.0, "Av": 0.1},
+        std={"met": 0.001, "loga": 0.1, "dm": 0.2, "Av": 0.05},
+        max_lkl=-0.05, n_stars=n,
+        curve_mag=np.linspace(9.0, 12.0, 50),
+        curve_color=np.linspace(1.0, 2.0, 50),
+    )
+    fig = plot_isochrone_fit(df, masks, "T", fit, highlight="combined")
+    field, member, _curve = fig.data
+    assert len(field.x) <= plots.PLOT_MAX_FIELD_POINTS
+    assert len(member.x) == int(members.sum())
+    assert len(fig.to_json()) < 200_000
+
+
 def test_plot_gaia_cmd() -> None:
     from cluster.isochrone import plot_gaia_cmd
 

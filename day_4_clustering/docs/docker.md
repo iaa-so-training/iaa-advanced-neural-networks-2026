@@ -137,6 +137,28 @@ real computation — say so in your report, and remember that scores move ~±0.0
 across machines anyway. `CLUSTER_TSNE_N_ITER=250` shortens t-SNE (43 s → 14 s on
 the same sample) when you are exploring rather than quoting.
 
+### A sluggish notebook is usually the page, not the CPU
+
+Slow *interaction* is a different layer: marimo ships every trace — and every
+hover string — to the browser, so a figure with 25 000 stars that each carry
+hover text is megabytes of JSON. Measured on the shipped notebook (30° cone
+around M 67): three cells carried 6.2 MB of the 7.1 MB page, and the mouse
+stopped responding long before the machine was busy. With the cap in place the
+same notebook exports to **1.71 MB** (from 7.11 MB) — those three figures fall
+from 2.51, 2.46 and 1.25 MB to 0.38, 0.36 and 0.13 MB, with every member still
+plotted. The plots cap the grey field at `CLUSTER_PLOT_MAX_POINTS` (default
+**3000**) points per panel:
+
+- **every member is always drawn** — only *unlabelled* field stars are thinned,
+  the same budget `abundance_violins` already applies on the data side;
+- hover text is built only for the stars that display it (field traces set
+  `hoverinfo="skip"`);
+- the sample is seeded, so the same figure is drawn twice for the same seed —
+  nothing about the science changes, only what is *painted*.
+
+`CLUSTER_PLOT_MAX_POINTS=0` draws members only; raise it and restart the kernel
+for the full crowd.
+
 ## What's inside / not inside
 
 - **In**: the code (`src/`, `scripts/`, `notebooks/`, `hf/`), all runtime deps

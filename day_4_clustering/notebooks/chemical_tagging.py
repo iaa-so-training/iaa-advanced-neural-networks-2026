@@ -67,6 +67,13 @@ def _(mo):
     still? `CLUSTER_TSNE_N_ITER=250` cuts t-SNE to ~14 s, `CLUSTER_NO_CACHE=1`
     (or `cluster run --no-cache`) forces a fresh read, and
     `CLUSTER_CACHE_DIR=<dir>` moves the cache.
+
+    If the *mouse* is what feels slow rather than the cells: a marimo page ships
+    every point a figure draws, so the interactive plots cap the grey field at
+    `CLUSTER_PLOT_MAX_POINTS` (default 3000) stars per panel. **Every member is
+    always drawn** — only unlabelled field stars are thinned, and the same
+    sample is drawn every time for a given seed. Raise the variable (and restart
+    the kernel) if you want the whole crowd, lower it on a thin laptop.
     """)
     return
 

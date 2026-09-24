@@ -31,6 +31,7 @@ import pandas as pd
 
 from .clusters import Cluster
 from .config import Settings
+from .plots import thin_field
 
 ISOCHRONE_URL = (
     "https://raw.githubusercontent.com/asteca/ASteCA/main/"
@@ -291,9 +292,10 @@ def plot_isochrone_fit(
     ok = np.isfinite(color) & np.isfinite(g)
 
     age = 10.0 ** (fit.best["loga"] - 9.0)
+    keep = thin_field(hl)  # cap the grey field; members are never dropped
     fig = go.Figure()
     fig.add_trace(go.Scatter(
-        x=color[ok & ~hl], y=g[ok & ~hl], mode="markers", name="field",
+        x=color[ok & ~hl & keep], y=g[ok & ~hl & keep], mode="markers", name="field",
         marker=dict(size=3, color="#c9c9c9", opacity=0.3), hoverinfo="skip",
     ))
     fig.add_trace(go.Scatter(
