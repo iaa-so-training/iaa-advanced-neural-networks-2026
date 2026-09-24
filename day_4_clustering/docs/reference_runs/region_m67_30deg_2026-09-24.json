@@ -1,0 +1,91 @@
+{
+  "command": "uv run python scripts/reference_run.py --fast --region 30.0 --clusters M 67",
+  "environment": {
+    "data": {
+      "bundle": {
+        "manifest": "chemical tagging of star clusters \u2014 IAA-SO school 2026",
+        "manifest_files": 31,
+        "missing": [],
+        "present": 31
+      },
+      "catalogue": {
+        "bytes": 1171102556,
+        "bytes_ok": true,
+        "expected_bytes": 1171102556,
+        "path": "data/astraAllStarASPCAP-0.6.0.fits.gz",
+        "sidecar_sha256": "5324bf39baeede7553b0a3c8a50bea1760f47eb67a95a8a84e6db303aa2edb04"
+      }
+    },
+    "git_sha": "b68054041a7c6d0c89e37e83ff6e4af5f97a64f9",
+    "image": "ghcr.io/iaa-so-training/day4-clustering:day4-v5",
+    "platform": "linux/x86_64",
+    "python": "3.13.15",
+    "seed": 42,
+    "threads": {
+      "MKL_NUM_THREADS": "unset",
+      "NUMBA_NUM_THREADS": "unset",
+      "OMP_NUM_THREADS": "unset",
+      "OPENBLAS_NUM_THREADS": "unset",
+      "PYTHONHASHSEED": "42",
+      "cpu_count": 16,
+      "numba_effective": 16,
+      "torch_threads": null
+    },
+    "versions": {
+      "evoc": "0.3.1",
+      "hdbscan": "0.8.44",
+      "marimo": "0.24.0",
+      "numba": "0.67.0",
+      "numpy": "2.5.2",
+      "opentsne": "1.0.4",
+      "pandas": "2.3.3",
+      "scikit-learn": "1.9.0",
+      "torch": "absent",
+      "umap-learn": "0.5.12"
+    }
+  },
+  "macro": [
+    {
+      "method": "t-SNE",
+      "n_clusters_scored": 1,
+      "n_true_members": 456,
+      "precision": 0.017834394904458598,
+      "recall": 0.03070175438596491
+    },
+    {
+      "method": "UMAP",
+      "n_clusters_scored": 1,
+      "n_true_members": 456,
+      "precision": 0.015706806282722512,
+      "recall": 0.019736842105263157
+    },
+    {
+      "method": "EVoC",
+      "n_clusters_scored": 1,
+      "n_true_members": 456,
+      "precision": 0.015448851774530271,
+      "recall": 0.08114035087719298
+    }
+  ],
+  "measured_utc": "2026-09-24T15:10:21+00:00",
+  "name": "fast",
+  "per_cluster_recall": {
+    "EVoC": {
+      "M 67": 0.08114
+    },
+    "UMAP": {
+      "M 67": 0.019737
+    },
+    "t-SNE": {
+      "M 67": 0.030702
+    }
+  },
+  "population": {
+    "clusters_scored": 1,
+    "features": 16,
+    "field_prepared": 24770,
+    "members_prepared": 230,
+    "members_scored": 456,
+    "stars": 25000
+  }
+}

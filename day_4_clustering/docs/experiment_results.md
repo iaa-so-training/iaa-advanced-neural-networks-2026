@@ -5,6 +5,12 @@ snapshot, git commit, data-file size, package versions, and per-method
 recall/precision/kNN-purity to the local MLflow store
 (`mlruns/`, experiment `chemical-tagging-tweaks`). `random_state=42` is forced.
 
+> The values below are a dated record of *this* configuration (seed 42, M 67 30°
+> region, 5 000-star cap) — four decimals are shown because this is the log that
+> proves they were bit-identical across six processes. For what may be quoted as
+> a workshop number and how to attach its environment, see
+> `docs/reproducibility.md`.
+
 ## Reproducibility check
 
 Six independent `*/baseline` runs (one per parallel agent) produced **identical**

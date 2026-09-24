@@ -47,18 +47,23 @@ What survives the re-run, honestly:
    leaves the AE at t-SNE 0.71 / UMAP 0.75 / EVoC 0.67 — essentially
    unchanged, so the separation is not a globular/open discriminator.
 
-**Field retrieval** (24,171 field vs 829 members, 24 clusters — the number
-that the product mismatch had forced us to withdraw):
+**Field retrieval** (23 998 field vs 829 members scored, 24 clusters — the number
+that the product mismatch had forced us to withdraw). Abundance arm, quoted to
+two decimals; the exact reading and its environment are in
+`docs/reference_runs/fast_2026-09-24.json`:
 
 | method | recall | precision |
 |---|---|---|
-| t-SNE | 0.209 | 0.223 |
-| UMAP | 0.223 | 0.133 |
-| EVoC | 0.483 | 0.002 |
+| t-SNE | ≈0.21 | ≈0.22 |
+| UMAP | ≈0.22 | ≈0.13 |
+| EVoC | ≈0.48 | ≈0.002 |
 
-Chance precision is ~3% (829 members in 25k stars), so t-SNE's 0.22 is a real
-signal, but retrieval from spectra alone is weak and EVoC over-segments the
-field (recall up, precision ~0). This is the honest baseline.
+Readings move by ~±0.02 across machines — the same command on a different CPU or
+thread count lands a decimal or two away, which is expected and not a bug
+(`docs/reproducibility.md`). Chance precision is ~3% (829 members in 25k stars),
+so t-SNE's 0.22 is a real signal, but retrieval from spectra alone is weak and
+EVoC over-segments the field (recall up, precision ~0). This is the honest
+baseline.
 
 **Provenance resolved.** The old confound was a *product* signature — the same
 star embedded twice landed 1.70× farther apart across products (AUC 0.9992,

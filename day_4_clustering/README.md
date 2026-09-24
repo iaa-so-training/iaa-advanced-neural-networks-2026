@@ -142,8 +142,9 @@ The catalogue is SDSS-V DR19
 Everything is driven by `src/cluster/config.py` — a single file of flags.
 
 - `FAST = True`  → subsample the **field** to `MAX_STARS` (default 25 000) while
-  keeping **every** cluster member. **Measured 1 m 51 s** for the all-sky fast run
-  on a 2026 laptop (`cluster run --fast`, 25 000 field stars).
+  keeping **every** cluster member. The all-sky fast run takes **≈2 minutes
+  natively / ≈3 minutes in the container** on the reference laptop, measured
+  2026-09-24 (`docs/reproducibility.md`).
 - `FAST = False` → drop the cap; the DR19 quality cuts leave **358 058** stars
   (16 elements), not the ~183 000 of the DR17 era. Re-measure the runtime before
   quoting one — sklearn's Barnes-Hut t-SNE is single-threaded.
@@ -205,7 +206,7 @@ the embeddings/checkpoints bundle.
 
 ```bash
 uv run pyrefly check            # strict type checking (currently reports errors — see below)
-uv run pytest                   # 206 tests (5 need `--extra torch`, 2 need the PARSEC grid)
+uv run pytest                   # 212 tests with the data bundle + `--extra torch`; CI runs 205 passed / 3 skipped without them
 uv run coverage run -m pytest && uv run coverage report   # 90% (branch coverage)
 uv run mlflow ui                # inspect experiment runs (mlruns/)
 ```
@@ -246,10 +247,12 @@ Full list (with `TSNE`, `UMAP`, `EVOC`, `HDBSCAN` hyperparameters) is in
 > ⚠️ **The two tables below are DR17-era numbers.** They were produced on
 > `allStar-dr17-synspec_rev1.fits` and **do not reproduce on a current checkout**
 > (the project moved to SDSS-V DR19 — `docs/data_releases.md`). A run of
-> `cluster run --fast` today gives t-SNE 0.21/0.22, UMAP 0.22/0.13, EVoC 0.48/0.00
-> (24 clusters, 829 members — the field-retrieval row of
-> `docs/spectral_benchmark_results.md`). Current, reproducible numbers live in
-> `docs/dr19_rerun_results.md` and `docs/spectral_benchmark_results.md`;
+> `cluster run --fast` gives t-SNE ≈0.21/0.22, UMAP ≈0.22/0.13, EVoC ≈0.48/0.002
+> (24 clusters, 829 members scored — the field-retrieval row of
+> `docs/spectral_benchmark_results.md`). Scores move by ~±0.02 across machines;
+> the exact reading and the machine it came from are in `docs/reproducibility.md`.
+> Current numbers live in `docs/dr19_rerun_results.md` and
+> `docs/spectral_benchmark_results.md`;
 > regenerating the per-cluster tables from the frozen student config is what
 > `docs/region_sweep_results.md` records.
 
@@ -288,8 +291,13 @@ What it teaches:
 
 1. **Full-sky collapses.** The target paper never ran one giant all-sky
    t-SNE — it ran t-SNE on **30–45° regions** around each cluster
-   (Kos et al. Fig. 3). The `--region` flag reproduces that: precision
-   jumps to 0.47 for M 67 (vs 0.17 all-sky). Embedding 163k stars at once
+   (Kos et al. Fig. 3). The `--region` flag reproduces that setup. On the DR17
+   data precision jumped to 0.47 for M 67 (vs 0.17 all-sky) — that 0.47 is a
+   DR17-era value: re-measured on 2026-09-24 with DR19 data, the same command
+   scores M 67 at t-SNE recall/precision **≈0.03/0.02** (1 cluster, 456
+   referee members), because the region now holds a much larger capped field
+   sample (24 770 stars). Read it as an illustration of the region method, not
+   as a number to hit (`docs/reproducibility.md`). Embedding 163k stars at once
    buries every cluster in field stars.
 2. **L2-normalisation is the precision lever.** Without `NORMALIZE_ROWS`
    HDBSCAN merges the whole field into one blob (recall ≈ 1, precision ≈

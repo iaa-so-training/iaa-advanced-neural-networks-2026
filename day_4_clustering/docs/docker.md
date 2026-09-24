@@ -79,11 +79,20 @@ docker build -t day4-clustering --build-arg WITH_TORCH=1 .   # + ~200 MB, CPU wh
 
 ## Performance
 
-A container run is measurably slower than a native install on the same laptop —
-measured here: `cluster run --fast` takes **1 m 51 s** natively vs **3 m 37 s** in
-the container (16 CPUs, Docker CPU shares). The benchmark results are
-**bit-identical** either way, so use Docker for convenience and `uv` when you
-are timing something.
+A container run is slower than a native install on the same laptop — measured
+2026-09-24 on the reference machine: the all-sky fast run takes **≈2 minutes
+natively vs ≈3 minutes in the container** (16 CPUs, Docker CPU shares).
+
+The scores are **identical to the last printed digit** between native and
+container on that machine — same code, same data, same thread setting. That is a
+property of the *pinned* image: the earlier unpinned build gave 0.1974 where
+native gives 0.2093, because `python:3.13-slim` had moved underneath it. Since
+`day4-v5` the base images are pinned (`python:3.13.15-slim`, uv 0.12.18) and the
+parity holds. Across *machines* the same command still lands a decimal or two
+away — that tolerance, and the readings behind it, are in
+`docs/reproducibility.md`.
+
+Use Docker for convenience and `uv` when you are timing something.
 
 ## What's inside / not inside
 

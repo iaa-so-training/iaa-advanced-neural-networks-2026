@@ -7,7 +7,7 @@ from pathlib import Path
 
 import click
 
-from . import config, seeding, tracking
+from . import config, doctor, seeding, tracking
 
 
 @click.group()
@@ -180,6 +180,11 @@ def run(
             "cluster_count": str(len(clusters)),
             "seed": str(settings.random_state),
             **{k: str(v) for k, v in seeding.thread_report().items()},
+            # the rest of the fingerprint, so an MLflow run can be interpreted
+            # without guessing which machine or build produced it
+            **{f"pkg_{k}": v for k, v in doctor.versions().items() if v != "absent"},
+            "git_sha": doctor.git_sha(),
+            "image": doctor.image_ref(),
         })
 
         click.echo(

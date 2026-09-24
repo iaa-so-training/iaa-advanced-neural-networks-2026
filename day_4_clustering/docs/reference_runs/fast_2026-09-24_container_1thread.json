@@ -1,0 +1,160 @@
+{
+  "command": "uv run python scripts/reference_run.py --fast",
+  "environment": {
+    "data": {
+      "bundle": {
+        "manifest": "chemical tagging of star clusters \u2014 IAA-SO school 2026",
+        "manifest_files": 31,
+        "missing": [],
+        "present": 31
+      },
+      "catalogue": {
+        "bytes": 1171102556,
+        "bytes_ok": true,
+        "expected_bytes": 1171102556,
+        "path": "data/astraAllStarASPCAP-0.6.0.fits.gz",
+        "sidecar_sha256": "5324bf39baeede7553b0a3c8a50bea1760f47eb67a95a8a84e6db303aa2edb04"
+      }
+    },
+    "git_sha": "b68054041a7c6d0c89e37e83ff6e4af5f97a64f9",
+    "image": "ghcr.io/iaa-so-training/day4-clustering:day4-v5",
+    "platform": "linux/x86_64",
+    "python": "3.13.15",
+    "seed": 42,
+    "threads": {
+      "MKL_NUM_THREADS": "unset",
+      "NUMBA_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "unset",
+      "PYTHONHASHSEED": "42",
+      "cpu_count": 16,
+      "numba_effective": 1,
+      "torch_threads": null
+    },
+    "versions": {
+      "evoc": "0.3.1",
+      "hdbscan": "0.8.44",
+      "marimo": "0.24.0",
+      "numba": "0.67.0",
+      "numpy": "2.5.2",
+      "opentsne": "1.0.4",
+      "pandas": "2.3.3",
+      "scikit-learn": "1.9.0",
+      "torch": "absent",
+      "umap-learn": "0.5.12"
+    }
+  },
+  "macro": [
+    {
+      "method": "t-SNE",
+      "n_clusters_scored": 24,
+      "n_true_members": 829,
+      "precision": 0.22869615389982564,
+      "recall": 0.19487465377749444
+    },
+    {
+      "method": "UMAP",
+      "n_clusters_scored": 24,
+      "n_true_members": 829,
+      "precision": 0.13333571400737407,
+      "recall": 0.22270313649826604
+    },
+    {
+      "method": "EVoC",
+      "n_clusters_scored": 24,
+      "n_true_members": 829,
+      "precision": 0.0025658447599273214,
+      "recall": 0.4917855556604303
+    }
+  ],
+  "measured_utc": "2026-09-24T15:07:07+00:00",
+  "name": "fast",
+  "per_cluster_recall": {
+    "EVoC": {
+      "Berkeley 17": 0.142857,
+      "Berkeley 66": 1.0,
+      "Berkeley 71": 0.8,
+      "Collinder 261": 0.571429,
+      "IC 166": 0.785714,
+      "King 7": 0.6,
+      "M 107": 0.142857,
+      "M 13": 0.060606,
+      "M 15": 0.034483,
+      "M 3": 0.0,
+      "M 5": 0.0,
+      "M 67": 0.361502,
+      "M 71": 0.615385,
+      "M 92": 0.04,
+      "NGC 1245": 0.954545,
+      "NGC 1798": 0.888889,
+      "NGC 188": 0.555556,
+      "NGC 2158": 0.4,
+      "NGC 2243": 0.5,
+      "NGC 2420": 0.47619,
+      "NGC 6791": 0.928571,
+      "NGC 6819": 0.653061,
+      "NGC 7789": 0.893617,
+      "Pleiades": 0.39759
+    },
+    "UMAP": {
+      "Berkeley 17": 0.142857,
+      "Berkeley 66": 0.5,
+      "Berkeley 71": 0.3,
+      "Collinder 261": 0.285714,
+      "IC 166": 0.214286,
+      "King 7": 0.2,
+      "M 107": 0.5,
+      "M 13": 0.424242,
+      "M 15": 0.172414,
+      "M 3": 0.295455,
+      "M 5": 0.507937,
+      "M 67": 0.042254,
+      "M 71": 0.269231,
+      "M 92": 0.12,
+      "NGC 1245": 0.318182,
+      "NGC 1798": 0.111111,
+      "NGC 188": 0.111111,
+      "NGC 2158": 0.2,
+      "NGC 2243": 0.0625,
+      "NGC 2420": 0.047619,
+      "NGC 6791": 0.214286,
+      "NGC 6819": 0.081633,
+      "NGC 7789": 0.12766,
+      "Pleiades": 0.096386
+    },
+    "t-SNE": {
+      "Berkeley 17": 0.142857,
+      "Berkeley 66": 0.5,
+      "Berkeley 71": 0.2,
+      "Collinder 261": 0.142857,
+      "IC 166": 0.142857,
+      "King 7": 0.2,
+      "M 107": 0.571429,
+      "M 13": 0.121212,
+      "M 15": 0.137931,
+      "M 3": 0.113636,
+      "M 5": 0.190476,
+      "M 67": 0.046948,
+      "M 71": 0.346154,
+      "M 92": 0.2,
+      "NGC 1245": 0.272727,
+      "NGC 1798": 0.111111,
+      "NGC 188": 0.111111,
+      "NGC 2158": 0.2,
+      "NGC 2243": 0.125,
+      "NGC 2420": 0.142857,
+      "NGC 6791": 0.142857,
+      "NGC 6819": 0.163265,
+      "NGC 7789": 0.255319,
+      "Pleiades": 0.096386
+    }
+  },
+  "population": {
+    "clusters_scored": 24,
+    "features": 16,
+    "field_prepared": 23998,
+    "members_prepared": 1002,
+    "members_scored": 829,
+    "stars": 25000
+  }
+}

@@ -6,6 +6,16 @@
 > The commands below need that DR17 file supplied manually; they will
 > not reproduce against a fresh checkout. For current numbers see
 > `docs/dr19_rerun_results.md` and `docs/spectral_benchmark_results.md`.
+>
+> **DR19 status (2026-09-24): the table below has not been regenerated.** One
+> 30° region on DR19 — even with the field capped at 25 000 stars, as the
+> reference runs do — takes ≈3 minutes to embed and score, so a 25-cluster
+> sweep is a ~1.5-hour run, and an uncapped one (`scripts/region_sweep.py`,
+> no `--fast`) is considerably longer. The current single-cluster reading is in
+> `docs/reference_runs/`: M 67, 30°, t-SNE ≈0.03/0.02, UMAP ≈0.02/0.02,
+> EVoC ≈0.08/0.02 (1 cluster, 456 referee members). Treat the DR17 rows as the
+> illustration of the method and `docs/reproducibility.md` as the policy for
+> what may be quoted today.
 
 Full per-cluster comparison of **t-SNE vs UMAP vs EVoC** under the target
 paper's own setup: for each cluster, cut a 30° sky region, embed the 16-D
