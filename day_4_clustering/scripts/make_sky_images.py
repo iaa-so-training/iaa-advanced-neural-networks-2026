@@ -2,8 +2,8 @@
 
 For each cluster: download DSS2-Red, DSS2-Blue, DSS2-IR JPEGs, combine as
 R=IR, G=Red, B=Blue (the standard DSS2 photographic colour mapping), apply an
-arcsinh stretch per channel, and save a square PNG into the deck's asset
-folder. Also builds a 25-tile montage.
+arcsinh stretch per channel, and save a square PNG into ``$DAY4_DECK_DIR``
+(default ``results/deck/``). Also builds a 25-tile montage.
 
 Usage:
     .venv/bin/python scripts/make_sky_images.py [--clusters "M 3,M 67,..."]
@@ -14,6 +14,7 @@ No API key needed; be polite (sequential, small sleep).
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 import time
@@ -24,7 +25,8 @@ from PIL import Image
 
 from cluster.clusters import CLUSTERS, Cluster
 
-DECK_ASSETS = Path.home() / "git/garciadias.github.io/public/presentations/iaa-so-chemical-tagging-2026"
+# Where the PNGs land. Override with DAY4_DECK_DIR=... (e.g. a slides folder).
+DECK_ASSETS = Path(os.environ.get("DAY4_DECK_DIR", "results/deck")).expanduser()
 BANDS = {"R": "DSS2-Red", "G": "DSS2-Blue", "B": "DSS2-IR"}
 
 

@@ -63,15 +63,27 @@ def embed(model: Any, torch: Any, X: np.ndarray) -> np.ndarray:
     return np.concatenate(Z, axis=0)
 
 
-def verify() -> None:
-    """Reproduce a few published latents from the DR19 flux CSV."""
+def verify(flux_csv: str) -> None:
+    """Reproduce a few published latents from the DR19 flux CSV.
+
+    ``flux_csv`` is the spectrum->abundance table of the training project, which
+    is not redistributed here: it is far too large for the bundle and the
+    published latents are the product students need. Point ``--flux-csv`` at a
+    copy if you have one.
+    """
     model, torch = load_model()
     ref = pd.read_parquet("data/embeddings/masked_latent.parquet")
     ref["APOGEE_ID"] = ref["APOGEE_ID"].astype(str)
     test = ref.iloc[:3]
     ids = test["APOGEE_ID"].tolist()
 
-    csv = Path.home() / "git/lightsurf/data/raw_data/flux_abundances.csv"
+    csv = Path(flux_csv)
+    if not csv.exists():
+        raise SystemExit(
+            f"flux CSV not found: {csv}\n"
+            "pass --flux-csv <path> (the file belongs to the training project "
+            "and is not part of the workshop bundle)",
+        )
     rows = []
     for chunk in pd.read_csv(csv, chunksize=200_000):
         f = chunk["FILE"].astype(str)
@@ -155,6 +167,11 @@ def main() -> None:
     parser.add_argument("--model", default=MODEL_PATH)
     parser.add_argument("--out", default=OUT_PATH)
     parser.add_argument("--skip-download", action="store_true")
+    parser.add_argument(
+        "--flux-csv", default="data/raw_data/flux_abundances.csv",
+        help="Spectrum->abundance CSV used by --verify (training-project data "
+             "product, not shipped here).",
+    )
     args = parser.parse_args()
 
     urls = pd.read_csv(URL_LIST, dtype=str)
@@ -163,7 +180,7 @@ def main() -> None:
     if args.download_only:
         return
     if args.verify:
-        verify()
+        verify(args.flux_csv)
         return
 
     model, torch = load_model()

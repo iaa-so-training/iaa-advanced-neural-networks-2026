@@ -352,7 +352,7 @@ Kinematics still cap the field at ~0.60.
 
 ---
 
-Trained on the desk machine (RTX 5090): `CnnLstmAttentionModel` regressing 9
+Trained on a single workstation with an RTX 5090: `CnnLstmAttentionModel` regressing 9
 APOGEE abundances from the 8575-flux H-band spectrum, and
 `DisentangledSpectralAE` (Phase B). Scored on the paper baseline
 (cluster-only multiclass separation, Garcia-Dias et al. 2019 metrics).
@@ -402,7 +402,7 @@ v-measure / completeness:
 ## Reproduce
 
 ```bash
-# train (desk, GPU): scripts/train_embedding_model.py + export
+# train (GPU): scripts/train_embedding_model.py + export
 # then locally:
 uv run cluster baseline --spectral data/embeddings/attention_merged.parquet
 uv run cluster baseline --spectral data/embeddings/disentangled_merged.parquet

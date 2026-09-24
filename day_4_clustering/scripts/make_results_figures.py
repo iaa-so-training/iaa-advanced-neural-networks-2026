@@ -19,11 +19,12 @@ Three figures, all computed from the real analysis data:
 Usage:
     .venv/bin/python scripts/make_results_figures.py
 
-Writes PNGs into the deck asset folder (~/git/garciadias.github.io/...).
+Writes PNGs into ``$DAY4_DECK_DIR`` (default: ``results/deck/``).
 """
 
 from __future__ import annotations
 
+import os
 import sys
 import time
 from pathlib import Path
@@ -47,7 +48,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 ASTRA = "data/astraAllStarASPCAP-0.6.0.fits.gz"
-DECK = Path.home() / "git/garciadias.github.io/public/presentations/iaa-so-chemical-tagging-2026"
+# Where the PNGs land. Override with DAY4_DECK_DIR=... (e.g. a slides folder).
+DECK = Path(os.environ.get("DAY4_DECK_DIR", "results/deck")).expanduser()
 FIVE = ["Berkeley 66", "IC 166", "M 3", "M 67", "NGC 188"]
 
 MEMBER = "#db2777"   # magenta, matches cspace_corner.png

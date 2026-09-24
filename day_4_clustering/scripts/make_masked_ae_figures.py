@@ -70,9 +70,8 @@ plt.rcParams.update({
     "ytick.color": MUTED,
 })
 
-DECK = os.path.expanduser(
-    "~/git/garciadias.github.io/public/presentations/iaa-so-chemical-tagging-2026"
-)
+# Where the PNGs land. Override with DAY4_DECK_DIR=... (e.g. a slides folder).
+DECK = os.path.expanduser(os.environ.get("DAY4_DECK_DIR", "results/deck"))
 CKPT = "data/embeddings/masked_ae_rerun.pt"
 SPEC_DIR = "data/mwmstar"
 
