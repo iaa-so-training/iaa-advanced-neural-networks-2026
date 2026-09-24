@@ -25,6 +25,20 @@ Two schema changes matter:
    `X_FE = x_h − fe_h`.
 2. Flags renamed: `ASPCAPFLAG`→`flag_bad`, `STARFLAG`→`spectrum_flags`.
 
+### Verifying the download
+
+`cluster download --all` records the catalogue's sha256 in a sidecar beside it
+(`data/astraAllStarASPCAP-0.6.0.fits.gz.sha256`) and prints it; a later run
+compares the file against it. As fetched on 2026-09-24, at 1 171 102 556 bytes:
+
+```
+5324bf39baeede7553b0a3c8a50bea1760f47eb67a95a8a84e6db303aa2edb04
+```
+
+`cluster doctor --deep` re-hashes both the catalogue and the asset bundle and
+checks them against these records — a size check alone catches a truncated
+transfer but not a corrupted one.
+
 ### Column mapping (Astra ASPCAP → internal schema)
 
 | Internal | Source | Notes |

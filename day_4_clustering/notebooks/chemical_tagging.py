@@ -18,7 +18,7 @@ def _(mo):
 
     Reproduces and extends Kos et al. (2017). The original paper tagged clusters
     with **t-SNE** on GALAH abundances. Here we benchmark **t-SNE vs UMAP vs EVoC**
-    on **APOGEE DR17 + Gaia EDR3**, over the clusters of Garcia-Dias et al. (2019)
+    on **SDSS-V DR19 (APOGEE) + Gaia DR3**, over the clusters of Garcia-Dias et al. (2019)
     plus the Pleiades.
 
     **Key idea** — stars born together share a chemical fingerprint. Chemical
@@ -28,8 +28,9 @@ def _(mo):
     provide a clean ground truth.
 
     This notebook runs a **fast demo**: it restricts the sky to a 30° region
-    around **M 67** and caps the field sample, so the whole pipeline finishes
-    in about a minute.
+    around **M 67** and caps the field sample. The first cells (data prep and the
+    benchmark) take a few minutes; the whole notebook, including the isochrone
+    grids and the Gaia cross-match, runs in about ten.
 
     ### Running it
 
@@ -55,7 +56,7 @@ def _(mo):
 
 @app.cell
 def _():
-    from cluster import config
+    from cluster import config, seeding
     from cluster.baseline import (
         baseline_labels,
         confusion_matrix_frame,
@@ -78,8 +79,12 @@ def _():
     settings.region_radius_deg = 30.0
     settings.cluster_names = ["M 67"]
     settings.max_stars = 5_000
+    seeding.seed_everything(settings.random_state)
 
-    print(f"FAST={settings.fast}  MAX_STARS={settings.max_stars}  SNR_MIN={settings.snr_min}")
+    print(
+        f"FAST={settings.fast}  MAX_STARS={settings.max_stars}  "
+        f"SNR_MIN={settings.snr_min}  SEED={settings.random_state}"
+    )
     print(f"REGION={settings.region_radius_deg}°  CLUSTERS={settings.cluster_names}")
     print(f"ELEMENTS ({len(settings.elements)}): {settings.elements}")
     return (
@@ -463,7 +468,12 @@ def _(mo):
 
 @app.cell
 def _(abundance_violins, mo, prepared, settings):
-    mo.mpl.interactive(abundance_violins(prepared.df, settings.elements, "M 67"))
+    mo.mpl.interactive(
+        abundance_violins(
+            prepared.df, settings.elements, "M 67",
+            random_state=settings.random_state,
+        )
+    )
     return
 
 

@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import click
 
-from . import config, tracking
+from . import config, seeding, tracking
 
 
 @click.group()
@@ -116,6 +117,10 @@ def download(
     "--spectral", "spectral_path", default=None, type=click.Path(exists=True),
     help="Use spectral embeddings (parquet) instead of abundances.",
 )
+@click.option(
+    "--seed", type=int, default=None,
+    help="Override the seed (default: CLUSTER_RANDOM_STATE, 42).",
+)
 def run(
     fast: bool | None,
     max_stars: int | None,
@@ -125,6 +130,7 @@ def run(
     outdir: str,
     spectral_path: str | None,
     region_scaled: bool = False,
+    seed: int | None = None,
 ) -> None:
     """Prepare the data, run the benchmark, print the score table."""
     from .benchmark import knn_purity, run_benchmark
@@ -149,6 +155,9 @@ def run(
         settings.region_radius_deg = region
     if cluster_names:
         settings.cluster_names = list(cluster_names)
+    if seed is not None:
+        settings.random_state = seed
+    seeding.seed_everything(settings.random_state)
 
     allstar_path = Path(allstar)
     if not allstar_path.exists():
@@ -169,12 +178,14 @@ def run(
             "n_elements": str(len(settings.elements)),
             "region": str(settings.region_radius_deg),
             "cluster_count": str(len(clusters)),
+            "seed": str(settings.random_state),
+            **{k: str(v) for k, v in seeding.thread_report().items()},
         })
 
         click.echo(
             f"🧪 FAST={settings.fast}  MAX_STARS={settings.max_stars}  "
             f"SNR_MIN={settings.snr_min}  ELEMENTS={len(settings.elements)}"
-            f"  REGION={settings.region_radius_deg}"
+            f"  REGION={settings.region_radius_deg}  SEED={settings.random_state}"
         )
         click.echo("📦 Preparing data (loading allStar, quality cuts, membership)...")
         prepared = prepare(
@@ -249,9 +260,13 @@ def run(
     "--spectral", "spectral_path", default=None, type=click.Path(exists=True),
     help="Use spectral embeddings (parquet) instead of abundances.",
 )
+@click.option(
+    "--seed", type=int, default=None,
+    help="Override the seed (default: CLUSTER_RANDOM_STATE, 42).",
+)
 def baseline(
     kinematics: bool, min_members: int, allstar: str, outdir: str | None,
-    spectral_path: str | None,
+    spectral_path: str | None, seed: int | None = None,
 ) -> None:
     """Paper baseline: cluster-only multiclass separation (Garcia-Dias 2019)."""
     import numpy as np
@@ -275,6 +290,9 @@ def baseline(
     if spectral_path is not None:
         # embeddings come from the raw spectrum; ASPCAP flag issues don't apply
         settings.require_aspcap_flag_clean = False
+    if seed is not None:
+        settings.random_state = seed
+    seeding.seed_everything(settings.random_state)
 
     clusters = [c for c in CLUSTERS if c.name in settings.resolve_cluster_names(
         [c.name for c in CLUSTERS]
@@ -284,6 +302,7 @@ def baseline(
         f"🧪 paper baseline  KINEMATICS={'on' if kinematics else 'off'}  "
         f"MIN_MEMBERS={min_members}  ELEMENTS={len(settings.elements)}"
         f"  FEATURES={'spectral' if spectral_path else 'abundances'}"
+        f"  SEED={settings.random_state}"
     )
     click.echo("📦 Preparing data (cluster members only)...")
     prepared = prepare(
@@ -356,6 +375,7 @@ def hr(
     from .plots import hr_comparison
 
     settings = config.Settings()
+    seeding.seed_everything(settings.random_state)
     cluster = CLUSTER_BY_NAME.get(cluster_name)
     if cluster is None:
         raise click.ClickException(
@@ -447,6 +467,7 @@ def provenance(spectral_path: str, allstar: str) -> None:
 
     settings = config.Settings()
     settings.require_aspcap_flag_clean = False
+    seeding.seed_everything(settings.random_state)
 
     click.echo("📦 Preparing data...")
     prepared = spectral_prepared(
@@ -458,7 +479,9 @@ def provenance(spectral_path: str, allstar: str) -> None:
 
     df = attach_source(prepared.df)
     click.echo("")
-    click.echo(format_report(provenance_report(df, prepared.X)))
+    click.echo(format_report(
+        provenance_report(df, prepared.X, random_state=settings.random_state),
+    ))
 
 
 @main.command("head-to-head")
@@ -504,6 +527,7 @@ def head_to_head_cmd(
     settings = config.Settings()
     settings.require_aspcap_flag_clean = False
     seed_list = [int(s) for s in seeds.split(",") if s.strip()]
+    seeding.seed_everything(settings.random_state)
 
     click.echo("📦 Preparing data...")
     prepared = _prepared_for(allstar, settings)
@@ -572,6 +596,7 @@ def ablate(
     if spectral_path is not None:
         settings.require_aspcap_flag_clean = False
     seed_list = [int(s) for s in seeds.split(",") if s.strip()]
+    seeding.seed_everything(settings.random_state)
 
     click.echo("📦 Preparing data...")
     prepared = _prepared_for(allstar, settings)
@@ -601,6 +626,27 @@ def ablate(
         f"{len(set(true_labels))} clusters: {', '.join(sorted(set(true_labels)))} ===",
     )
     click.echo(format_stability(stability(X, true_labels, settings, seeds=seed_list)))
+
+
+@main.command()
+@click.option("--json", "as_json", is_flag=True, help="Machine-readable output (reference-file format).")
+@click.option("--deep", is_flag=True, help="Also re-hash the catalogue and the bundle (slow).")
+def doctor(as_json: bool, deep: bool) -> None:
+    """Print the environment fingerprint a quoted number belongs to.
+
+    Scores move by ~±0.02 across machines — a different CPU (or thread count)
+    changes the order of the floating-point reductions inside sklearn's
+    Barnes-Hut t-SNE, numba (UMAP, EVoC, HDBSCAN) and BLAS. This command records
+    everything needed to read a number in context; `--json` is the format
+    `docs/reference_runs/*.json` is written in.
+    """
+    from .doctor import fingerprint, format_fingerprint
+
+    fp = fingerprint(deep=deep)
+    if as_json:
+        click.echo(json.dumps(fp, indent=2, sort_keys=True, default=str))
+    else:
+        click.echo(format_fingerprint(fp))
 
 
 if __name__ == "__main__":

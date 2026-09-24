@@ -11,14 +11,18 @@
 #   error: Failed to build `opentsne==1.0.4` … [Errno 2] No such file or directory: 'g++'
 # and the whole arm64 image build dies. build-essential here costs nothing in the
 # published image: nothing from this stage ships except /app.
-FROM python:3.13-slim AS builder
+# Pinned to a versioned tag rather than plain `slim`: a rebuild months later must
+# not silently pick up a different interpreter. (A digest would be per-platform,
+# so a version tag is the right pin for a multi-arch build.)
+FROM python:3.13.15-slim AS builder
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 # uv for fast, reproducible, layer-cacheable installs
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+# uv pinned for the same reason (this is the binary copied into the runtime).
+COPY --from=ghcr.io/astral-sh/uv:0.12.18 /uv /uvx /bin/
 
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
@@ -39,7 +43,7 @@ ARG WITH_TORCH=""
 RUN uv sync --frozen --no-dev ${WITH_TORCH:+--extra torch} --no-cache
 
 # --- runtime: the slim image students pull ---------------------------------
-FROM python:3.13-slim
+FROM python:3.13.15-slim
 
 # numba (pulled in by umap-learn, hdbscan and — the real offender — EVoC's
 # pynndescent KNN graph) needs a threadsafe threading layer. Without libgomp it
@@ -54,11 +58,28 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
+# GIT_PYTHON_REFRESH=quiet: there is no git binary in the image and mlflow's
+# GitPython probe prints two "Failed to import Git" warnings per run without it.
+# PYTHONHASHSEED is belt-and-braces next to cluster.seeding — the pipeline seeds
+# its own RNGs, this only removes dict/set iteration order as a source of drift.
 ENV UV_NO_SYNC=1 \
     UV_CACHE_DIR=/tmp/day4-uv \
     MLFLOW_TRACKING_URI=file:///app/results/mlruns \
     PATH="/app/.venv/bin:$PATH" \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PYTHONHASHSEED=42 \
+    GIT_PYTHON_REFRESH=quiet
+
+# Provenance stamped into the image: the commit it was built from and the
+# reference it is published under. `cluster doctor` prints both; the digest can
+# only be read from outside the container
+# (`docker inspect --format '{{index .RepoDigests 0}}' <image>`).
+ARG GIT_SHA=""
+ARG IMAGE_REF=""
+ENV DAY4_GIT_SHA=$GIT_SHA \
+    DAY4_IMAGE=$IMAGE_REF
+LABEL org.opencontainers.image.revision=$GIT_SHA \
+      org.opencontainers.image.source="https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026"
 
 # the pinned environment + source, exactly as synced in the builder
 COPY --from=builder /app /app

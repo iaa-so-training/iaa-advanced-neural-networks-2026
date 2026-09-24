@@ -45,6 +45,7 @@ fi
 # yours and not root's; it also sets HOME and the cache dirs these mounts need.
 COMMON_ARGS=(
   --rm -i
+  -e PYTHONHASHSEED=42
   ${EXTRA_ENV[@]+"${EXTRA_ENV[@]}"}
   -v "$HERE/data:/app/data"
   -v "$HERE/results:/app/results"

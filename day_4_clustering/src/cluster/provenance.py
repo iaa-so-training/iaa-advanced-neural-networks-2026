@@ -42,6 +42,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from .config import RANDOM_STATE
+
 SOURCE_COLUMN = "source"
 ID_COLUMN = "APOGEE_ID"
 
@@ -122,7 +124,7 @@ def provenance_auc(
     source: np.ndarray | pd.Series,
     *,
     n_splits: int = 5,
-    random_state: int = 0,
+    random_state: int = RANDOM_STATE,
 ) -> tuple[float, float]:
     """Cross-validated AUC of a linear probe predicting the data release.
 
@@ -176,7 +178,7 @@ def uniform_provenance_mask(
 
 
 def provenance_report(
-    df: pd.DataFrame, X: np.ndarray, *, random_state: int = 0,
+    df: pd.DataFrame, X: np.ndarray, *, random_state: int = RANDOM_STATE,
 ) -> dict[str, object]:
     """Full batch-effect diagnostic for a prepared spectral population."""
     if SOURCE_COLUMN not in df.columns:

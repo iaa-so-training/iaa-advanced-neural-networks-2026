@@ -250,7 +250,8 @@ Full list (with `TSNE`, `UMAP`, `EVOC`, `HDBSCAN` hyperparameters) is in
 > (24 clusters, 829 members — the field-retrieval row of
 > `docs/spectral_benchmark_results.md`). Current, reproducible numbers live in
 > `docs/dr19_rerun_results.md` and `docs/spectral_benchmark_results.md`;
-> regenerating the per-cluster tables is tracked in `docs/student_assets_plan.md §5`.
+> regenerating the per-cluster tables from the frozen student config is what
+> `docs/region_sweep_results.md` records.
 
 Measured with the defaults (`NORMALIZE_ROWS`, `IMPUTE_MISSING`).
 Recall/precision are macro-averages over the clusters.
@@ -262,8 +263,8 @@ Recall/precision are macro-averages over the clusters.
 
 Full per-cluster table: `docs/region_sweep_results.md` (**DR17, historical** —
 see the warning at the top of that file). The current-region-mode table has to be
-regenerated from the frozen student config; the task is item 8 in
-`docs/student_assets_plan.md`.
+regenerated from the frozen student config (`scripts/region_sweep.py`);
+`docs/region_sweep_results.md` is where the result lands.
 
 ### Paper baseline (cluster-only multiclass separation)
 

@@ -12,6 +12,10 @@
 # ---------------------------------------------------------------------------
 set -e
 
+# mlflow prints "No username set in the environment" when neither is present;
+# there is no login session inside the image to supply one.
+export USER="${USER:-day4}" LOGNAME="${LOGNAME:-day4}"
+
 if [ "$(id -u)" = "0" ] && [ "${DAY4_KEEP_ROOT:-0}" != "1" ]; then
     target_uid=""
     target_gid=""

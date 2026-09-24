@@ -157,5 +157,6 @@ f(100); print('layer:', numba.threading_layer())"   # want: omp (or tbb), never 
 - **`./run.sh` says "permission denied"** — `chmod +x run.sh` (git preserves the
   bit, but zip downloads may not), or run `bash run.sh …`. You can always fall
   back to the plain `docker run` commands above.
-- **Out of disk** — the image (~1.5 GB) + the catalogue (1.17 GB) + embeddings
-  (~0.3 GB) ≈ 5.5 GB total. Delete `data/` to reclaim the catalogue.
+- **Out of disk** — the image (~1.6 GB) + the catalogue (1.17 GB) + the asset
+  bundle (1.0 GB) ≈ 3.9 GB, plus what Docker itself keeps. Delete `data/` to
+  reclaim the downloads; `results/` holds only figures and MLflow runs.

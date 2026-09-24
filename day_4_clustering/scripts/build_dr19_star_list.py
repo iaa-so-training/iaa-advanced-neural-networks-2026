@@ -42,6 +42,10 @@ TARGETS = {
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--n-stars", type=int, default=40_000)
+    ap.add_argument(
+        "--seed", type=int, default=config.RANDOM_STATE,
+        help="Seed for the field subsample (default: CLUSTER_RANDOM_STATE).",
+    )
     ap.add_argument("--out", default="data/dr19_star_list.fits")
     args = ap.parse_args()
 
@@ -98,7 +102,7 @@ def main() -> None:
 
     n_field = max(0, args.n_stars - len(members))
     if len(field) > n_field:
-        field = field.sample(n=n_field, random_state=42)
+        field = field.sample(n=n_field, random_state=args.seed)
     df = pd.concat([members, field], ignore_index=True)
 
     # [X/H] -> [X/Fe]

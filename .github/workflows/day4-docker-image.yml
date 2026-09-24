@@ -51,6 +51,11 @@ jobs:
           context: day_4_clustering
           file: day_4_clustering/Dockerfile
           platforms: ${{ matrix.platform }}
+          # Stamped into the image as ENV: `cluster doctor` prints both, so a
+          # quoted number can be traced to the commit and reference behind it.
+          build-args: |
+            GIT_SHA=${{ github.sha }}
+            IMAGE_REF=${{ env.IMAGE }}:${{ github.ref_type == 'tag' && github.ref_name || github.sha }}
           outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha,scope=${{ matrix.platform }}
           cache-to: type=gha,scope=${{ matrix.platform }},mode=max

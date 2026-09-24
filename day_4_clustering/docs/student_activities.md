@@ -158,6 +158,11 @@ Compare the recovered age + distance to `src/cluster/literature.py`. The red
 clump pins the distance (NGC 6819 within 0.01 mag); the main sequence pins the
 age. Open clusters with ≥ 20 member giants are the clean cases.
 
+> **Note** — the first isochrone fit downloads the PARSEC grids (~44 MB) into
+> `data/isochrones/`, and the notebook's Gaia cross-match queries the archive, so
+> these tracks need a network connection once. Everything else in the workshop
+> runs offline after `cluster download`.
+
 ### Track C — Two surveys (GALAH + APOGEE)
 
 APOGEE sees giants, GALAH sees the main sequence. Cross-match them:

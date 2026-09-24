@@ -89,6 +89,7 @@ def download_allstar(destination: str | Path, url: str = ALLSTAR_URL) -> Path:
 
     if _already_downloaded(destination):
         click.echo(f"✓ {destination} already present ({ALLSTAR_BYTES} bytes). Skipping.")
+        _write_catalogue_sidecar(destination)
         return destination
 
     click.echo(f"🌐 Downloading {url} → {destination}")
@@ -102,7 +103,35 @@ def download_allstar(destination: str | Path, url: str = ALLSTAR_URL) -> Path:
             "Rerun to resume; delete the file to start over."
         )
     click.echo("✓ Download complete.")
+    _write_catalogue_sidecar(destination)
     return destination
+
+
+def _write_catalogue_sidecar(catalogue: Path) -> Path:
+    """Record the catalogue's sha256 beside it, and check it when it exists.
+
+    A size check catches a truncated transfer but not a corrupted one. The
+    sidecar makes the bytes checkable later (``cluster doctor --deep``); when one
+    is already present its hash is compared now, and a mismatch is reported
+    loudly rather than overwritten — it means the file is not the one this
+    machine recorded.
+    """
+    sidecar = catalogue.with_name(catalogue.name + ".sha256")
+    digest = _sha256(catalogue)
+    if sidecar.is_file():
+        recorded = sidecar.read_text().split()[0].strip()
+        if recorded != digest:
+            click.echo(
+                f"⚠ {sidecar.name} records {recorded[:16]}… but the file hashes to "
+                f"{digest[:16]}… — these are not the bytes this machine verified. "
+                "Delete the file and rerun to download it again."
+            )
+        else:
+            click.echo(f"✓ catalogue sha256 matches {sidecar.name} ({digest[:16]}…)")
+        return sidecar
+    sidecar.write_text(f"{digest}  {catalogue.name}\n")
+    click.echo(f"✓ catalogue sha256 {digest} recorded in {sidecar.name}")
+    return sidecar
 
 
 @click.command()

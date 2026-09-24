@@ -149,6 +149,7 @@ def abundance_violins(
     elements: list[str],
     cluster: str,
     out_path: str | Path | None = None,
+    random_state: int = 42,
 ) -> Any:
     """Violin plot of each abundance: ``cluster`` members vs field stars.
 
@@ -164,7 +165,7 @@ def abundance_violins(
     if field.empty:
         field = df[df["cluster"] != cluster]
     if len(field) > 3000:
-        field = field.sample(n=3000, random_state=42)
+        field = field.sample(n=3000, random_state=random_state)
 
     n = len(elements)
     fig, axes = plt.subplots(
