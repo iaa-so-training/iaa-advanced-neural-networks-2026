@@ -49,7 +49,7 @@ release they were produced on.
 | configuration | t-SNE recall / precision | UMAP recall / precision | EVoC recall / precision |
 |---|---|---|---|
 | native, default threads | 0.2093 / 0.2230 | 0.2227 / 0.1333 | 0.4828 / 0.0024 |
-| container `day4-v7` (= `:latest`, `sha256:b1590f7d…`), default threads | 0.2093 / 0.2230 | 0.2227 / 0.1333 | 0.4828 / 0.0024 |
+| container `day4-v8` (= `:latest`, `sha256:d8c178a6…`), default threads | 0.2093 / 0.2230 | 0.2227 / 0.1333 | 0.4828 / 0.0024 |
 | container `day4-v4`, `day4-v5`, `day4-v6`, default threads | 0.2093 / 0.2230 | 0.2227 / 0.1333 | 0.4828 / 0.0024 |
 | container, threads pinned to 1 | 0.1949 / 0.2287 | 0.2227 / 0.1333 | 0.4918 / 0.0026 |
 | container `day4-v2` (*unpinned* base images), default threads | 0.1974 / 0.2241 | 0.1755 / 0.1499 | 0.5092 / 0.0024 |
@@ -63,7 +63,7 @@ Two things to read from that table:
    native by 0.012 on t-SNE and 0.047 on UMAP — the same code, the same data.
    Since `day4-v4` the bases are pinned (`python:3.13.15-slim`, uv 0.12.18) and
    native and container agree to the last printed digit on three consecutive
-   releases (`day4-v4` … `day4-v7`), each re-measured end to end.
+   releases (`day4-v4` … `day4-v8`), each re-measured end to end.
 2. **What remains is the tolerance.** Pinning threads (row 4) still moves t-SNE
    and EVoC; UMAP does not move at all here because it is pinned internally by
    `random_state`. Across the rows, recall spans roughly ±0.03.
@@ -103,7 +103,7 @@ To pin threads the way row 4 does, add
 digest rather than by tag:
 
 ```bash
-docker pull ghcr.io/iaa-so-training/day4-clustering@sha256:b1590f7dc77815ba502f1a60d5cba2cf7a502f6e3e6b570a72b1af46cf96a36b
+docker pull ghcr.io/iaa-so-training/day4-clustering@sha256:d8c178a6195a2d648ff92e7ed8beaf37305d92c7c1487b3500a85e2e781621f5
 ```
 
 The tag moves with each release; the digest does not. The committed readings are
