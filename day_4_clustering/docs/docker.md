@@ -132,6 +132,12 @@ def f(n):
 f(100); print('layer:', numba.threading_layer())"   # want: omp (or tbb), never workqueue
 ```
 
+- **`docker pull` says "unauthorized" or asks for a login** — either you have a
+  stale (private) login cached for another Day 4 image, `docker logout ghcr.io`
+  fixes it, or the published package is not public yet; you do not need it:
+  build the image yourself, it is the same thing and takes a few minutes:
+  `docker build -t day4-clustering .` then use `day4-clustering` as `$IMG`
+  (add `--build-arg WITH_TORCH=1` for the torch extra; see below).
 - **"device or resource busy" / permission errors** — mount the folder with
   `:Z` (SELinux) or run from a fresh dir.
 - **Files in `data/`/`results/` belong to root** — only if you created the mount
