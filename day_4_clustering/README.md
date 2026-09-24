@@ -146,8 +146,10 @@ Everything is driven by `src/cluster/config.py` — a single file of flags.
   natively / ≈3 minutes in the container** on the reference laptop, measured
   2026-09-24 (`docs/reproducibility.md`).
 - `FAST = False` → drop the cap; the DR19 quality cuts leave **358 058** stars
-  (16 elements), not the ~183 000 of the DR17 era. Re-measure the runtime before
-  quoting one — sklearn's Barnes-Hut t-SNE is single-threaded.
+  (16 elements), not the ~183 000 of the DR17 era. The full all-sky run takes
+  **≈57 minutes** on the reference laptop (3418 s, measured 2026-09-24 — see
+  `docs/dr19_rerun_results.md`); sklearn's Barnes-Hut t-SNE is single-threaded,
+  so budget for it rather than running it in a coffee break.
 
 Flip the flag, or override on the command line:
 
