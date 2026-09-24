@@ -67,7 +67,7 @@ ALLSTAR_BYTES = ASTRA_ASPCAP_BYTES
 # ``hf/MANIFEST.json`` in this repo is the source of truth (path, bytes,
 # sha256, consumer); the published copy must be regenerated with
 # ``python hf/make_manifest.py`` after any change to the artifacts.
-HF_REPO_ID: str = env("HF_REPO", "garciadias/iaa-chemical-tagging-2026")
+HF_REPO_ID: str = env("HF_REPO", "RafaelDias/iaa-chemical-tagging-2026")
 HF_REPO_TYPE: str = env("HF_REPO_TYPE", "dataset")
 
 

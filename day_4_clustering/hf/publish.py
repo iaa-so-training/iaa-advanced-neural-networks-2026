@@ -33,7 +33,7 @@ def _sha256_local(path: Path) -> str:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--repo-id", default=None, help="e.g. garciadias/iaa-chemical-tagging-2026")
+    ap.add_argument("--repo-id", default=None, help="e.g. RafaelDias/iaa-chemical-tagging-2026")
     ap.add_argument("--private", action="store_true", help="Create the repo private (default public).")
     ap.add_argument("--dry-run", action="store_true", help="Print the upload plan and exit.")
     ap.add_argument("--card-only", action="store_true", help="Upload only the card + manifest.")
