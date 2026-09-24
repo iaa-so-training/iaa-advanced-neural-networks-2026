@@ -59,7 +59,7 @@ are all the same interpreter.
 | host folder | in the container | holds |
 |---|---|---|
 | `./data` | `/app/data` | the 1.17 GB SDSS catalogue, the ~1 GB embeddings/checkpoints bundle |
-| `./results` | `/app/results` | the score tables, `benchmark_grid.png`, and `mlruns/` (MLflow tracking) |
+| `./results` | `/app/results` | the score tables, `benchmark_grid.png`, the prepared-sample cache (`cache/prepared/`), and `mlruns/` — the image sets `MLFLOW_TRACKING_URI=file:///app/results/mlruns`, so container runs keep their MLflow record here (a *native* run writes to `./mlruns` instead) |
 | `./notebooks` | `/app/notebooks` | the marimo notebooks, so your edits are saved in your checkout |
 
 The image starts as root, then the entrypoint **drops to the uid that owns
