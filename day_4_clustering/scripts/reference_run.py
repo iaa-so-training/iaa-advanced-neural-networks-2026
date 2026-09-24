@@ -94,9 +94,11 @@ def main() -> None:
         "population": {
             "stars": int(prepared.X.shape[0]),
             "features": int(prepared.X.shape[1]),
-            "members": int((prepared.df["cluster"] != "field").sum()),
-            "field": int((prepared.df["cluster"] == "field").sum()),
-            "clusters_scored": int(macro.shape[0]),
+            "members_prepared": int((prepared.df["cluster"] != "field").sum()),
+            "field_prepared": int((prepared.df["cluster"] == "field").sum()),
+            # the scored subset: clusters with enough members to be scored at all
+            "clusters_scored": int(macro["n_clusters_scored"].iloc[0]) if len(macro) else 0,
+            "members_scored": int(macro["n_true_members"].iloc[0]) if len(macro) else 0,
         },
         "macro": macro.to_dict(orient="records"),
         "per_cluster_recall": summary["recall"].round(6).to_dict(),
