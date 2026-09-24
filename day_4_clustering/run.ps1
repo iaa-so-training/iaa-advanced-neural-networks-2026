@@ -1,17 +1,22 @@
 # ---------------------------------------------------------------------------
-# The Day 4 workshop runner for Windows (Docker Desktop + PowerShell 5+).
+# OPTIONAL shortcut for the exact commands in README.md / docs/docker.md.
 #
-# Prerequisites: Docker (section B of the School Software Installation Guide)
-# and git. Everything else lives inside the image.
+# You do not need this file - it only saves typing the mount flags:
 #
-#   .\run.ps1 download --all         # fetch the catalogue + embeddings (~2.5 GB)
-#   .\run.ps1 run --fast             # the 2-minute warm-up run
-#   .\run.ps1 run --spectral         # the same clustering on spectral embeddings
-#   .\run.ps1 marimo                 # the interactive notebook, http://localhost:2718
-#   .\run.ps1 shell                  # a shell inside the container
+#   .\run.ps1 download --all  ==  docker run --rm -it `
+#                                   -v "$($PWD.Path)/data:/app/data" `
+#                                   -v "$($PWD.Path)/results:/app/results" `
+#                                   ghcr.io/iaa-so-training/day4-clustering `
+#                                   uv run cluster download --all
 #
-# Anything you pass is handed to the `cluster` command inside the container.
-# Data and results stay on your machine in .\data and .\results.
+# Prerequisites: Docker Desktop (section B of the School Software Installation
+# Guide) and git. uv and every dependency live inside the image.
+#
+#   .\run.ps1 download --all         # catalogue + embeddings (~2.2 GB, once)
+#   .\run.ps1 run --fast             # the ~2 min warm-up run
+#   .\run.ps1 marimo                 # the notebook, http://localhost:2718
+#   .\run.ps1 python scripts/red_clump.py --clusters "NGC 6819"
+#   .\run.ps1 shell                  # a shell inside the image
 # ---------------------------------------------------------------------------
 param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Rest)
 
@@ -37,7 +42,7 @@ function Ensure-Image {
         return
     }
     Write-Host "  Not available (published from the workshop repository once merged)."
-    Write-Host "Building it locally from this folder - this takes a few minutes once:"
+    Write-Host "Building it locally from this folder - a few minutes, once:"
     docker build -t $Tag $Here
     if ($LASTEXITCODE -ne 0) { throw "docker build failed" }
 }
@@ -49,20 +54,21 @@ Get-ChildItem env: |
     Where-Object { $_.Name -match '^(CLUSTER|NUMBA|OMP)_' } |
     ForEach-Object { $ExtraEnv += @("-e", $_.Name) }
 
+# The image's entrypoint drops to the owner of .\data, so files you create are
+# yours and not root's; it also sets HOME and the cache dirs these mounts need.
 $Common = @(
     "--rm", "-i",
-    "-v", "$($Data.Replace('\', '/')):/workspace/data",
-    "-v", "$($Results.Replace('\', '/')):/workspace/results",
-    "-v", "$($Notebooks.Replace('\', '/')):/workspace/notebooks",
-    "-w", "/workspace",
-    "-e", "MLFLOW_TRACKING_URI=file:///workspace/results/mlruns"
+    "-v", "$($Data.Replace('\', '/')):/app/data",
+    "-v", "$($Results.Replace('\', '/')):/app/results",
+    "-v", "$($Notebooks.Replace('\', '/')):/app/notebooks",
+    "-w", "/app"
 ) + $ExtraEnv
 
 $Command = if ($Rest.Count -gt 0) { $Rest[0] } else { "help" }
 
 switch ($Command) {
     "help" {
-        Write-Host (Get-Content $MyInvocation.MyCommand.Path | Select-Object -First 18 |
+        Write-Host (Get-Content $MyInvocation.MyCommand.Path | Select-Object -First 21 |
             ForEach-Object { $_ -replace '^#\s?', '' })
         exit 0
     }
@@ -80,23 +86,22 @@ switch ($Command) {
             $RestArgs = @($RestArgs | Select-Object -Skip 1)
         }
         Write-Host "Notebook starting - open http://localhost:2718 (no password). Ctrl-C to stop."
-        # Copy any notebook that is missing from the mounted folder and run it
-        # from the workspace root, where `data/` lives. Edits are yours: the
-        # notebooks/ folder is your checkout, mounted into the container.
-        $Shell = "for f in /app/notebooks/*.py; do [ -e `"notebooks/`$(basename `"`$f`")`" ] || cp `"`$f`" notebooks/; done; echo 'running notebooks/$Notebook'; exec marimo edit notebooks/$Notebook --host 0.0.0.0 --no-token `"`$@`""
-        docker run @Common -t -p 2718:2718 $Tag sh -c $Shell -- @RestArgs
+        docker run @Common -t -p 2718:2718 $Tag uv run marimo edit "notebooks/$Notebook" --host 0.0.0.0 --no-token @RestArgs
         exit $LASTEXITCODE
     }
-    { $_ -in "python", "python3", "pytest", "cluster", "uv" } {
-        # any command that exists inside the image, e.g.
-        #   .\run.ps1 python scripts/red_clump.py --clusters "NGC 6819"
+    { $_ -in "python", "python3", "pytest" } {
+        Ensure-Image
+        docker run @Common -t $Tag uv run @Rest
+        exit $LASTEXITCODE
+    }
+    { $_ -eq "uv" } {
         Ensure-Image
         docker run @Common -t $Tag @Rest
         exit $LASTEXITCODE
     }
     default {
         Ensure-Image
-        docker run @Common -t $Tag cluster @Rest
+        docker run @Common -t $Tag uv run cluster @Rest
         exit $LASTEXITCODE
     }
 }

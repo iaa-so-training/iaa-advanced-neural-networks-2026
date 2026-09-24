@@ -15,30 +15,51 @@ and scores each method's cluster recovery against **kinematic ground truth**.
 ## Quick start (Docker — all you need is Docker and git)
 
 Docker is section B of the School Software Installation Guide, so it is already
-on every laptop in the room. Nothing else gets installed on your machine.
+on every laptop in the room. Nothing is installed on your machine: `uv`, Python
+and every dependency live inside the image, and we run them there.
 
 ```bash
 git clone https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026.git
 cd iaa-advanced-neural-networks-2026/day_4_clustering
+mkdir -p data results notebooks
 
-./run.sh download --all     # 1.17 GB DR19 catalogue + ~1.0 GB embeddings (resumable)
-./run.sh run --fast         # smoke test: ~2 min on a laptop CPU, no GPU
-./run.sh marimo             # the notebook, http://localhost:2718
+docker pull ghcr.io/iaa-so-training/day4-clustering:latest
+
+# the flags every command repeats, once per shell session
+export IMG=ghcr.io/iaa-so-training/day4-clustering:latest
+export DAY4="-v $PWD/data:/app/data -v $PWD/results:/app/results -v $PWD/notebooks:/app/notebooks"
+
+docker run --rm -it $DAY4 $IMG uv run cluster download --all   # 1.17 GB catalogue + ~1.0 GB embeddings
+docker run --rm -it $DAY4 $IMG uv run cluster run --fast       # smoke test: ~2 min, no GPU
+docker run --rm -it -p 2718:2718 $DAY4 $IMG \
+  uv run marimo edit notebooks/chemical_tagging.py --host 0.0.0.0 --no-token   # http://localhost:2718
 ```
 
-`./run.sh` (Linux/macOS) and `.\run.ps1` (Windows — same arguments) pull
-`ghcr.io/iaa-so-training/day4-clustering:latest`, build it from this folder if
-that is not reachable, mount `./data` and `./results`, and hand their arguments
-to the `cluster` command inside the container. The files you produce land in
-`results/` owned by you, not by root.
+That is the whole workflow: `uv run cluster <command>` executes *inside* the
+container, on the pinned environment we tested. Data, results and notebooks stay
+on your machine in `./data`, `./results` and `./notebooks`; the image starts as
+root but drops to your own uid, so the files it writes belong to you.
+
+**Windows (PowerShell)** — same commands, different mount syntax:
+
+```powershell
+$Day4 = @("-v","$($PWD.Path)/data:/app/data","-v","$($PWD.Path)/results:/app/results","-v","$($PWD.Path)/notebooks:/app/notebooks")
+docker run --rm -it @Day4 ghcr.io/iaa-so-training/day4-clustering uv run cluster download --all
+docker run --rm -it @Day4 ghcr.io/iaa-so-training/day4-clustering uv run cluster run --fast
+```
+
+`docs/docker.md` has the full form of every command, what is inside the image,
+and the alternatives (building it yourself, adding the optional torch extra).
+`./run.sh` / `.\run.ps1` are optional shortcuts that only save typing the mounts.
 
 **Reading the rest of this README:** every example is written as
-`uv run cluster <flags>`. In Docker the same command is `./run.sh <flags>` — drop
-`uv run cluster`, keep the flags. Both paths take identical options.
+`uv run cluster <flags>`. In Docker the same command is
+`docker run --rm -it $DAY4 $IMG uv run cluster <flags>` — the flags never change.
 
 ## Alternative: native Python with uv
 
-You need Python ≥ 3.13 on your machine (`uv` builds the virtualenv for you):
+If you would rather not use Docker, you need Python ≥ 3.13 on your machine
+(`uv` builds the virtualenv for you):
 
 ```bash
 uv sync                     # add --extra torch for the re-embedding extension
@@ -46,8 +67,8 @@ uv run cluster download --all
 uv run cluster run --fast
 ```
 
-The two paths are interchangeable; the container adds nothing except that it
-cannot fall out of sync with the environment we tested.
+Identical commands and flags — the container simply removes the possibility of a
+mismatched Python, library or JIT environment.
 
 ## How it works
 
@@ -86,6 +107,10 @@ uv sync            # or: python -m venv .venv && . .venv/bin/activate && pip ins
 Python ≥ 3.13.
 
 ## Download the data
+
+Commands from here on are shown in the `uv run cluster …` form; under Docker
+(Quick start) each one is `docker run --rm -it $DAY4 $IMG uv run cluster …` — the
+flags are identical, `$DAY4`/`$IMG` just carry the mounts and image name.
 
 ```bash
 uv run cluster download            # the 1.17 GB DR19 catalogue (resumable)
@@ -158,8 +183,9 @@ uv run marimo run notebooks/chemical_tagging.py    # read-only app
 In Docker the wrapper opens the port for you:
 
 ```bash
-./run.sh marimo                                     # → http://localhost:2718
-./run.sh marimo notebooks/tuning_template.py        # any notebook in notebooks/
+docker run --rm -it -p 2718:2718 $DAY4 $IMG \
+  uv run marimo edit notebooks/chemical_tagging.py --host 0.0.0.0 --no-token
+# any notebook in notebooks/ works — swap the file name
 ```
 
 ## Development
@@ -171,7 +197,9 @@ uv run coverage run -m pytest && uv run coverage report   # 90% (branch coverage
 uv run mlflow ui                # inspect experiment runs (mlruns/)
 ```
 
-In Docker: `./run.sh pytest`, `./run.sh uv run pyrefly check`, `./run.sh python …`.
+In Docker: `docker run --rm -it $DAY4 $IMG uv run pytest`,
+`docker run --rm -it $DAY4 $IMG uv run pyrefly check`,
+`docker run --rm -it $DAY4 $IMG uv run python scripts/…`.
 
 Data contracts are enforced at runtime: pydantic `Settings`/`Cluster` models
 + pandera `ALLSTAR_SCHEMA` / `ABUNDANCE_SCHEMA` (see `src/cluster/schemas.py`).

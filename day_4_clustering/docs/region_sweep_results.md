@@ -24,10 +24,13 @@ standardisation · `NORMALIZE_ROWS` (L2-normalise so Euclidean ≡ cosine) ·
 - **precision** — purity of that predicted cluster.
 - **kNN purity** — parameter-free chemical cohesion: fraction of a member's 10 nearest neighbours in the embedding that share its cluster (t-SNE/UMAP only; mirrors the paper's visual-polygon test).
 
+>
 > **Running these:** the commands below are written in the native form. In the
-> Docker setup (the default — see `docs/docker.md`) drop `uv run cluster` and use
-> `./run.sh` instead, e.g. `./run.sh baseline --kinematics`; scripts become
-> `./run.sh python scripts/…` and `CLUSTER_*` variables pass straight through.
+> Docker setup (the default — see `docs/docker.md`) prefix them with
+> `docker run --rm -it $DAY4 $IMG`, e.g.
+> `docker run --rm -it $DAY4 $IMG uv run cluster baseline --kinematics`; scripts
+> become `… $IMG uv run python scripts/…`, and pass knobs with `-e`
+> (`docker run --rm -it -e CLUSTER_MAX_STARS=10000 $DAY4 $IMG uv run cluster run`).
 
 ## Macro (mean over clusters with ≥ 3 members)
 

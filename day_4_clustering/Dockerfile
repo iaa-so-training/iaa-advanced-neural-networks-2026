@@ -22,6 +22,9 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
+    UV_NO_SYNC=1 \
+    UV_CACHE_DIR=/tmp/day4-uv \
+    MLFLOW_TRACKING_URI=file:///app/results/mlruns \
     PATH="/app/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1
 
@@ -39,11 +42,19 @@ COPY hf ./hf
 ARG WITH_TORCH=""
 RUN uv sync --frozen --no-dev ${WITH_TORCH:+--extra torch} --no-cache
 
-# Scratch HOME dirs so `run.sh` can run the container as *your* uid (files you
-# create come out owned by you) without tools failing on an unwritable HOME.
-# /workspace must also be writable by that uid: tools write to the cwd.
-RUN install -d -m 777 /tmp/day4-home /tmp/day4-mpl /tmp/day4-marimo /workspace
+# Scratch dirs, all writable by whatever uid the entrypoint drops to: HOME and
+# the caches matplotlib/numba/uv/marimo want, plus the mount points so the
+# documented `docker run -v "$PWD/data:/app/data" …` works without `-w` flags.
+RUN install -d -m 777 /tmp/day4-home /tmp/day4-mpl /tmp/day4-marimo /tmp/day4-uv \
+        /app/data /app/results
 
-# run from a clean workspace where students mount data/ and results/
-WORKDIR /workspace
-CMD ["cluster", "--help"]
+# Runs the command as the owner of the mounted folders, so the files you get on
+# your laptop belong to you and not to root.
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+
+# Students work from /app: `data/` and `results/` resolve inside the mounts, and
+# `uv run …` finds the pinned project environment without any extra flags.
+WORKDIR /app
+CMD ["uv", "run", "cluster", "--help"]

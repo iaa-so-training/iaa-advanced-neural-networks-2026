@@ -1,20 +1,23 @@
 #!/usr/bin/env bash
 # ---------------------------------------------------------------------------
-# The Day 4 workshop runner — one command, no Python needed on your machine.
+# OPTIONAL shortcut for the exact commands in README.md / docs/docker.md.
+#
+# You do not need this file — it only saves typing the mount flags:
+#
+#   ./run.sh download --all    ==  docker run --rm -it \
+#                                    -v "$PWD/data:/app/data" -v "$PWD/results:/app/results" \
+#                                    ghcr.io/iaa-so-training/day4-clustering \
+#                                    uv run cluster download --all
 #
 # Prerequisites: Docker (section B of the School Software Installation Guide)
-# and git. That is all: everything else lives inside the image.
+# and git. uv and every dependency live inside the image.
 #
-#   ./run.sh download --all          # fetch the catalogue + embeddings (~2.5 GB)
-#   ./run.sh run --fast              # the 2-minute warm-up run
+#   ./run.sh download --all          # catalogue + embeddings (~2.2 GB, once)
+#   ./run.sh run --fast              # the ~2 min warm-up run
 #   ./run.sh run --spectral          # the same clustering on spectral embeddings
-#   ./run.sh marimo                  # the interactive notebook, http://localhost:2718
-#   ./run.sh shell                   # a shell inside the container
-#
-# Anything you pass is handed to the `cluster` command inside the container, so
-# `./run.sh run --help`, `./run.sh download --list`, … all work the same as the
-# README describes. Data and results stay on your machine in ./data and
-# ./results.
+#   ./run.sh marimo                  # the notebook, http://localhost:2718
+#   ./run.sh python scripts/red_clump.py --clusters "NGC 6819"
+#   ./run.sh shell                   # a shell inside the image
 # ---------------------------------------------------------------------------
 set -eo pipefail
 
@@ -33,24 +36,20 @@ while IFS= read -r var_name; do
   esac
 done < <(env | cut -d= -f1)
 
-# Keep the files you create owned by *you*, not by root.
-RUN_USER="$(id -u):$(id -g)"
 TTY_ARGS=()
 if [ -t 0 ] && [ -t 1 ]; then
   TTY_ARGS=(-t)
 fi
+
+# The image's entrypoint drops to the owner of ./data, so files you create are
+# yours and not root's; it also sets HOME and the cache dirs these mounts need.
 COMMON_ARGS=(
   --rm -i
-  -u "$RUN_USER"
-  -e HOME=/tmp/day4-home
-  -e MPLCONFIGDIR=/tmp/day4-mpl
-  -e MARIMO_HOME=/tmp/day4-marimo
-  -e MLFLOW_TRACKING_URI="${MLFLOW_TRACKING_URI:-file:///workspace/results/mlruns}"
   ${EXTRA_ENV[@]+"${EXTRA_ENV[@]}"}
-  -v "$HERE/data:/workspace/data"
-  -v "$HERE/results:/workspace/results"
-  -v "$HERE/notebooks:/workspace/notebooks"
-  -w /workspace
+  -v "$HERE/data:/app/data"
+  -v "$HERE/results:/app/results"
+  -v "$HERE/notebooks:/app/notebooks"
+  -w /app
 )
 
 ensure_image() {
@@ -65,13 +64,13 @@ ensure_image() {
     return 0
   fi
   echo "  Not available (it is published from the workshop repository once merged)."
-  echo "▸ Building it locally from this folder — this takes a few minutes once:"
+  echo "▸ Building it locally from this folder — a few minutes, once:"
   docker build -t "$TAG" "$HERE"
 }
 
 case "${1:-}" in
   ""|-h|--help|help)
-    sed -n '3,17p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+    sed -n '3,20p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
     exit 0
     ;;
   shell|bash)
@@ -88,28 +87,19 @@ case "${1:-}" in
       shift
     fi
     echo "▸ Notebook starting — open http://localhost:2718 (no password). Ctrl-C to stop."
-    # The image's notebooks are read-only to your uid, and the notebook reads
-    # `data/…` relative to the working directory. So: copy the shipped notebook
-    # into the mounted folder (never overwriting your edits) and run it from
-    # the workspace root.
     exec docker run "${COMMON_ARGS[@]}" ${TTY_ARGS[@]+"${TTY_ARGS[@]}"} -p 2718:2718 "$TAG" \
-      sh -c '
-        mkdir -p notebooks
-        for f in /app/notebooks/*.py; do
-          [ -e "notebooks/$(basename "$f")" ] || cp "$f" notebooks/
-        done
-        echo "▸ running notebooks/'"$NOTEBOOK"'"
-        exec marimo edit "notebooks/'"$NOTEBOOK"'" --host 0.0.0.0 --no-token "$@"
-      ' -- "$@"
+      uv run marimo edit "notebooks/$NOTEBOOK" --host 0.0.0.0 --no-token "$@"
     ;;
-  python|python3|pytest|cluster|uv)
-    # Any other command that exists inside the image, e.g.
-    #   ./run.sh python scripts/red_clump.py --clusters "NGC 6819"
+  python|python3|pytest)
+    ensure_image
+    exec docker run "${COMMON_ARGS[@]}" ${TTY_ARGS[@]+"${TTY_ARGS[@]}"} "$TAG" uv run "$@"
+    ;;
+  uv)
     ensure_image
     exec docker run "${COMMON_ARGS[@]}" ${TTY_ARGS[@]+"${TTY_ARGS[@]}"} "$TAG" "$@"
     ;;
   *)
     ensure_image
-    exec docker run "${COMMON_ARGS[@]}" ${TTY_ARGS[@]+"${TTY_ARGS[@]}"} "$TAG" cluster "$@"
+    exec docker run "${COMMON_ARGS[@]}" ${TTY_ARGS[@]+"${TTY_ARGS[@]}"} "$TAG" uv run cluster "$@"
     ;;
 esac

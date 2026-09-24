@@ -12,41 +12,51 @@ and get better numbers for *your* cluster. Your cluster is assigned in
 ## 0 · Setup (do this first, before the session if you can)
 
 You need **Docker** (section B of the School Software Installation Guide) and
-`git`. Nothing else is installed on your machine.
+`git`. Nothing else is installed on your machine: `uv`, Python and every library
+live inside the image, and you run them there.
 
 ```bash
 git clone https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026.git
 cd iaa-advanced-neural-networks-2026/day_4_clustering
+mkdir -p data results notebooks
+
+docker pull ghcr.io/iaa-so-training/day4-clustering:latest
+
+# the flags every command repeats, once per shell session
+export IMG=ghcr.io/iaa-so-training/day4-clustering:latest
+export DAY4="-v $PWD/data:/app/data -v $PWD/results:/app/results -v $PWD/notebooks:/app/notebooks"
 
 # both downloads at once: the 1.17 GB SDSS-V DR19 catalogue + the ~1.0 GB
 # embeddings/checkpoint bundle from Hugging Face (hotel wifi tonight, not now)
-./run.sh download --all
+docker run --rm -it $DAY4 $IMG uv run cluster download --all
 ```
 
-On Windows use `.\run.ps1 download --all` — every command in this document takes
-the same arguments (`. \run.ps1 …` instead of `./run.sh …`).
+On Windows (PowerShell) the same commands are:
 
-The first `./run.sh` also pulls the workshop image (~1.5 GB) — or builds it from
-this folder if the published one is not reachable. Downloads are resumable and
-skip whatever is already on disk, so a dropped wifi connection costs nothing —
-just re-run it. Check what you have:
+```powershell
+$Day4 = @("-v","$($PWD.Path)/data:/app/data","-v","$($PWD.Path)/results:/app/results","-v","$($PWD.Path)/notebooks:/app/notebooks")
+docker run --rm -it @Day4 ghcr.io/iaa-so-training/day4-clustering uv run cluster download --all
+```
+
+Downloads are resumable and skip whatever is already on disk, so a dropped wifi
+connection costs nothing — just re-run it. Check what you have:
 
 ```bash
-./run.sh download --assets --check     # sha256-verify the bundle
+docker run --rm -it $DAY4 $IMG uv run cluster download --assets --check   # sha256-verify the bundle
 ```
 
 Verify it runs (~2 min with the field cap):
 
 ```bash
-./run.sh run --fast
+docker run --rm -it $DAY4 $IMG uv run cluster run --fast
 ```
 
-**Environment knobs** (e.g. `CLUSTER_USE_ELEMENT_WEIGHTS=1`) are forwarded into
-the container: `CLUSTER_USE_ELEMENT_WEIGHTS=1 ./run.sh run …` works as written.
+**Environment knobs** (e.g. `CLUSTER_USE_ELEMENT_WEIGHTS=1`) are passed through
+by `docker run -e`: `docker run --rm -it -e CLUSTER_USE_ELEMENT_WEIGHTS=1 $DAY4 $IMG uv run cluster run …`.
 
-**Prefer native Python?** Replace `./run.sh` with `uv run cluster` (or
-`uv run python` for a script) after `uv sync` — same flags, same results. Python
-≥ 3.13 required; see the README. Everything below is shown in the Docker form.
+**Prefer native Python?** Replace `docker run --rm -it $DAY4 $IMG uv run cluster`
+with `uv run cluster` (and `uv run python` for a script) after `uv sync` — same
+flags, same results. Python ≥ 3.13 required; see the README.
 
 `--fast` caps the field at 25 000 stars (measured 1 m 51 s on a laptop).
 `--full` drops the cap — at DR19 quality cuts that is 358 058 stars, so budget
@@ -60,13 +70,13 @@ number.
 Run the sweep for **your cluster only**, in the paper's region mode:
 
 ```bash
-./run.sh run --cluster "M 67" --region-scaled
+docker run --rm -it $DAY4 $IMG uv run cluster run --cluster "M 67" --region-scaled
 ```
 
 Or use the tuning notebook — same loop, with widgets:
 
 ```bash
-./run.sh marimo notebooks/tuning_template.py
+docker run --rm -it -p 2718:2718 $DAY4 $IMG uv run marimo edit notebooks/tuning_template.py --host 0.0.0.0 --no-token
 ```
 
 Open `docs/region_sweep_results.md` and find your cluster's row. Your numbers
@@ -97,7 +107,7 @@ Pick **one** lever, change it, re-run, and watch your row move. Log what you
 tried in a scratch file. The full map is `docs/experiment_results.md`.
 
 Every lever is also an env var (prefix `CLUSTER_`), e.g.
-`CLUSTER_USE_ELEMENT_WEIGHTS=1 ./run.sh run --cluster "M 67" --region-scaled`.
+`docker run --rm -it -e CLUSTER_USE_ELEMENT_WEIGHTS=1 $DAY4 $IMG uv run cluster run --cluster "M 67" --region-scaled`.
 
 **Rule of the game**: change one thing at a time, and know *why* it moved.
 A recall jump with a precision collapse is a lesson, not a win.
@@ -114,7 +124,7 @@ A CNN-LSTM-Attention network trained on the raw 8575-pixel spectrum gives a
 256-d latent that beats the 16 abundances on every benchmark.
 
 ```bash
-./run.sh run --cluster "M 67" --region-scaled \
+docker run --rm -it $DAY4 $IMG uv run cluster run --cluster "M 67" --region-scaled \
     --spectral data/embeddings/attention_broad_merged.parquet
 ```
 
@@ -128,8 +138,8 @@ Cleaner membership → better cluster parameters. Fit a PARSEC isochrone to your
 cluster's members and measure the red-clump distance:
 
 ```bash
-./run.sh python scripts/red_clump.py --clusters "NGC 6819"
-./run.sh python scripts/sweet_spot.py --clusters "NGC 2243"
+docker run --rm -it $DAY4 $IMG uv run python scripts/red_clump.py --clusters "NGC 6819"
+docker run --rm -it $DAY4 $IMG uv run python scripts/sweet_spot.py --clusters "NGC 2243"
 ```
 
 Compare the recovered age + distance to `src/cluster/literature.py`. The red
@@ -141,8 +151,8 @@ age. Open clusters with ≥ 20 member giants are the clean cases.
 APOGEE sees giants, GALAH sees the main sequence. Cross-match them:
 
 ```bash
-./run.sh python scripts/build_galah_apogee.py --clusters "M 67"
-./run.sh python scripts/rerun_combined.py
+docker run --rm -it $DAY4 $IMG uv run python scripts/build_galah_apogee.py --clusters "M 67"
+docker run --rm -it $DAY4 $IMG uv run python scripts/rerun_combined.py
 ```
 
 GALAH covers DEC ≲ +25°, so this works for the southern clusters (M 67,

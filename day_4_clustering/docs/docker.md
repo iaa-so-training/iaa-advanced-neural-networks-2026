@@ -1,68 +1,66 @@
 # Docker: running the workshop in a container
 
 Requirement: **Docker** — section B of the School Software Installation Guide.
-No Python, no `uv`, no dependency installs on your machine, and nothing to keep
-in sync with what we tested.
+Nothing else is installed on your machine: `uv`, Python and every dependency live
+inside the image, and the commands below run them there.
 
 ## The short version
 
-The repo ships a wrapper that does the mount/flags/pull dance for you:
-
 ```bash
-./run.sh download --all                 # 1.17 GB catalogue + ~1.0 GB embeddings (one time)
-./run.sh download --assets --list       # what is in the bundle
-./run.sh download --assets --check      # sha256-verify what you downloaded
-./run.sh run --fast                     # M 67 demo, ~2 min
-./run.sh run --cluster "M 67" --region-scaled
-./run.sh marimo                         # notebook → http://localhost:2718
-./run.sh shell                          # a bash prompt inside the image
-./run.sh python scripts/red_clump.py --clusters "NGC 6819"
-```
-
-Windows: `.\run.ps1` with exactly the same arguments. If the prebuilt image is
-not reachable it builds one from the folder you cloned — same result, a few
-minutes once.
-
-## What the wrapper does (the long form)
-
-`run.sh` pulls `ghcr.io/iaa-so-training/day4-clustering:latest` on first use —
-published for **linux/amd64** and **linux/arm64** (Apple silicon), public, no
-login — then runs the container as *your* uid with this folder mounted:
-
-```bash
-docker pull ghcr.io/iaa-so-training/day4-clustering:latest      # once
-docker tag  ghcr.io/iaa-so-training/day4-clustering:latest day4-clustering
-
-# data, results and notebooks live on your machine, not in the image
+docker pull ghcr.io/iaa-so-training/day4-clustering:latest
 mkdir -p data results notebooks
 
-docker run -it --rm -u "$(id -u):$(id -g)" \
-  -e HOME=/tmp/day4-home -e MPLCONFIGDIR=/tmp/day4-mpl -e MARIMO_HOME=/tmp/day4-marimo \
-  -e MLFLOW_TRACKING_URI=file:///workspace/results/mlruns \
-  -v "$PWD/data:/workspace/data" -v "$PWD/results:/workspace/results" \
-  -v "$PWD/notebooks:/workspace/notebooks" \
-  -w /workspace day4-clustering cluster download --all
+# the flags every command repeats, once per shell session
+export IMG=ghcr.io/iaa-so-training/day4-clustering:latest
+export DAY4="-v $PWD/data:/app/data -v $PWD/results:/app/results -v $PWD/notebooks:/app/notebooks"
 
-docker run -it --rm -u "$(id -u):$(id -g)" \
-  -e HOME=/tmp/day4-home -e MPLCONFIGDIR=/tmp/day4-mpl -e MARIMO_HOME=/tmp/day4-marimo \
-  -e MLFLOW_TRACKING_URI=file:///workspace/results/mlruns \
-  -v "$PWD/data:/workspace/data" -v "$PWD/results:/workspace/results" \
-  -v "$PWD/notebooks:/workspace/notebooks" \
-  -w /workspace day4-clustering cluster run --fast
+docker run --rm -it $DAY4 $IMG uv run cluster download --all          # ~2.2 GB, once
+docker run --rm -it $DAY4 $IMG uv run cluster download --assets --list    # what is in the bundle
+docker run --rm -it $DAY4 $IMG uv run cluster download --assets --check   # sha256-verify it
+docker run --rm -it $DAY4 $IMG uv run cluster run --fast              # M 67 demo, ~2 min
+docker run --rm -it $DAY4 $IMG uv run cluster run --cluster "M 67" --region-scaled
+docker run --rm -it $DAY4 $IMG uv run python scripts/red_clump.py --clusters "NGC 6819"
+docker run --rm -it $DAY4 $IMG bash                                   # a shell inside the image
 
-# the marimo notebook (open http://localhost:2718), edits saved in your checkout
-docker run -it --rm -p 2718:2718 -u "$(id -u):$(id -g)" \
-  -e HOME=/tmp/day4-home -e MARIMO_HOME=/tmp/day4-marimo \
-  -v "$PWD/data:/workspace/data" -v "$PWD/results:/workspace/results" \
-  -v "$PWD/notebooks:/workspace/notebooks" \
-  -w /workspace day4-clustering \
-  sh -c 'for f in /app/notebooks/*.py; do [ -e "notebooks/$(basename "$f")" ] || cp "$f" notebooks/; done; \
-         exec marimo edit notebooks/chemical_tagging.py --host 0.0.0.0 --no-token'
+# the notebook → http://localhost:2718
+docker run --rm -it -p 2718:2718 $DAY4 $IMG \
+  uv run marimo edit notebooks/chemical_tagging.py --host 0.0.0.0 --no-token
 ```
 
-MLflow records every run under `results/mlruns/` (that is what the wrapper sets
-`MLFLOW_TRACKING_URI` to), so the tracking data is on your disk next to the plots
-and survives the `--rm`.
+Windows (PowerShell) — same commands, array splatting instead of `$DAY4`:
+
+```powershell
+$Day4 = @("-v","$($PWD.Path)/data:/app/data","-v","$($PWD.Path)/results:/app/results","-v","$($PWD.Path)/notebooks:/app/notebooks")
+docker run --rm -it @Day4 ghcr.io/iaa-so-training/day4-clustering uv run cluster download --all
+```
+
+`./run.sh` / `.\run.ps1` are optional shortcuts that only save typing the mount
+flags — `./run.sh run --fast` is exactly the `docker run … uv run cluster run
+--fast` above, and if the published image is not reachable they build it from the
+folder you cloned.
+
+## Why `uv run` inside the container
+
+The image is built with `uv` from the same `pyproject.toml` + `uv.lock` that the
+native instructions use, and the environment is already synced at `/app/.venv`.
+`uv run cluster …` therefore starts in **under a second** and executes the pinned
+environment — no resolution, no downloads, no sync (`UV_NO_SYNC=1` is baked in).
+Inside the container, `uv run cluster …`, a bare `cluster …`, and `/app/.venv/bin/python`
+are all the same interpreter.
+
+## What the mounts are for
+
+| host folder | in the container | holds |
+|---|---|---|
+| `./data` | `/app/data` | the 1.17 GB SDSS catalogue, the ~1 GB embeddings/checkpoints bundle |
+| `./results` | `/app/results` | the score tables, `benchmark_grid.png`, and `mlruns/` (MLflow tracking) |
+| `./notebooks` | `/app/notebooks` | the marimo notebooks, so your edits are saved in your checkout |
+
+The image starts as root, then the entrypoint **drops to the uid that owns
+`./data`**, so every file it writes belongs to you and needs no `sudo` to delete.
+It also sets `HOME`, `MPLCONFIGDIR`, `MARIMO_HOME` and `UV_CACHE_DIR` to scratch
+directories inside the container, which is what makes the plain `docker run`
+above work without `-u`/`-e` flags. `DAY4_KEEP_ROOT=1 docker run …` opts out.
 
 Build it yourself instead (a few minutes), if you prefer — or to add the optional
 torch extra for the re-embedding extension, which is left out of the published
@@ -72,10 +70,6 @@ image to keep the pull small:
 docker build -t day4-clustering .
 docker build -t day4-clustering --build-arg WITH_TORCH=1 .   # + ~200 MB, CPU wheels
 ```
-
-Running as your own uid is what keeps `data/` and `results/` writable by you;
-the image pre-creates the scratch HOME paths (`/tmp/day4-*`) that matplotlib,
-numba and marimo want, so nothing needs `sudo` afterwards.
 
 ## Performance
 
@@ -105,7 +99,8 @@ Track A needs `data/embeddings/attention_broad_merged.parquet`, which arrives wi
 **Downloads** resume where they stopped (HTTP range requests inside the image —
 no `wget`/`curl` needed, and none installed); re-run the same command after a
 dropped connection. The catalogue is verified against its exact byte size, the
-bundle against per-file sha256 (`./run.sh download --assets --check`).
+bundle against per-file sha256
+(`docker run --rm -it $DAY4 $IMG uv run cluster download --assets --check`).
 
 **The run dies with `exit 139` after "Running benchmark (t-SNE / UMAP / EVoC)"** — numba picked
 its *workqueue* threading layer, which is not threadsafe; EVoC's nested parallel regions then
@@ -126,7 +121,7 @@ pip install tbb && export NUMBA_THREADING_LAYER=tbb
 To check which layer is live inside the container:
 
 ```bash
-./run.sh python -c "
+docker run --rm -it $DAY4 $IMG uv run python -c "
 import numba, pynndescent; from numba import njit, prange
 @njit(parallel=True)
 def f(n):
@@ -139,12 +134,16 @@ f(100); print('layer:', numba.threading_layer())"   # want: omp (or tbb), never 
 
 - **"device or resource busy" / permission errors** — mount the folder with
   `:Z` (SELinux) or run from a fresh dir.
-- **Files in `data/`/`results/` belong to root** — the wrapper runs as your uid;
-  only hand-written `docker run` commands without `-u` hit this. Fix once with
-  `sudo chown -R "$USER" data results`.
+- **Files in `data/`/`results/` belong to root** — only if you created the mount
+  folder as root before the first run (e.g. `sudo mkdir data`), because the
+  entrypoint derives your uid from that folder's owner. Fix once with
+  `sudo chown -R "$USER" data results`, or run as root deliberately with
+  `docker run -e DAY4_KEEP_ROOT=1 …`.
 - **marimo doesn't open** — the `--host 0.0.0.0 --no-token` flags are
-  required inside the container; browse to `http://localhost:2718`.
+  required inside the container, and remember `-p 2718:2718`; browse to
+  `http://localhost:2718`.
 - **`./run.sh` says "permission denied"** — `chmod +x run.sh` (git preserves the
-  bit, but zip downloads may not), or run `bash run.sh …`.
+  bit, but zip downloads may not), or run `bash run.sh …`. You can always fall
+  back to the plain `docker run` commands above.
 - **Out of disk** — the image (~1.5 GB) + the catalogue (1.17 GB) + embeddings
   (~0.3 GB) ≈ 5.5 GB total. Delete `data/` to reclaim the catalogue.
