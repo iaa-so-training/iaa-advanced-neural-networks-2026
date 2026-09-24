@@ -38,7 +38,7 @@ def _parse() -> argparse.Namespace:
                     help="25 000-star sample (the documented student command).")
     ap.add_argument("--full", dest="fast", action="store_false",
                     help="No star cap (slow: 10–20 min).")
-    ap.add_argument("--allstar", default=config.ASTRA_ASPCAP_PATH, show_default=True)
+    ap.add_argument("--allstar", default=config.ASTRA_ASPCAP_PATH)
     ap.add_argument("--spectral", default=None,
                     help="Score a spectral embedding instead of the abundances.")
     ap.add_argument("--region", type=float, default=None,
