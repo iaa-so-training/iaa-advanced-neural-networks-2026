@@ -84,6 +84,22 @@ def test_seed_everything_seeds_the_global_rngs(monkeypatch: pytest.MonkeyPatch) 
     assert os.environ["PYTHONHASHSEED"] == "7"
 
 
+def test_mlflow_params_carry_the_fingerprint() -> None:
+    """The bundle `cluster run` logs must exist and be flattenable.
+
+    This is the guard for a real bug: the module `cluster.doctor` and the CLI
+    command `doctor` share a name inside `cli.py`, so a module-level reference
+    to the module resolved to the click Command at import time and `cluster run`
+    died with AttributeError before it reached the benchmark.
+    """
+    from cluster.doctor import mlflow_params
+
+    params = mlflow_params(run="unit-test")
+    assert {"git_sha", "image", "python", "platform", "run"} <= set(params)
+    assert any(key.startswith("pkg_") for key in params)
+    assert all(isinstance(value, str) for value in params.values())
+
+
 def test_thread_report_names_the_knobs() -> None:
     report = thread_report()
     assert {"OMP_NUM_THREADS", "NUMBA_NUM_THREADS", "cpu_count", "numba_effective"} <= set(report)

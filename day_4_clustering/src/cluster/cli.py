@@ -7,7 +7,8 @@ from pathlib import Path
 
 import click
 
-from . import config, doctor, seeding, tracking
+from . import config, seeding, tracking
+from .doctor import fingerprint, format_fingerprint, mlflow_params
 
 
 @click.group()
@@ -180,11 +181,10 @@ def run(
             "cluster_count": str(len(clusters)),
             "seed": str(settings.random_state),
             **{k: str(v) for k, v in seeding.thread_report().items()},
-            # the rest of the fingerprint, so an MLflow run can be interpreted
-            # without guessing which machine or build produced it
-            **{f"pkg_{k}": v for k, v in doctor.versions().items() if v != "absent"},
-            "git_sha": doctor.git_sha(),
-            "image": doctor.image_ref(),
+            # the rest of the fingerprint, so an MLflow run can be read without
+            # guessing which machine or build produced it (built in doctor.py,
+            # where a test can pin it without a data download)
+            **mlflow_params(),
         })
 
         click.echo(
@@ -645,8 +645,6 @@ def doctor(as_json: bool, deep: bool) -> None:
     everything needed to read a number in context; `--json` is the format
     `docs/reference_runs/*.json` is written in.
     """
-    from .doctor import fingerprint, format_fingerprint
-
     fp = fingerprint(deep=deep)
     if as_json:
         click.echo(json.dumps(fp, indent=2, sort_keys=True, default=str))

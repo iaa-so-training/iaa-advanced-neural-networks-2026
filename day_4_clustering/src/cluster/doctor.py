@@ -130,6 +130,24 @@ def data_report(*, deep: bool = False) -> dict[str, Any]:
     return report
 
 
+def mlflow_params(**extra: Any) -> dict[str, str]:
+    """The fingerprint as MLflow params: a run should never need a machine guess.
+
+    Package versions and the git/image stamps are flattened here rather than at
+    the call site so both stay in one place — and so a unit test can pin them
+    without a data download.
+    """
+    params: dict[str, str] = {
+        **{f"pkg_{k}": v for k, v in versions().items() if v != "absent"},
+        "git_sha": git_sha(),
+        "image": image_ref(),
+        "python": platform.python_version(),
+        "platform": f"{platform.system().lower()}/{platform.machine()}",
+    }
+    params.update({k: str(v) for k, v in extra.items()})
+    return params
+
+
 def fingerprint(*, deep: bool = False) -> dict[str, Any]:
     """Everything a quoted number depends on, as a JSON-ready dict."""
     return {
