@@ -1,0 +1,25 @@
+{
+    "HDF5Merger": {
+        "r0_waveforms": true,
+        "r1_waveforms": true,
+        "dl1_parameters": true,
+        "dl1_images": true,
+        "true_parameters": true,
+        "true_images": true
+    },
+    "PredictCTLearnModel": {
+        "dl1_features": false,
+        "dl2_telescope": true,
+        "dl2_subarray": true,
+        "dl1dh_reader_type": "DLImageReader",
+        "batch_size": 64,
+        "keras_verbose": 1
+    },
+    "MonoPredictCTLearnModel": {
+        "stereo_combiner_cls": "StereoMeanCombiner"
+    },
+    "StereoPredictCTLearnModel": {
+        "stack_telescope_images": true,
+        "sort_by_intensity": false
+    }
+}
