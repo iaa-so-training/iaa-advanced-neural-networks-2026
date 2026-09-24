@@ -144,6 +144,20 @@ def mlflow_params(**extra: Any) -> dict[str, str]:
         "python": platform.python_version(),
         "platform": f"{platform.system().lower()}/{platform.machine()}",
     }
+    # input identity, cheaply: the catalogue's recorded hash (its .sha256 sidecar,
+    # written by `cluster download --all`) and how much of the bundle is on disk.
+    # The catalogue's bytes are not re-hashed here — `cluster doctor --deep` does
+    # that; a run should not pay a minute to log which file it read.
+    data = data_report()
+    catalogue = data.get("catalogue", {})
+    if catalogue.get("sidecar_sha256"):
+        params["catalogue_sha256"] = str(catalogue["sidecar_sha256"])
+    elif catalogue.get("bytes") is not None:
+        params["catalogue_sha256"] = f"unrecorded ({catalogue['bytes']} B)"
+    bundle = data.get("bundle", {})
+    if "manifest_files" in bundle:
+        params["bundle_files"] = f"{bundle['present']}/{bundle['manifest_files']}"
+        params["dataset"] = str(bundle.get("manifest", ""))
     params.update({k: str(v) for k, v in extra.items()})
     return params
 
