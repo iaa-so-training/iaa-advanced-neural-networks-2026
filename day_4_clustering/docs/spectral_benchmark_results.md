@@ -255,19 +255,24 @@ that trained it. Load it with the vendored `cluster.models.MaskedSpectralAE`
 (`uv sync --extra torch`) — the supervised `model*.pt` checkpoints are a
 different architecture (`CnnLstmAttention`), and `scripts/embed_dr19_rerun.py`
 defaults to the masked autoencoder. Re-embedding needs those checkpoints, the
-736 DR19 `mwmStar` spectra, and the torch extra:
+736 DR19 `mwmStar` spectra, the torch extra, and — for the `--verify` gate — the
+training project's DR19 flux table:
 
 ```bash
 uv sync --extra torch
 uv run cluster download --assets --with-optional   # adds optional/mwmstar.tar
-uv run python scripts/embed_dr19_rerun.py --verify # gate: reproduce before writing
+uv run python scripts/embed_dr19_rerun.py --verify \
+    --flux-csv /path/to/dr19/flux_abundances.csv   # gate: reproduce before writing
 uv run python scripts/embed_dr19_rerun.py          # full re-embed
 ```
 
-The DR19 apStar **flux matrix** (2.9 GB) the checkpoint was pretrained on is not
-part of the bundle — it is only needed to *retrain*, which is out of scope here.
-The `data/raw_data/flux_abundances.csv` shipped locally is the DR17 arm
-(33 756 aspcapStar rows).
+`--flux-csv` defaults to `data/raw_data/flux_abundances.csv` and must be the
+**DR19** arm: the gate re-embeds a few stars and compares them against the
+published `masked_latent.parquet`, so a different release's table simply does not
+contain those ids. The table is a data product of the training project and is not
+redistributed here — the published latents are what students need, and the DR19
+apStar **flux matrix** (2.9 GB) the checkpoint was pretrained on is likewise only
+required to *retrain*, which is out of scope.
 
 ### Interim: what survives on the current data
 
