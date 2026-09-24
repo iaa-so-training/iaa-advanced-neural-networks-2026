@@ -37,6 +37,21 @@ dependencies = [
 #   uv sync --extra torch
 torch = ["torch>=2.6"]
 
+# The Jupyter front end — the A/B alternative to the marimo notebooks:
+#   uv run --extra jupyter jupyter lab --ip=0.0.0.0 --port=8888 --no-browser
+# Kept optional so `pip install cluster` and the lean image do not drag a
+# second notebook stack in; the published image builds with it while the
+# comparison runs (see Dockerfile WITH_JUPYTER).
+jupyter = [
+    "jupyterlab>=4.2",
+    "ipykernel>=6.29",
+    "ipywidgets>=8.1",
+    "ipympl>=0.9.4",
+    "nbformat>=5.10",
+    "nbclient>=0.10",
+    "nbconvert>=7.16",
+]
+
 # PyPI's default torch wheel for Linux bundles ~3 GB of CUDA libraries; the
 # workshop needs none of it. Pinning the extra to the CPU wheel index keeps the
 # install ~200 MB on Linux, macOS and Windows alike.

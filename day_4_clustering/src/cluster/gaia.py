@@ -41,6 +41,8 @@ def query_gaia_region(
 
     from astroquery.gaia import Gaia
 
+    from .net import call_with_timeout
+
     cols = ", ".join(_GAIA_COLUMNS)
     query = f"""
     SELECT TOP {int(max_rows)} {cols}
@@ -56,7 +58,11 @@ def query_gaia_region(
     """
     cache_dir.mkdir(parents=True, exist_ok=True)
     print(f"↓ querying Gaia DR3 ({radius_deg}° around {cluster.name}) ...")
-    table = Gaia.launch_job(query).get_results()
+
+    def _run_query():
+        return Gaia.launch_job(query).get_results()
+
+    table = call_with_timeout(_run_query, what=f"the Gaia archive ({cluster.name})")
     assert table is not None
     out = table.to_pandas()
     out.to_csv(cache, index=False)

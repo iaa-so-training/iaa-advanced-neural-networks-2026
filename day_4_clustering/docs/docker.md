@@ -45,6 +45,53 @@ The embedding/checkpoint bundle is public on the Hub —
 `download --assets` commands above fetch the same files into `./data` and verify
 them against the sha256 recorded in the dataset's `MANIFEST.json`.
 
+## The notebooks: marimo (default) and Jupyter
+
+The material ships in **two front ends that call the same library with the same
+seeds**, so you can compare them on your own laptop:
+
+| notebook | front end | open it with |
+| --- | --- | --- |
+| `notebooks/chemical_tagging.py` | **marimo** (reactive; the default) | `docker run --rm -it -p 2718:2718 $DAY4 $IMG uv run marimo edit notebooks/chemical_tagging.py --host 0.0.0.0 --no-token` → http://localhost:2718 |
+| `notebooks/chemical_tagging.ipynb` | **JupyterLab** | `docker run --rm -it -p 8888:8888 $DAY4 $IMG uv run --extra jupyter jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --IdentityProvider.token=""` → http://localhost:8888 |
+
+The tuning lab is the same pair (`tuning_template.py` / `tuning_template.ipynb`).
+In JupyterLab, open the `.ipynb` from the file browser (you start in `/app`, the
+notebooks are under `notebooks/`).
+
+What actually differs:
+
+| | marimo | Jupyter |
+| --- | --- | --- |
+| execution | dependency graph: touching a widget re-runs that cell and everything that depends on it | you run cells; the widget cells re-run one render callback in place |
+| memoisation | `mo.cache` per argument set | no built-in cell cache — the .ipynb memoises its expensive calls itself (and still uses the on-disk prepared-sample cache) |
+| outputs | all cells shipped with the single-page app | outputs live in the notebook document; JupyterLab renders the ones you scroll to |
+| extra | default image | `uv run --extra jupyter …` (the published image carries the extra) |
+
+Both front ends cap the interactive figures identically — same
+`CLUSTER_PLOT_MAX_POINTS`, same "every member is always drawn" rule (see
+*A sluggish notebook is usually the page, not the CPU* below) — so the figures
+themselves are not a variable in the comparison.
+
+Measured on the workshop laptop (16 cores, warm data cache, both front ends
+running the same cells end to end):
+
+| | marimo | Jupyter |
+| --- | --- | --- |
+| full run, headless | `marimo export html`: **3 min 10 s** | executed `.ipynb`: **3 min 6 s** (main), **2 min 51 s** (tuning) |
+| what the browser gets | 1.71 MB single page, heaviest figure 376 kB | 1.48 MB of cell outputs, heaviest figure 391 kB (2.13 MB file on disk) |
+| interactivity | widget change re-runs the cell and its dependents through the dependency graph | widget change re-runs one render callback in place |
+| run order | the graph heals a cell run out of order | cells must be run top to bottom, as usual |
+
+Two Jupyter-specific notes: a *saved* notebook (one someone else executed, like
+the copy in `results/`) shows the widgets as their plain-text repr until you
+trust it (`File → Trust Notebook`; live output has no such gate), and `nbconvert`
+only persists widget state when it drives the whole notebook — a hand-rolled
+cell-by-cell driver has to call `client.set_widgets_metadata()`.
+
+Prefer a lean image without the Jupyter stack? Build with
+`--build-arg WITH_JUPYTER=` (measured: 1.75 GB → 1.61 GB without it).
+
 ## Why `uv run` inside the container
 
 The image is built with `uv` from the same `pyproject.toml` + `uv.lock` that the
@@ -163,7 +210,9 @@ for the full crowd.
 
 - **In**: the code (`src/`, `scripts/`, `notebooks/`, `hf/`), all runtime deps
   (astropy, scikit-learn, umap-learn, hdbscan, EVoC, marimo, asteca, emcee,
-  astroquery, huggingface_hub…), pinned by `uv.lock`.
+  astroquery, huggingface_hub…), pinned by `uv.lock`. The Jupyter stack
+  (`--extra jupyter`: jupyterlab, ipykernel, ipywidgets, ipympl) is in the
+  published image too, so one pull serves both front ends.
 - **Not in** (keeps it small): the 1.17 GB catalogue, the ~1 GB embedding
   bundle, docs, tests, dev tooling, and the optional `torch` extra for the
   re-embedding extension — add that with
@@ -175,6 +224,16 @@ Track A needs `data/embeddings/attention_broad_merged.parquet`, which arrives wi
 `docs/spectral_embeddings_plan.md`.
 
 ## Troubleshooting
+
+**A cell hangs with no error, and the CPU stays near zero** — an archive that
+accepted the connection and then went quiet (hotel wifi, or VizieR/Gaia having a
+bad day). Every archive call the pipeline makes is bounded: after
+`CLUSTER_NET_TIMEOUT` seconds (default 30) it gives up with a message instead of
+hanging, `literature_table` stops after the *first* timeout and fills the
+remaining rows with a `note`, and §8 of the notebooks prints "Gaia archive
+unreachable …" and carries on. Raise the budget on a slow-but-working link with
+`CLUSTER_NET_TIMEOUT=120`, or work from the caches under `data/gaia/` and
+`data/literature/`.
 
 **Downloads** resume where they stopped (HTTP range requests inside the image —
 no `wget`/`curl` needed, and none installed); re-run the same command after a

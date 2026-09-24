@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 
 from .clusters import Cluster
+from .net import NetworkTimeout
 
 Z_SUN = 0.0152
 
@@ -54,9 +55,14 @@ def fetch_literature(cluster: Cluster, cache_dir: str | Path = "data/literature"
 
     from astroquery.vizier import Vizier
 
+    from .net import call_with_timeout
+
     Vizier.ROW_LIMIT = 3
     if cluster.kind == "open":
-        result = Vizier.query_object(cluster.name, catalog=["B/ocl/clusters"])  # pyrefly: ignore[missing-attribute]
+        result = call_with_timeout(
+            Vizier.query_object, cluster.name, catalog=["B/ocl/clusters"],  # pyrefly: ignore[missing-attribute]
+            what=f"VizieR ({cluster.name})",
+        )
         table = result[0]
         age_log = float(table["Age"][0])
         dist_pc = float(table["Dist"][0])
@@ -66,7 +72,10 @@ def fetch_literature(cluster: Cluster, cache_dir: str | Path = "data/literature"
                 feh = float(table[col][0])
                 break
     else:
-        result = Vizier.query_object(cluster.name, catalog=["VII/202"])  # pyrefly: ignore[missing-attribute]
+        result = call_with_timeout(
+            Vizier.query_object, cluster.name, catalog=["VII/202"],  # pyrefly: ignore[missing-attribute]
+            what=f"VizieR ({cluster.name})",
+        )
         table = result[0]
         feh = float(table["[Fe/H]"][0])
         dist_pc = float(table["Rsun"][0]) * 1000.0  # kpc -> pc
@@ -86,21 +95,40 @@ def fetch_literature(cluster: Cluster, cache_dir: str | Path = "data/literature"
 
 
 def literature_table(clusters: list[Cluster]) -> pd.DataFrame:
+    """One row per cluster; a row is NaN-filled when the archive cannot supply it.
+
+    An unreachable VizieR stops the walk after its *first* timeout instead of
+    waiting out the budget once per cluster (23 clusters x 30 s is not a
+    workshop-friendly wait), and says so in the ``note`` column.
+    """
     rows = []
+    archive_quiet = False
     for c in clusters:
+        empty = {
+            "cluster": c.name, "kind": c.kind,
+            "lit_age_Gyr": float("nan"), "lit_dm": float("nan"),
+            "lit_feh": float("nan"), "lit_dist_pc": float("nan"),
+            "note": "",
+        }
+        if archive_quiet:
+            empty["note"] = "skipped: VizieR did not answer for an earlier cluster"
+            rows.append(empty)
+            continue
         try:
             lit = fetch_literature(c)
             rows.append({
                 "cluster": c.name, "kind": c.kind,
                 "lit_age_Gyr": lit["age_Gyr"], "lit_dm": lit["dm"],
                 "lit_feh": lit["feh"], "lit_dist_pc": lit["dist_pc"],
+                "note": "",
             })
+        except NetworkTimeout as exc:
+            archive_quiet = True
+            empty["note"] = f"VizieR unreachable ({exc.__class__.__name__})"
+            rows.append(empty)
         except Exception as exc:
-            rows.append({
-                "cluster": c.name, "kind": c.kind,
-                "lit_age_Gyr": float("nan"), "lit_dm": float("nan"),
-                "lit_feh": float("nan"), "lit_dist_pc": float("nan"),
-            })
+            empty["note"] = f"{exc.__class__.__name__}: {exc}"[:120]
+            rows.append(empty)
     return pd.DataFrame(rows)
 
 

@@ -110,6 +110,28 @@ def test_plot_gaia_cmd() -> None:
     assert len(fig.data) == 2
 
 
+def test_isochrone_cell_under25_members_without_marimo(
+    monkeypatch: Any, allstar_frame: pd.DataFrame
+) -> None:
+    """The Jupyter front end calls it without marimo and gets the note as text."""
+    import cluster.catalog as cat
+    import cluster.isochrone as iso
+    from cluster.config import Settings
+
+    def _fake_masks(df: pd.DataFrame, *args: Any, **kwargs: Any) -> dict[str, np.ndarray]:
+        n = len(df)
+        return {
+            "catalog": np.zeros(n, dtype=bool),
+            "kinematic": np.zeros(n, dtype=bool),
+            "combined": np.ones(n, dtype=bool),
+        }
+
+    monkeypatch.setattr(cat, "membership_masks_for", _fake_masks)
+    note = iso.isochrone_cell(allstar_frame, "Pleiades", "combined", Settings(), mo=None)
+    assert isinstance(note, str)
+    assert "members" in note and not note.startswith("md:")
+
+
 def test_isochrone_cell_under25_members(monkeypatch: Any, allstar_frame: pd.DataFrame) -> None:
     import types
 

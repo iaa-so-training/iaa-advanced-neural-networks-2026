@@ -31,6 +31,7 @@ import pandas as pd
 
 from .clusters import Cluster
 from .config import Settings
+from .net import NetworkTimeout
 from .plots import thin_field
 
 ISOCHRONE_URL = (
@@ -327,9 +328,14 @@ def isochrone_cell(
     cluster_name: str,
     method: str,
     settings: Any,
-    mo: Any,
+    mo: Any = None,
 ) -> Any:
-    """Full isochrone fit + plot for the notebook (region cut + masks + emcee)."""
+    """Full isochrone fit + plot for the notebook (region cut + masks + emcee).
+
+    ``mo`` is the marimo module when called from the marimo notebook; both front
+    ends get the same figure, and the "too few members" note comes back as plain
+    text when there is no marimo to render it (the Jupyter notebook).
+    """
     from .catalog import membership_masks_for
     from .clusters import CLUSTER_BY_NAME
     from .data import complete_case, make_matrix
@@ -346,7 +352,8 @@ def isochrone_cell(
     masks = membership_masks_for(df, cluster, X, settings)
     members = df[masks[method]]
     if len(members) < 25:
-        return mo.md(f"⚠ only {len(members)} members in '{method}' — need ≥ 25 for a fit")
+        note = f"⚠ only {len(members)} members in '{method}' — need ≥ 25 for a fit"
+        return mo.md(note) if mo is not None else note
     fit = fit_isochrone(
         members,
         seed=settings.isofit_seed,
@@ -442,7 +449,15 @@ def gaia_age_cell(cluster_name: str, settings: Settings) -> Any:
 
     cluster = CLUSTER_BY_NAME[cluster_name]
     mag_min = 16.0 if cluster.kind == "globular" else None
-    df = query_gaia_region(cluster, 0.5)
+    try:
+        df = query_gaia_region(cluster, 0.5)
+    except NetworkTimeout as exc:
+        # No cached region for this cluster and the archive is quiet: say so and
+        # leave the rest of the notebook alone instead of hanging the cell.
+        return (
+            f"⚠ Gaia archive unreachable for {cluster_name} — {exc} "
+            f"Run this again when you are online; nothing else in the notebook depends on it."
+        )
     members = df[gaia_members(df, cluster)]
     if mag_min is not None:
         members = members[members["phot_g_mean_mag"] > mag_min]

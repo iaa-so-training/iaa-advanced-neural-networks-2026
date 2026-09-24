@@ -78,6 +78,9 @@ Or use the tuning notebook — same loop, with widgets:
 
 ```bash
 docker run --rm -it -p 2718:2718 $DAY4 $IMG uv run marimo edit notebooks/tuning_template.py --host 0.0.0.0 --no-token
+# or the JupyterLab version of the same lab → http://localhost:8888
+docker run --rm -it -p 8888:8888 $DAY4 $IMG \
+  uv run --extra jupyter jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --IdentityProvider.token=""
 ```
 
 Open `docs/region_sweep_results.md` and find your cluster's row. Your numbers

@@ -33,6 +33,8 @@ docker run --rm -it $DAY4 $IMG uv run cluster download --all   # 1.17 GB catalog
 docker run --rm -it $DAY4 $IMG uv run cluster run --fast       # smoke test: ~2 min, no GPU
 docker run --rm -it -p 2718:2718 $DAY4 $IMG \
   uv run marimo edit notebooks/chemical_tagging.py --host 0.0.0.0 --no-token   # http://localhost:2718
+docker run --rm -it -p 8888:8888 $DAY4 $IMG \
+  uv run --extra jupyter jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --IdentityProvider.token=""   # http://localhost:8888
 ```
 
 That is the whole workflow: `uv run cluster <command>` executes *inside* the
@@ -191,27 +193,34 @@ score, and saves `results/benchmark_grid.png`.
 
 ## Notebooks
 
-A [marimo](https://marimo.io) notebook (reactive Python, no Jupyter):
+Two front ends over the same pipeline — pick whichever suits you; the
+differences that matter are tabulated in `docs/docker.md`.
+
+**marimo** ([marimo.io](https://marimo.io)) — reactive Python, the default:
 
 ```bash
 uv run marimo edit notebooks/chemical_tagging.py   # edit
 uv run marimo run notebooks/chemical_tagging.py    # read-only app
+
+docker run --rm -it -p 2718:2718 $DAY4 $IMG \
+  uv run marimo edit notebooks/chemical_tagging.py --host 0.0.0.0 --no-token   # http://localhost:2718
 ```
 
-In Docker the wrapper opens the port for you:
+**JupyterLab** — the same material ported cell for cell (same library calls, same
+seeds, same numbers):
 
 ```bash
-docker run --rm -it -p 2718:2718 $DAY4 $IMG \
-  uv run marimo edit notebooks/chemical_tagging.py --host 0.0.0.0 --no-token
-# any notebook in notebooks/ works — swap the file name
+docker run --rm -it -p 8888:8888 $DAY4 $IMG \
+  uv run --extra jupyter jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --IdentityProvider.token=""   # http://localhost:8888
+# open notebooks/chemical_tagging.ipynb from the file browser (you start in /app)
 ```
 
-Two ship with the day:
+Four ship with the day — each notebook in both front ends:
 
-- `chemical_tagging.py` — the end-to-end demo. The abundance benchmark in §2–§3,
-  the **published spectral latent vs the abundances on the same stars** in §0c
-  (via `cluster head-to-head`), then the HR / isochrone / Gaia-age material.
-- `tuning_template.py` — the knob-turning lab for the student activities.
+- `chemical_tagging.py` / `.ipynb` — the end-to-end demo. The abundance benchmark
+  in §2–§3, the **published spectral latent vs the abundances on the same stars**
+  in §0c (via `cluster head-to-head`), then the HR / isochrone / Gaia-age material.
+- `tuning_template.py` / `.ipynb` — the knob-turning lab for the student activities.
 
 `cluster download --all` fetches everything both notebooks read: the catalogue and
 the embeddings/checkpoints bundle.
@@ -220,7 +229,7 @@ the embeddings/checkpoints bundle.
 
 ```bash
 uv run pyrefly check            # strict type checking (currently reports errors — see below)
-uv run pytest                   # 212 tests with the data bundle + `--extra torch`; CI runs 205 passed / 3 skipped without them
+uv run pytest                   # 230 tests (1 skipped without `--extra torch`); CI runs a subset without the data bundle
 uv run coverage run -m pytest && uv run coverage report   # 90% (branch coverage)
 uv run mlflow ui                # inspect experiment runs (mlruns/)
 ```
@@ -361,7 +370,7 @@ src/cluster/
   provenance.py  # DR17-vs-DR19 artifact check
   plots.py       # embedding scatter
   cli.py         # `cluster download` / `run` / `baseline` / `head-to-head` / …
-notebooks/       # marimo notebooks
+notebooks/       # notebooks in both front ends (.py = marimo, .ipynb = Jupyter)
 hf/              # asset-bundle manifest, dataset card, publisher
 .github/         # (in the repo root) multi-arch docker image + test workflows
 ```

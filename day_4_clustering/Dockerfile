@@ -40,7 +40,11 @@ COPY hf ./hf
 # optional torch extra (CPU wheels, ~200 MB) for the re-embedding extension —
 # it is left out by default so the pull 30 students do stays ~1.5 GB.
 ARG WITH_TORCH=""
-RUN uv sync --frozen --no-dev ${WITH_TORCH:+--extra torch} --no-cache
+# Jupyter is on by default while the marimo-vs-jupyter comparison runs, so the
+# published image can serve both front ends from one pull; build with
+# `--build-arg WITH_JUPYTER=` for the lean marimo-only image.
+ARG WITH_JUPYTER="1"
+RUN uv sync --frozen --no-dev ${WITH_TORCH:+--extra torch} ${WITH_JUPYTER:+--extra jupyter} --no-cache
 
 # --- runtime: the slim image students pull ---------------------------------
 FROM python:3.13.15-slim
