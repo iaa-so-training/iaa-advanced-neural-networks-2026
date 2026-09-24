@@ -1,7 +1,44 @@
 # syntax=docker/dockerfile:1
-# Smallest practical image: python:3.13-slim + the workshop deps via uv.
-# The 3.7 GB APOGEE allStar is NOT baked in — students download it into a
-# mounted volume on first run. Embeddings parquets are also excluded.
+# Two stages: the build tools stay in `builder`, the published image is
+# python:3.13-slim + the synced virtualenv. The 1.17 GB APOGEE catalogue is NOT
+# baked in — students download it into a mounted volume on first run, and the
+# embedding parquets/checkpoints come from the mounted Hugging Face bundle.
+
+# --- builder: needs a C/C++ toolchain -------------------------------------
+# opentsne (t-SNE) publishes wheels for linux x86_64, macOS and Windows but NONE
+# for linux aarch64, so on Apple silicon / arm64 machines uv compiles it from
+# source. Without g++ that build fails with
+#   error: Failed to build `opentsne==1.0.4` … [Errno 2] No such file or directory: 'g++'
+# and the whole arm64 image build dies. build-essential here costs nothing in the
+# published image: nothing from this stage ships except /app.
+FROM python:3.13-slim AS builder
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# uv for fast, reproducible, layer-cacheable installs
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_CACHE_DIR=/tmp/day4-uv
+
+WORKDIR /app
+
+# deps + source in one layer; uv.lock pins everything
+COPY pyproject.toml uv.lock README.md ./
+COPY src ./src
+COPY notebooks ./notebooks
+COPY scripts ./scripts
+COPY hf ./hf
+# The default image is the workshop core. `--build-arg WITH_TORCH=1` adds the
+# optional torch extra (CPU wheels, ~200 MB) for the re-embedding extension —
+# it is left out by default so the pull 30 students do stays ~1.5 GB.
+ARG WITH_TORCH=""
+RUN uv sync --frozen --no-dev ${WITH_TORCH:+--extra torch} --no-cache
+
+# --- runtime: the slim image students pull ---------------------------------
 FROM python:3.13-slim
 
 # numba (pulled in by umap-learn, hdbscan and — the real offender — EVoC's
@@ -17,30 +54,18 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-# uv for fast, reproducible, layer-cacheable installs
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-
-ENV UV_COMPILE_BYTECODE=1 \
-    UV_LINK_MODE=copy \
-    UV_NO_SYNC=1 \
+ENV UV_NO_SYNC=1 \
     UV_CACHE_DIR=/tmp/day4-uv \
     MLFLOW_TRACKING_URI=file:///app/results/mlruns \
     PATH="/app/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1
 
-WORKDIR /app
+# the pinned environment + source, exactly as synced in the builder
+COPY --from=builder /app /app
 
-# deps + source in one layer; uv.lock pins everything
-COPY pyproject.toml uv.lock README.md ./
-COPY src ./src
-COPY notebooks ./notebooks
-COPY scripts ./scripts
-COPY hf ./hf
-# The default image is the workshop core. `--build-arg WITH_TORCH=1` adds the
-# optional torch extra (CPU wheels, ~200 MB) for the re-embedding extension —
-# it is left out by default so the pull 30 students do stays ~1.5 GB.
-ARG WITH_TORCH=""
-RUN uv sync --frozen --no-dev ${WITH_TORCH:+--extra torch} --no-cache
+# `uv` itself, so the documented `docker run … $IMG uv run cluster …` works: the
+# environment is synced and frozen, uv only resolves the command against it.
+COPY --from=builder /bin/uv /bin/uvx /bin/
 
 # Scratch dirs, all writable by whatever uid the entrypoint drops to: HOME and
 # the caches matplotlib/numba/uv/marimo want, plus the mount points so the
