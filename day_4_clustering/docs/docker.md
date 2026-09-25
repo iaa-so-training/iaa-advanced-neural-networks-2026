@@ -67,10 +67,11 @@ place when a control changes, and the notebooks memoise their expensive calls on
 top of the on-disk prepared-sample cache, so re-picking a configuration you tried
 before is instant while a genuinely new one is a real computation.
 
-Measured on the workshop laptop (16 cores, warm data cache): the main notebook
-executes end to end in **3 min 6 s** and the tuning lab in **2 min 51 s**, over
-**1.48 MB of cell outputs** — heaviest figure 391 kB (the file with its widget
-state is 2.13 MB). The figures are capped exactly as the CLI's are
+Measured on the workshop laptop (16 cores, warm data cache, `day4-v10`): the main
+notebook executes end to end in **3 min 15 s** and the tuning lab in **3 min 13 s**,
+over **1.48 MB of cell outputs** (1.07 MB of that is plotly JSON) — the heaviest
+figure is 335 kB (the file with its widget state is 2.13 MB). The figures are
+capped exactly as the CLI's are
 (`CLUSTER_PLOT_MAX_POINTS`; every member is always drawn — see *A sluggish
 notebook is usually the page, not the CPU* below).
 
@@ -176,11 +177,10 @@ the same sample) when you are exploring rather than quoting.
 
 Slow *interaction* is a different layer: a figure ships every trace — and every
 hover string — to the browser, so 25 000 stars that each carry hover text are
-megabytes of JSON. Measured on the shipped notebook (30° cone around M 67):
-three figures carried **6.2 MB** and the mouse stopped responding long before the
-machine was busy. With the cap in place those three fall from 2.51, 2.46 and
-1.25 MB to **0.38, 0.36 and 0.13 MB**, the whole executed notebook is **1.48 MB**
-of cell outputs, and no figure exceeds **391 kB** — with every member still
+megabytes of JSON. Before the cap, three figures in this notebook carried
+**6.2 MB** between them (30° cone around M 67) and the mouse stopped responding
+long before the machine was busy. Now the whole executed notebook is **1.48 MB**
+of cell outputs and no figure exceeds **335 kB** — with every member still
 plotted. The plots cap the grey field at `CLUSTER_PLOT_MAX_POINTS` (default
 **3000**) points per panel:
 
