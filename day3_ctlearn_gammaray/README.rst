@@ -6,8 +6,8 @@ Date & time
 -----------
 Wednesday, 30th of September 2026
 
-Session 1: 11:30 - 13:00
-Session 2: 14:30 - 17:00
+Session 1: 11:30 - 13:00 (Tutorial 1 and Tutorial 2 Part A)
+Session 2: 14:30 - 17:00 (Tutorial 2 Part B and Tutorial 3)
 
 Tutor
 -----
@@ -87,3 +87,13 @@ See the documentation for further information like `installation instructions fo
 
    mamba create -n vitables -c conda-forge python==3.12 vitables
    conda run -n vitables vitables hdf5_filepaths
+
+
+CTAO open-source testdata
+-------------------------
+
+The tutorials use three different types of data. Some notebooks download very small test datasets directly. These datasets contain only a few events and are mainly intended for CI and automated testing, although we also use them in some examples. Other notebooks generate mock data to mimic observations from the LST-1 telescope, since the original LST-1 observational data are private to the collaboration.
+
+For the more advanced tutorials, we use the publicly available CTAO open-source simulation data released on `Zenodo <https://zenodo.org/records/7298569>`_. Since the original data were produced with an older version of ctapipe, we took the official open-source dataset and reprocessed it with a recent `ctapipe` version. The resulting data are provided for the tutorials through the  `IAA Cloud <https://cloud.iaa.es/index.php/s/77d6MK4rGfanSKx>`_.
+
+These data follow the CTAO data-model structure and can therefore be directly used with the standard ctapipe tools. They provide a realistic dataset for exploring the complete analysis workflow, while keeping in mind that the tutorial datasets and statistics are not intended for production-level or competitive physics results.
