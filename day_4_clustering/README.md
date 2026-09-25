@@ -29,9 +29,9 @@ splat it with `@Day4` — see
 Prefer native Python? `uv sync && uv run cluster …` — identical flags and
 commands.
 
-- Instructions and full walk-through: [`day_4_clustering/README.md`](day_4_clustering/README.md)
-- Student activities: [`day_4_clustering/docs/student_activities.md`](day_4_clustering/docs/student_activities.md)
-- Container details (image, mounts, performance): [`day_4_clustering/docs/docker.md`](day_4_clustering/docs/docker.md)
+- Instructions and full walk-through: [`README.md`](README.md)
+- Student activities: [`docs/student_activities.md`](docs/student_activities.md)
+- Container details (image, mounts, performance): [`docs/docker.md`](docs/docker.md)
 
 
 

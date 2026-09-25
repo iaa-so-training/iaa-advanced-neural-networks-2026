@@ -29,5 +29,7 @@ Public **CAMELS-SAM** Rockstar halo catalogs:
 - **Session 2** samples ~100 boxes spanning Ω_m at a higher-redshift snapshot (`out_16`, z ≈ 5.2,
   ~50 MB/box → ~5 GB total).
 
-Both notebooks also include a built-in **synthetic data generator** (`USE_REAL_DATA = False`) so
-the full pipeline runs with no download.
+Hands-on 2 also includes a built-in **synthetic data generator**
+(`USE_REAL_DATA = False`) so its graph-regression pipeline can run without the
+5 GB multi-box download. Hands-on 1 uses the real `LH_35` catalogue (~200 MB),
+so download that file before class if possible.

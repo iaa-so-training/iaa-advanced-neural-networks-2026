@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="A friendly student guide to the five hands-on sessions in the SO–IAA Advanced Neural Networks for Astronomy school."
+    />
+    <meta name="theme-color" content="#111a41" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Advanced Neural Networks for Astronomy 2026" />
+    <meta
+      property="og:description"
+      content="Five hands-on sessions. One cosmic learning journey. See what you will learn and how to get ready."
+    />
+    <meta
+      property="og:url"
+      content="https://iaa-so-training.github.io/iaa-advanced-neural-networks-2026/"
+    />
+    <meta
+      property="og:image"
+      content="https://iaa-so-training.github.io/iaa-advanced-neural-networks-2026/og.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Advanced Neural Networks for Astronomy 2026" />
+    <meta
+      name="twitter:description"
+      content="Five hands-on sessions. One cosmic learning journey."
+    />
+    <meta
+      name="twitter:image"
+      content="https://iaa-so-training.github.io/iaa-advanced-neural-networks-2026/og.png"
+    />
+    <title>Advanced Neural Networks for Astronomy 2026</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script>
+      document.documentElement.classList.add("js");
+    </script>
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#course-guide">Skip to the course guide</a>
+
+    <header class="site-header">
+      <div class="shell topbar">
+        <a class="wordmark" href="#top" aria-label="Advanced Neural Networks course home">
+          <span class="wordmark-mark" aria-hidden="true">AN</span>
+          <span>
+            <strong>Advanced Neural Networks</strong>
+            <small>SO–IAA School · 2026</small>
+          </span>
+        </a>
+        <a
+          class="repo-link"
+          href="https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026"
+          target="_blank"
+          rel="noreferrer"
+        >
+          View the repository <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </header>
+
+    <main id="course-guide">
+      <section class="hero shell" id="top" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span aria-hidden="true">✦</span> Your friendly field guide</p>
+          <h1 id="page-title">Teach a neural network to read the universe.</h1>
+          <p class="hero-lede">
+            Five hands-on days, five very different astronomical data stories. Pick a session to
+            see what you will learn, what to prepare, and exactly where to begin.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#session-tabs">Explore the sessions</a>
+            <a
+              class="button button-quiet"
+              href="https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026#readme"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Open the course README
+            </a>
+          </div>
+          <ul class="hero-notes" aria-label="Course guide highlights">
+            <li><span aria-hidden="true">✓</span> Plain-language setup</li>
+            <li><span aria-hidden="true">✓</span> Direct notebook links</li>
+            <li><span aria-hidden="true">✓</span> Honest download warnings</li>
+          </ul>
+        </div>
+
+        <aside class="journey-card" aria-label="The five-day learning journey">
+          <p class="journey-card-label">Your route through the cosmos</p>
+          <ol>
+            <li><span>01</span><div><strong>Radio skies</strong><small>Images &amp; transfer learning</small></div></li>
+            <li><span>02</span><div><strong>Cosmic webs</strong><small>Graphs &amp; cosmology</small></div></li>
+            <li><span>03</span><div><strong>Gamma rays</strong><small>Event reconstruction</small></div></li>
+            <li><span>04</span><div><strong>Stellar chemistry</strong><small>Clustering &amp; discovery</small></div></li>
+            <li><span>05</span><div><strong>Black-hole imaging</strong><small>Inverse problems &amp; priors</small></div></li>
+          </ol>
+          <p class="journey-card-foot">Every tab ends with a small, practical “start here” checklist.</p>
+        </aside>
+      </section>
+
+      <section class="guide-section" aria-labelledby="guide-title">
+        <div class="shell">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow eyebrow-dark">Session guide</p>
+              <h2 id="guide-title">Choose your observing window.</h2>
+            </div>
+            <p>
+              You do not need to memorize every setup command. Use this page as your launch pad;
+              the full READMEs remain linked whenever you want the details.
+            </p>
+          </div>
+
+          <div class="tabs-frame" id="session-tabs">
+            <div class="session-tabs" role="tablist" aria-label="Course days">
+              <button
+                class="session-tab is-active"
+                id="tab-day1"
+                type="button"
+                role="tab"
+                aria-selected="true"
+                aria-controls="panel-day1"
+                tabindex="0"
+                data-session="day1"
+              >
+                <span class="tab-number">01</span>
+                <span><strong>Radio skies</strong><small>Images</small></span>
+              </button>
+              <button
+                class="session-tab"
+                id="tab-day2"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                aria-controls="panel-day2"
+                tabindex="-1"
+                data-session="day2"
+              >
+                <span class="tab-number">02</span>
+                <span><strong>Cosmic webs</strong><small>Graphs</small></span>
+              </button>
+              <button
+                class="session-tab"
+                id="tab-day3"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                aria-controls="panel-day3"
+                tabindex="-1"
+                data-session="day3"
+              >
+                <span class="tab-number">03</span>
+                <span><strong>Gamma rays</strong><small>CNNs</small></span>
+              </button>
+              <button
+                class="session-tab"
+                id="tab-day4"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                aria-controls="panel-day4"
+                tabindex="-1"
+                data-session="day4"
+              >
+                <span class="tab-number">04</span>
+                <span><strong>Star clusters</strong><small>Clustering</small></span>
+              </button>
+              <button
+                class="session-tab"
+                id="tab-day5"
+                type="button"
+                role="tab"
+                aria-selected="false"
+                aria-controls="panel-day5"
+                tabindex="-1"
+                data-session="day5"
+              >
+                <span class="tab-number">05</span>
+                <span><strong>M87*</strong><small>Imaging</small></span>
+              </button>
+            </div>
+          </div>
+
+          <div class="panels">
+            <article
+              class="session-panel is-active day1"
+              id="panel-day1"
+              role="tabpanel"
+              tabindex="0"
+              aria-labelledby="tab-day1"
+              data-panel="day1"
+            >
+              <header class="panel-hero">
+                <div>
+                  <p class="panel-kicker">Day 1 · Radio survey pipelines</p>
+                  <h3>From raw LoTSS images to trustworthy model evidence</h3>
+                  <p>
+                    Learn why the choices made before training—scaling, splitting, augmentation,
+                    and class balance—shape every conclusion that comes after it.
+                  </p>
+                </div>
+                <dl class="session-meta">
+                  <div><dt>Format</dt><dd>2 × 90 min</dd></div>
+                  <div><dt>Workspace</dt><dd>Google Colab</dd></div>
+                  <div><dt>Data</dt><dd>LoTSS FITS cutouts</dd></div>
+                </dl>
+              </header>
+
+              <div class="content-grid">
+                <section class="content-card span-8" aria-labelledby="day1-learn">
+                  <p class="card-label">What you will learn</p>
+                  <h4 id="day1-learn">Build the pipeline before you build the model.</h4>
+                  <div class="learning-grid">
+                    <article>
+                      <span>01</span>
+                      <h5>Read the dataset honestly</h5>
+                      <p>Audit fixed source-level splits, class imbalance, and why accuracy alone can mislead.</p>
+                    </article>
+                    <article>
+                      <span>02</span>
+                      <h5>Make defensible image choices</h5>
+                      <p>Compare FITS scaling routes and decide which augmentations preserve radio morphology.</p>
+                    </article>
+                    <article>
+                      <span>03</span>
+                      <h5>Evaluate class by class</h5>
+                      <p>Fine-tune a pretrained vision model, then read macro-F1, recalls, and failure examples.</p>
+                    </article>
+                  </div>
+                </section>
+
+                <aside class="content-card span-4 prep-card" aria-labelledby="day1-prep">
+                  <p class="card-label">Before class</p>
+                  <h4 id="day1-prep">Pack these essentials</h4>
+                  <ul class="checklist">
+                    <li><span aria-hidden="true">✓</span><div><strong>5 GB free space</strong><small>Room for the repository and the 1.2 GB archive.</small></div></li>
+                    <li><span aria-hidden="true">✓</span><div><strong>Google account</strong><small>The notebooks run in Colab and use Drive.</small></div></li>
+                    <li><span aria-hidden="true">✓</span><div><strong>Git + Git LFS</strong><small>A normal clone alone will not fetch the data archive.</small></div></li>
+                  </ul>
+                </aside>
+
+                <section class="content-card span-5" aria-labelledby="day1-route">
+                  <p class="card-label">Your route</p>
+                  <h4 id="day1-route">Two sessions, one reproducible story</h4>
+                  <ol class="route-list">
+                    <li><span>Session I</span><div><strong>Inspect, scale, augment</strong><p>Explore real FITS arrays and export a small preprocessing contract.</p></div></li>
+                    <li><span>Session II</span><div><strong>Transfer, compare, diagnose</strong><p>Reuse that contract, train one controlled configuration, and investigate errors.</p></div></li>
+                  </ol>
+                </section>
+
+                <section class="content-card span-7 start-card" aria-labelledby="day1-start">
+                  <div class="card-heading-row">
+                    <div><p class="card-label">Start here</p><h4 id="day1-start">Download the real files, not pointer files</h4></div>
+                    <button class="copy-button" type="button" data-copy="day1-code">Copy</button>
+                  </div>
+                  <pre id="day1-code"><code>git clone https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026.git
+cd iaa-advanced-neural-networks-2026
+git lfs install
+git lfs pull</code></pre>
+                  <ol class="mini-steps">
+                    <li>Create <code>My Drive/Granada School/</code> in Google Drive.</li>
+                    <li>Upload <code>Granada_School_LoTSS_raw.tar.gz</code> without unpacking it.</li>
+                    <li>Open notebook 01 first, then notebook 02. Keep the exported contract between them.</li>
+                  </ol>
+                </section>
+
+                <section class="content-card span-12 resources-card" aria-labelledby="day1-files">
+                  <div><p class="card-label">Open the materials</p><h4 id="day1-files">Everything for Day 1</h4></div>
+                  <div class="resource-list">
+                    <a href="https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026/blob/main/day1_radio_surveys/README.md" target="_blank" rel="noreferrer"><span>Guide</span><strong>Day 1 README</strong><small>Full setup and troubleshooting ↗</small></a>
+                    <a href="https://colab.research.google.com/github/iaa-so-training/iaa-advanced-neural-networks-2026/blob/main/day1_radio_surveys/01_lotss_fits_scaling_augmentation.ipynb" target="_blank" rel="noreferrer"><span>Notebook 01</span><strong>Scaling &amp; augmentation</strong><small>Open directly in Colab ↗</small></a>
+                    <a href="https://colab.research.google.com/github/iaa-so-training/iaa-advanced-neural-networks-2026/blob/main/day1_radio_surveys/02_lotss_transfer_learning.ipynb" target="_blank" rel="noreferrer"><span>Notebook 02</span><strong>Transfer learning</strong><small>Open directly in Colab ↗</small></a>
+                  </div>
+                </section>
+              </div>
+
+              <div class="friendly-callout"><span aria-hidden="true">☄</span><div><strong>Friendly heads-up</strong><p>If the archive is only a few hundred bytes, it is a Git LFS pointer. Run <code>git lfs pull</code> again before class.</p></div></div>
+            </article>
+
+            <article
+              class="session-panel day2"
+              id="panel-day2"
+              role="tabpanel"
+              tabindex="0"
+              aria-labelledby="tab-day2"
+              data-panel="day2"
+            >
+              <header class="panel-hero">
+                <div>
+                  <p class="panel-kicker">Day 2 · Graph neural networks for cosmology</p>
+                  <h3>Turn the cosmic web into something a network can read</h3>
+                  <p>
+                    Build graphs from dark-matter halos, use their connections to identify
+                    environments, then scale up from one graph to a universe of simulations.
+                  </p>
+                </div>
+                <dl class="session-meta">
+                  <div><dt>Format</dt><dd>2 hands-ons</dd></div>
+                  <div><dt>Workspace</dt><dd>Google Colab</dd></div>
+                  <div><dt>Data</dt><dd>CAMELS-SAM halos</dd></div>
+                </dl>
+              </header>
+
+              <div class="content-grid">
+                <section class="content-card span-8" aria-labelledby="day2-learn">
+                  <p class="card-label">What you will learn</p>
+                  <h4 id="day2-learn">Let relationships carry the signal.</h4>
+                  <div class="learning-grid">
+                    <article><span>01</span><h5>Build a physical graph</h5><p>Make halos into nodes and connect nearby neighbors across periodic box boundaries.</p></article>
+                    <article><span>02</span><h5>Classify environments</h5><p>Predict cluster versus void from graph structure, and compare GraphSAGE with GCN.</p></article>
+                    <article><span>03</span><h5>Infer cosmology</h5><p>Pool whole graphs to regress Ω<sub>m</sub> and learn a useful predictive uncertainty.</p></article>
+                  </div>
+                </section>
+
+                <aside class="content-card span-4 prep-card" aria-labelledby="day2-prep">
+                  <p class="card-label">Before class</p>
+                  <h4 id="day2-prep">Plan the real-data download</h4>
+                  <ul class="checklist">
+                    <li><span aria-hidden="true">✓</span><div><strong>Hands-on 1</strong><small>The real halo catalogue is about 200 MB; pre-download it if possible.</small></div></li>
+                    <li><span aria-hidden="true">✓</span><div><strong>Hands-on 2</strong><small>Use synthetic graphs with no download, or stage about 5 GB for the real 100-box route.</small></div></li>
+                    <li><span aria-hidden="true">✓</span><div><strong>Google account</strong><small>Colab installs dependencies in the first cell.</small></div></li>
+                  </ul>
+                </aside>
+
+                <section class="content-card span-5" aria-labelledby="day2-route">
+                  <p class="card-label">Your route</p>
+                  <h4 id="day2-route">Move from nodes to entire universes</h4>
+                  <ol class="route-list">
+                    <li><span>Hands-on 1</span><div><strong>Cluster or void?</strong><p>Learn node classification on one periodic halo graph.</p></div></li>
+                    <li><span>Hands-on 2</span><div><strong>What is Ω<sub>m</sub>?</strong><p>Train on many simulation graphs and add an uncertainty head.</p></div></li>
+                  </ol>
+                </section>
+
+                <section class="content-card span-7 start-card" aria-labelledby="day2-start">
+                  <p class="card-label">Start here</p>
+                  <h4 id="day2-start">Open, run, then choose real or synthetic</h4>
+                  <ol class="numbered-steps">
+                    <li><span>1</span><div><strong>Begin with node classification.</strong><p>Run the setup cell, then work down in order.</p></div></li>
+                    <li><span>2</span><div><strong>Finish the real-box node lab.</strong><p>The first notebook downloads one CAMELS-SAM catalogue and caches it in Drive.</p></div></li>
+                    <li><span>3</span><div><strong>Continue to graph regression.</strong><p>In Hands-on 2, set <code>USE_REAL_DATA = False</code> for the download-free synthetic route.</p></div></li>
+                  </ol>
+                </section>
+
+                <section class="content-card span-12 resources-card" aria-labelledby="day2-files">
+                  <div><p class="card-label">Open the materials</p><h4 id="day2-files">Everything for Day 2</h4></div>
+                  <div class="resource-list">
+                    <a href="https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026/blob/main/day2_GNN_LSS/README.md" target="_blank" rel="noreferrer"><span>Guide</span><strong>Day 2 README</strong><small>Tasks, data sizes, and modes ↗</small></a>
+                    <a href="https://colab.research.google.com/github/iaa-so-training/iaa-advanced-neural-networks-2026/blob/main/day2_GNN_LSS/Handson1_Node_Classification.ipynb" target="_blank" rel="noreferrer"><span>Hands-on 1</span><strong>Node classification</strong><small>Open directly in Colab ↗</small></a>
+                    <a href="https://colab.research.google.com/github/iaa-so-training/iaa-advanced-neural-networks-2026/blob/main/day2_GNN_LSS/Handson2_Omega_m_Regression.ipynb" target="_blank" rel="noreferrer"><span>Hands-on 2</span><strong>Ω<sub>m</sub> regression</strong><small>Open directly in Colab ↗</small></a>
+                  </div>
+                </section>
+              </div>
+
+              <div class="friendly-callout"><span aria-hidden="true">✦</span><div><strong>The experiment that proves the point</strong><p>Compare your GNN with an MLP that sees the same node features but no edges. The gap tells you what the graph structure contributes.</p></div></div>
+            </article>
+
+            <article
+              class="session-panel day3"
+              id="panel-day3"
+              role="tabpanel"
+              tabindex="0"
+              aria-labelledby="tab-day3"
+              data-panel="day3"
+            >
+              <header class="panel-hero panel-hero-with-image">
+                <div>
+                  <p class="panel-kicker">Day 3 · Gamma-ray event reconstruction</p>
+                  <h3>Follow an atmospheric shower from camera pixels to predictions</h3>
+                  <p>
+                    Explore Cherenkov-telescope data, train CTLearn models for three reconstruction
+                    tasks, and keep preprocessing consistent when it is time to infer.
+                  </p>
+                </div>
+                <img src="assets/ctlearn-logo.png" alt="CTLearn" />
+                <dl class="session-meta">
+                  <div><dt>Schedule</dt><dd>11:30–13:00 · 14:30–17:00</dd></div>
+                  <div><dt>Workspace</dt><dd>Conda + Jupyter</dd></div>
+                  <div><dt>Toolkit</dt><dd>CTLearn 0.10.4</dd></div>
+                </dl>
+              </header>
+
+              <div class="content-grid">
+                <section class="content-card span-8" aria-labelledby="day3-learn">
+                  <p class="card-label">What you will learn</p>
+                  <h4 id="day3-learn">Reconstruct events from rich telescope data.</h4>
+                  <div class="learning-grid">
+                    <article><span>01</span><h5>Explore the data model</h5><p>Inspect HDF5 files, calibrated waveforms, camera images, and stereoscopic events.</p></article>
+                    <article><span>02</span><h5>Train three tasks</h5><p>Predict particle energy, arrival direction, and gamma-versus-proton class.</p></article>
+                    <article><span>03</span><h5>Move safely to inference</h5><p>Reuse training configuration, write DL2 predictions, and inspect the result.</p></article>
+                  </div>
+                </section>
+
+                <aside class="content-card span-4 prep-card" aria-labelledby="day3-prep">
+                  <p class="card-label">Before class</p>
+                  <h4 id="day3-prep">Create a clean environment</h4>
+                  <ul class="checklist">
+                    <li><span aria-hidden="true">✓</span><div><strong>Mamba or Conda</strong><small>Use a fresh Python 3.12 environment.</small></div></li>
+                    <li><span aria-hidden="true">✓</span><div><strong>CTLearn</strong><small>The workshop pins version 0.10.4.</small></div></li>
+                    <li><span aria-hidden="true">✓</span><div><strong>ViTables, optional</strong><small>Keep its GUI in a separate environment.</small></div></li>
+                  </ul>
+                </aside>
+
+                <section class="content-card span-5" aria-labelledby="day3-route">
+                  <p class="card-label">Your route</p>
+                  <h4 id="day3-route">Use the public path first</h4>
+                  <ol class="route-list compact">
+                    <li><span>Explore</span><div><strong>Public HDF5 data</strong><p>See waveforms, images, and data readers.</p></div></li>
+                    <li><span>Train</span><div><strong>CTLearn models</strong><p>Energy, direction, and particle type.</p></div></li>
+                    <li><span>Predict</span><div><strong>Run inference</strong><p>Apply the trained models and inspect DL2 output.</p></div></li>
+                  </ol>
+                </section>
+
+                <section class="content-card span-7 start-card" aria-labelledby="day3-start">
+                  <div class="card-heading-row">
+                    <div><p class="card-label">Start here</p><h4 id="day3-start">Install the workshop environment</h4></div>
+                    <button class="copy-button" type="button" data-copy="day3-code">Copy</button>
+                  </div>
+                  <pre id="day3-code"><code>mamba create -n ctlearn -c conda-forge python==3.12 llvmlite
+conda activate ctlearn
+pip install ctlearn==0.10.4
+
+# Optional HDF5 browser, kept separate
+mamba create -n vitables -c conda-forge python==3.12 vitables</code></pre>
+                  <p class="small-note">The private-data reduction and exploration notebooks are optional and require collaboration data that cannot be distributed publicly.</p>
+                </section>
+
+                <section class="content-card span-12 resources-card" aria-labelledby="day3-files">
+                  <div><p class="card-label">Open the materials</p><h4 id="day3-files">Choose the notebook for your step</h4></div>
+                  <div class="resource-list four-up">
+                    <a href="https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026/blob/main/day3_ctlearn_gammaray/README.rst" target="_blank" rel="noreferrer"><span>Guide</span><strong>Day 3 README</strong><small>Install and tutor details ↗</small></a>
+                    <a href="https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026/blob/main/day3_ctlearn_gammaray/notebooks/explore_public_data.ipynb" target="_blank" rel="noreferrer"><span>Explore</span><strong>Public data</strong><small>Start with the data model ↗</small></a>
+                    <a href="https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026/blob/main/day3_ctlearn_gammaray/notebooks/train_ctlearn_model.ipynb" target="_blank" rel="noreferrer"><span>Train</span><strong>CTLearn models</strong><small>Three reconstruction tasks ↗</small></a>
+                    <a href="https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026/blob/main/day3_ctlearn_gammaray/notebooks/predict_ctlearn_model.ipynb" target="_blank" rel="noreferrer"><span>Predict</span><strong>Run inference</strong><small>Write and inspect DL2 ↗</small></a>
+                  </div>
+                </section>
+              </div>
+
+              <div class="friendly-callout"><span aria-hidden="true">⚡</span><div><strong>Configuration is part of the model</strong><p>Image readers, preprocessing, and telescope stacking should match between training and inference. A trained weight file is not the whole experiment.</p></div></div>
+            </article>
+
+            <article
+              class="session-panel day4"
+              id="panel-day4"
+              role="tabpanel"
+              tabindex="0"
+              aria-labelledby="tab-day4"
+              data-panel="day4"
+            >
+              <header class="panel-hero">
+                <div>
+                  <p class="panel-kicker">Day 4 · Clustering and chemical tagging</p>
+                  <h3>Find stellar families in a crowded chemical space</h3>
+                  <p>
+                    Compare t-SNE, UMAP, and EVoC on APOGEE abundances, score them against
+                    kinematic truth, and learn why a beautiful embedding is not automatically a discovery.
+                  </p>
+                </div>
+                <dl class="session-meta">
+                  <div><dt>Format</dt><dd>90 min + ≈ 2-hour lab</dd></div>
+                  <div><dt>Workspace</dt><dd>Docker preferred</dd></div>
+                  <div><dt>Download</dt><dd>≈ 2.2 GB once</dd></div>
+                </dl>
+              </header>
+
+              <div class="content-grid">
+                <section class="content-card span-8" aria-labelledby="day4-learn">
+                  <p class="card-label">What you will learn</p>
+                  <h4 id="day4-learn">Measure discovery, not just visual appeal.</h4>
+                  <div class="learning-grid">
+                    <article><span>01</span><h5>Compare three methods</h5><p>Separate embedding from clustering and understand what t-SNE, UMAP, and EVoC each return.</p></article>
+                    <article><span>02</span><h5>Score against a referee</h5><p>Use Gaia kinematics as ground truth, then read recall, precision, and kNN purity together.</p></article>
+                    <article><span>03</span><h5>Run a clean experiment</h5><p>Tune one lever, explain the trade-off, and extend the baseline with one frontier track.</p></article>
+                  </div>
+                </section>
+
+                <aside class="content-card span-4 prep-card" aria-labelledby="day4-prep">
+                  <p class="card-label">Before class</p>
+                  <h4 id="day4-prep">Download tonight, analyze tomorrow</h4>
+                  <ul class="checklist">
+                    <li><span aria-hidden="true">✓</span><div><strong>Docker + Git</strong><small>Python and uv already live inside the image.</small></div></li>
+                    <li><span aria-hidden="true">✓</span><div><strong>About 2.2 GB</strong><small>Catalogue plus embeddings and checkpoints.</small></div></li>
+                    <li><span aria-hidden="true">✓</span><div><strong>Your assigned cluster</strong><small>Find it in the student activities guide.</small></div></li>
+                  </ul>
+                </aside>
+
+                <section class="content-card span-5" aria-labelledby="day4-route">
+                  <p class="card-label">Your route</p>
+                  <h4 id="day4-route">Reproduce → tune → extend → share</h4>
+                  <ol class="route-list compact">
+                    <li><span>0–20</span><div><strong>Match the baseline</strong><p>Prove the pipeline and seed are under control.</p></div></li>
+                    <li><span>20–60</span><div><strong>Move one lever</strong><p>Track why recall or precision changes.</p></div></li>
+                    <li><span>60–100</span><div><strong>Pick a frontier</strong><p>Spectra, isochrones, or two surveys.</p></div></li>
+                    <li><span>Final 20</span><div><strong>Make one slide</strong><p>Result, comparison, and honest interpretation.</p></div></li>
+                  </ol>
+                </section>
+
+                <section class="content-card span-7 start-card" aria-labelledby="day4-start">
+                  <div class="card-heading-row">
+                    <div><p class="card-label">Start here</p><h4 id="day4-start">Pull the tested container and data</h4></div>
+                    <button class="copy-button" type="button" data-copy="day4-code">Copy</button>
+                  </div>
+                  <pre id="day4-code"><code>cd iaa-advanced-neural-networks-2026/day_4_clustering
+mkdir -p data results notebooks
+docker pull ghcr.io/iaa-so-training/day4-clustering:latest
+
+export IMG=ghcr.io/iaa-so-training/day4-clustering:latest
+export DAY4="-v $PWD/data:/app/data -v $PWD/results:/app/results -v $PWD/notebooks:/app/notebooks"
+
+docker run --rm -it $DAY4 $IMG uv run cluster download --all
+docker run --rm -it $DAY4 $IMG uv run cluster run --fast</code></pre>
+                  <p class="small-note">On Windows PowerShell, use the mount-array form in the full README. Native Python with <code>uv</code> is also supported.</p>
+                </section>
+
+                <section class="content-card span-12 resources-card" aria-labelledby="day4-files">
+                  <div><p class="card-label">Open the materials</p><h4 id="day4-files">Everything for Day 4</h4></div>
+                  <div class="resource-list">
+                    <a href="https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026/blob/main/day_4_clustering/README.md" target="_blank" rel="noreferrer"><span>Guide</span><strong>Full Day 4 README</strong><small>Docker, native setup, and methods ↗</small></a>
+                    <a href="https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026/blob/main/day_4_clustering/docs/student_activities.md" target="_blank" rel="noreferrer"><span>Lab</span><strong>Student activities</strong><small>Timing, tracks, and deliverable ↗</small></a>
+                    <a href="https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026/blob/main/day_4_clustering/notebooks/chemical_tagging.ipynb" target="_blank" rel="noreferrer"><span>Notebook</span><strong>Chemical tagging</strong><small>End-to-end interactive demo ↗</small></a>
+                  </div>
+                </section>
+              </div>
+
+              <div class="friendly-callout"><span aria-hidden="true">⌁</span><div><strong>A null result is still a result</strong><p>If your cluster resists chemical tagging, explain why. An honest precision–recall trade-off is more valuable than a lucky number.</p></div></div>
+            </article>
+
+            <article
+              class="session-panel day5"
+              id="panel-day5"
+              role="tabpanel"
+              tabindex="0"
+              aria-labelledby="tab-day5"
+              data-panel="day5"
+            >
+              <header class="panel-hero">
+                <div>
+                  <p class="panel-kicker">Day 5 · Imaging interferometry</p>
+                  <h3>Reconstruct M87* with a deep image prior</h3>
+                  <p>
+                    Turn sparse Event Horizon Telescope observables into an image, then ask the
+                    scientific question that matters: does the image actually agree with the data?
+                  </p>
+                </div>
+                <dl class="session-meta">
+                  <div><dt>Canvas</dt><dd>64 × 64 pixels</dd></div>
+                  <div><dt>Workspace</dt><dd>Colab + CUDA</dd></div>
+                  <div><dt>Target</dt><dd>M87* · EHT 2017</dd></div>
+                </dl>
+              </header>
+
+              <div class="content-grid">
+                <section class="content-card span-8" aria-labelledby="day5-learn">
+                  <p class="card-label">What you will learn</p>
+                  <h4 id="day5-learn">Judge an inverse solution in observable space.</h4>
+                  <div class="learning-grid">
+                    <article><span>01</span><h5>Read the (u,v) plane</h5><p>Connect Fourier coverage, visibility amplitudes, closure phases, and angular resolution.</p></article>
+                    <article><span>02</span><h5>Understand the prior</h5><p>Separate the neural parameterization from explicit smoothness and compactness assumptions.</p></article>
+                    <article><span>03</span><h5>Test robustness</h5><p>Inspect residuals, change one assumption at a time, and sample with weighted bootstraps.</p></article>
+                  </div>
+                </section>
+
+                <aside class="content-card span-4 prep-card" aria-labelledby="day5-prep">
+                  <p class="card-label">Before class</p>
+                  <h4 id="day5-prep">Keep three files together</h4>
+                  <ul class="checklist">
+                    <li><span aria-hidden="true">✓</span><div><strong>The Colab notebook</strong><small>Your guided reconstruction and exercises.</small></div></li>
+                    <li><span aria-hidden="true">✓</span><div><strong><code>eht_dip.py</code></strong><small>Model and optimization code.</small></div></li>
+                    <li><span aria-hidden="true">✓</span><div><strong>The <code>.npz</code> data</strong><small>Visibility amplitudes and closure phases.</small></div></li>
+                  </ul>
+                </aside>
+
+                <section class="content-card span-5" aria-labelledby="day5-route">
+                  <p class="card-label">Your route</p>
+                  <h4 id="day5-route">Image, forward-model, challenge</h4>
+                  <ol class="route-list compact">
+                    <li><span>Inspect</span><div><strong>Coverage and observables</strong><p>Estimate what the baselines can resolve.</p></div></li>
+                    <li><span>Reconstruct</span><div><strong>Optimize one observation</strong><p>Use the network as an implicit prior.</p></div></li>
+                    <li><span>Evaluate</span><div><strong>Return to data space</strong><p>Compare amplitudes, phases, and residual trends.</p></div></li>
+                    <li><span>Stress-test</span><div><strong>Vary assumptions</strong><p>Regularizers, loss, seeds, and bootstrap weights.</p></div></li>
+                  </ol>
+                </section>
+
+                <section class="content-card span-7 start-card" aria-labelledby="day5-start">
+                  <p class="card-label">Start here</p>
+                  <h4 id="day5-start">Give Colab a GPU before you run</h4>
+                  <ol class="numbered-steps">
+                    <li><span>1</span><div><strong>Open the tutorial in Colab.</strong><p>Choose <em>Runtime → Change runtime type → T4 GPU</em>.</p></div></li>
+                    <li><span>2</span><div><strong>Run from the top.</strong><p>Upload <code>eht_dip.py</code> and the <code>.npz</code> file when prompted.</p></div></li>
+                    <li><span>3</span><div><strong>Use the quick run first.</strong><p>Set <code>QUICK_RUN = True</code> and <code>RUN_BOOTSTRAP = False</code> for the classroom pass.</p></div></li>
+                    <li><span>4</span><div><strong>Save before leaving.</strong><p>Download <code>eht_dip_results.zip</code>; Colab runtimes are temporary.</p></div></li>
+                  </ol>
+                </section>
+
+                <section class="content-card span-12 resources-card" aria-labelledby="day5-files">
+                  <div><p class="card-label">Open the materials</p><h4 id="day5-files">Everything for Day 5</h4></div>
+                  <div class="resource-list four-up">
+                    <a href="https://colab.research.google.com/github/iaa-so-training/iaa-advanced-neural-networks-2026/blob/main/day5_imaging_interferometry/EHT_DIP_Colab_Tutorial.ipynb" target="_blank" rel="noreferrer"><span>Tutorial</span><strong>EHT DIP notebook</strong><small>Open directly in Colab ↗</small></a>
+                    <a href="https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026/blob/main/day5_imaging_interferometry/README.md" target="_blank" rel="noreferrer"><span>Guide</span><strong>Day 5 README</strong><small>Quick setup and files ↗</small></a>
+                    <a href="https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026/blob/main/day5_imaging_interferometry/eht_dip.py" target="_blank" rel="noreferrer"><span>Module</span><strong>DIP implementation</strong><small>Model and optimizer ↗</small></a>
+                    <a href="https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026/blob/main/day5_imaging_interferometry/IAA_school_EHTDIP.pdf" target="_blank" rel="noreferrer"><span>Slides</span><strong>Session notes</strong><small>Open the companion PDF ↗</small></a>
+                  </div>
+                </section>
+              </div>
+
+              <div class="friendly-callout"><span aria-hidden="true">◎</span><div><strong>A familiar-looking ring is not enough</strong><p>Always forward-model the reconstruction at the measured coordinates. Trust agreement in data space more than visual familiarity.</p></div></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="closing-section">
+        <div class="shell closing-card">
+          <div>
+            <p class="eyebrow">Ready when you are</p>
+            <h2>Bring curiosity. We’ll bring the cosmic datasets.</h2>
+          </div>
+          <p>
+            Start with the README for your day, run the smallest working example, and keep a note
+            of every choice you change. That is already excellent scientific practice.
+          </p>
+          <a class="button button-light" href="#session-tabs">Back to the sessions</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="shell">
+        <p>SO–IAA School on Advanced Neural Networks · 2026</p>
+        <a href="https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026" target="_blank" rel="noreferrer">Course repository ↗</a>
+      </div>
+    </footer>
+  </body>
+</html>
