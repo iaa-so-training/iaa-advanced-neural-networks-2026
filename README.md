@@ -4,6 +4,10 @@ Welcome to the hands-on repository for the **SO–IAA School on Advanced Neural
 Networks**. Across five teaching days, we will move from radio-galaxy images to
 cosmic-web graphs, gamma-ray events, stellar chemistry, and black-hole imaging.
 
+> **Conference website:** 
+> <https://www.granadacongresos.com/ai-ml>.
+
+
 > **Student guide:** the friendly, session-by-session website will be available at
 > <https://iaa-so-training.github.io/iaa-advanced-neural-networks-2026/>.
 
