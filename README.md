@@ -47,3 +47,9 @@ git lfs pull
 Most notebooks are designed for Google Colab. Day 3 uses a Conda environment,
 and Day 4 uses a tested Docker image by default. Each session README gives the
 exact setup and a lighter-weight route where one is available.
+
+![](docs/Combo_2025.png)
+
+The organisers acknowledge financial support from the State Agency for Research of the Spanish MCIU through the "Center of Excellence Severo Ochoa" award for the Instituto de Astrofísica de Andalucía (grant CEX2021-001131-S 10.13039/501100011033)​​
+
+​
