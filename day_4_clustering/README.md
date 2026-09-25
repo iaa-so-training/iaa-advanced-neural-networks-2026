@@ -60,7 +60,7 @@ git clone https://github.com/iaa-so-training/iaa-advanced-neural-networks-2026.g
 cd iaa-advanced-neural-networks-2026/day_4_clustering
 mkdir -p data results notebooks
 
-docker pull ghcr.io/iaa-so-training/day4-clustering:latest    # current release: day4-v9
+docker pull ghcr.io/iaa-so-training/day4-clustering:latest    # current release: day4-v10
 
 # the flags every command repeats, once per shell session
 export IMG=ghcr.io/iaa-so-training/day4-clustering:latest
@@ -77,8 +77,8 @@ container, on the pinned environment we tested. Data, results and notebooks stay
 on your machine in `./data`, `./results` and `./notebooks`; the image starts as
 root but drops to your own uid, so the files it writes belong to you.
 
-The guide was verified against the `day4-v9` release (manifest list digest
-`sha256:448cf80a…`); `docker pull …@sha256:448cf80a…` freezes that exact image if
+The guide was verified against the `day4-v10` release (manifest list digest
+`sha256:5cb41d9c…`); `docker pull …@sha256:5cb41d9c…` freezes that exact image if
 you want the environment recorded in `docs/reproducibility.md` to the byte, and
 `:latest` follows the newest workshop tag.
 
