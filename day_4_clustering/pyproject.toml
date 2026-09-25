@@ -21,7 +21,6 @@ dependencies = [
     "pydantic>=2.10",
     "pandera>=0.30",
     "mlflow>=3",
-    "marimo>=0.24",
     "opentsne>=1.0.4",
     "astroquery>=0.4.11",
     "plotly<6",
@@ -30,19 +29,9 @@ dependencies = [
     "requests>=2.34.2",
     "lxml>=6.1.2",
     "huggingface_hub>=0.34",
-]
-
-[project.optional-dependencies]
-# Only the spectral re-embedding / figure scripts need torch:
-#   uv sync --extra torch
-torch = ["torch>=2.6"]
-
-# The Jupyter front end — the A/B alternative to the marimo notebooks:
-#   uv run --extra jupyter jupyter lab --ip=0.0.0.0 --port=8888 --no-browser
-# Kept optional so `pip install cluster` and the lean image do not drag a
-# second notebook stack in; the published image builds with it while the
-# comparison runs (see Dockerfile WITH_JUPYTER).
-jupyter = [
+    # JupyterLab is the notebook front end: ipywidgets drives the controls,
+    # ipympl the matplotlib figures, and nbformat/nbclient/nbconvert execute and
+    # validate the notebooks headless (scripts + CI).
     "jupyterlab>=4.2",
     "ipykernel>=6.29",
     "ipywidgets>=8.1",
@@ -51,6 +40,11 @@ jupyter = [
     "nbclient>=0.10",
     "nbconvert>=7.16",
 ]
+
+[project.optional-dependencies]
+# Only the spectral re-embedding / figure scripts need torch:
+#   uv sync --extra torch
+torch = ["torch>=2.6"]
 
 # PyPI's default torch wheel for Linux bundles ~3 GB of CUDA libraries; the
 # workshop needs none of it. Pinning the extra to the CPU wheel index keeps the

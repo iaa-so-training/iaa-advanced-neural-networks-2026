@@ -27,9 +27,5 @@ mlruns/
 htmlcov/
 .pytest_cache/
 
-# marimo autosave session state
-__marimo__/
-notebooks/layouts/
-
 # Ralph loop state
 .ralph/

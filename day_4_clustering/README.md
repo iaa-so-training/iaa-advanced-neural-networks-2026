@@ -68,10 +68,8 @@ export DAY4="-v $PWD/data:/app/data -v $PWD/results:/app/results -v $PWD/noteboo
 
 docker run --rm -it $DAY4 $IMG uv run cluster download --all   # 1.17 GB catalogue + ~1.0 GB embeddings
 docker run --rm -it $DAY4 $IMG uv run cluster run --fast       # smoke test: ~2 min, no GPU
-docker run --rm -it -p 2718:2718 $DAY4 $IMG \
-  uv run marimo edit notebooks/chemical_tagging.py --host 0.0.0.0 --no-token   # http://localhost:2718
-docker run --rm -it -p 8888:8888 $DAY4 $IMG \
-  uv run --extra jupyter jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --IdentityProvider.token=""   # http://localhost:8888
+docker run --rm -it -p 8889:8889 $DAY4 $IMG \
+  uv run jupyter lab --ip=0.0.0.0 --port=8889 --no-browser --IdentityProvider.token=""   # http://localhost:8889
 ```
 
 That is the whole workflow: `uv run cluster <command>` executes *inside* the
@@ -230,43 +228,39 @@ score, and saves `results/benchmark_grid.png`.
 
 ## Notebooks
 
-Two front ends over the same pipeline — pick whichever suits you; the
-differences that matter are tabulated in `docs/docker.md`.
-
-**marimo** ([marimo.io](https://marimo.io)) — reactive Python, the default:
+The material ships as **JupyterLab notebooks** over the same library the CLI uses
+— same calls, same seeds, same numbers.
 
 ```bash
-uv run marimo edit notebooks/chemical_tagging.py   # edit
-uv run marimo run notebooks/chemical_tagging.py    # read-only app
+uv run jupyter lab                                   # on your own machine, from this folder
 
-docker run --rm -it -p 2718:2718 $DAY4 $IMG \
-  uv run marimo edit notebooks/chemical_tagging.py --host 0.0.0.0 --no-token   # http://localhost:2718
-```
-
-**JupyterLab** — the same material ported cell for cell (same library calls, same
-seeds, same numbers):
-
-```bash
-docker run --rm -it -p 8888:8888 $DAY4 $IMG \
-  uv run --extra jupyter jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --IdentityProvider.token=""   # http://localhost:8888
+docker run --rm -it -p 8889:8889 $DAY4 $IMG \       # inside the workshop container
+  uv run jupyter lab --ip=0.0.0.0 --port=8889 --no-browser --IdentityProvider.token=""   # http://localhost:8889
 # open notebooks/chemical_tagging.ipynb from the file browser (you start in /app)
 ```
 
-Four ship with the day — each notebook in both front ends:
+`8889`, not Jupyter's usual `8888`: on a machine that already serves something on
+8888 (glance, say) the default collides. To move it, change the left number —
+`-p 18889:8889` — and browse to that port.
 
-- `chemical_tagging.py` / `.ipynb` — the end-to-end demo. The abundance benchmark
-  in §2–§3, the **published spectral latent vs the abundances on the same stars**
-  in §0c (via `cluster head-to-head`), then the HR / isochrone / Gaia-age material.
-- `tuning_template.py` / `.ipynb` — the knob-turning lab for the student activities.
+Two ship with the day:
 
-`cluster download --all` fetches everything both notebooks read: the catalogue and
+- `chemical_tagging.ipynb` — the end-to-end demo. The abundance benchmark in
+  §2–§3, the **published spectral latent vs the abundances on the same stars** in
+  §0c (via `cluster head-to-head`), then the HR / isochrone / Gaia-age material.
+- `tuning_template.ipynb` — the knob-turning lab for the student activities.
+
+Run the cells top to bottom; a widget cell re-renders in place when you change a
+control, and repeated configurations come back from the notebook's own memo.
+
+`cluster download --all` fetches everything the notebooks read: the catalogue and
 the embeddings/checkpoints bundle.
 
 ## Development
 
 ```bash
 uv run pyrefly check            # strict type checking (currently reports errors — see below)
-uv run pytest                   # 230 tests (1 skipped without `--extra torch`); CI runs a subset without the data bundle
+uv run pytest                   # 229 tests (1 skipped without `--extra torch`); CI runs a subset without the data bundle
 uv run coverage run -m pytest && uv run coverage report   # 90% (branch coverage)
 uv run mlflow ui                # inspect experiment runs (mlruns/)
 ```
@@ -407,7 +401,7 @@ src/cluster/
   provenance.py  # DR17-vs-DR19 artifact check
   plots.py       # embedding scatter
   cli.py         # `cluster download` / `run` / `baseline` / `head-to-head` / …
-notebooks/       # notebooks in both front ends (.py = marimo, .ipynb = Jupyter)
+notebooks/       # the JupyterLab notebooks (chemical_tagging, tuning_template)
 hf/              # asset-bundle manifest, dataset card, publisher
 .github/         # (in the repo root) multi-arch docker image + test workflows
 ```

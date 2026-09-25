@@ -110,10 +110,10 @@ def test_plot_gaia_cmd() -> None:
     assert len(fig.data) == 2
 
 
-def test_isochrone_cell_under25_members_without_marimo(
+def test_isochrone_cell_under25_members_returns_note(
     monkeypatch: Any, allstar_frame: pd.DataFrame
 ) -> None:
-    """The Jupyter front end calls it without marimo and gets the note as text."""
+    """Too few members comes back as a plain-text note, not a figure."""
     import cluster.catalog as cat
     import cluster.isochrone as iso
     from cluster.config import Settings
@@ -127,35 +127,9 @@ def test_isochrone_cell_under25_members_without_marimo(
         }
 
     monkeypatch.setattr(cat, "membership_masks_for", _fake_masks)
-    note = iso.isochrone_cell(allstar_frame, "Pleiades", "combined", Settings(), mo=None)
+    note = iso.isochrone_cell(allstar_frame, "Pleiades", "combined", Settings())
     assert isinstance(note, str)
     assert "members" in note and not note.startswith("md:")
-
-
-def test_isochrone_cell_under25_members(monkeypatch: Any, allstar_frame: pd.DataFrame) -> None:
-    import types
-
-    import cluster.catalog as cat
-    import cluster.isochrone as iso
-    from cluster.config import Settings
-
-    n = len(allstar_frame)
-
-    def _fake_masks(df: pd.DataFrame, *args: Any, **kwargs: Any) -> dict[str, np.ndarray]:
-        n = len(df)
-        return {
-            "catalog": np.zeros(n, dtype=bool),
-            "kinematic": np.zeros(n, dtype=bool),
-            "combined": np.ones(n, dtype=bool),
-        }
-
-    def _fake_md(s: str) -> str:
-        return f"md:{s}"
-
-    fake_mo = types.SimpleNamespace(md=_fake_md)
-    monkeypatch.setattr(cat, "membership_masks_for", _fake_masks)
-    out = iso.isochrone_cell(allstar_frame, "Pleiades", "combined", Settings(), fake_mo)
-    assert str(out).startswith("md:")  # <25 members -> warning
 
 
 def test_fit_isochrone_gaia_mock(monkeypatch: Any) -> None:
@@ -300,11 +274,7 @@ def test_isochrone_cell_full_path(monkeypatch: Any) -> None:
     monkeypatch.setattr(iso, "fit_isochrone", _fake_fit)
     monkeypatch.setattr(iso, "plot_isochrone_fit", _fake_plot)
 
-    def _fake_md(s: str) -> str:
-        return f"md:{s}"
-
-    fake_mo = types.SimpleNamespace(md=_fake_md)
-    out = iso.isochrone_cell(df_hr, "M 67", "combined", Settings(), fake_mo)
+    out = iso.isochrone_cell(df_hr, "M 67", "combined", Settings())
     assert out == "fig"
 
 

@@ -305,8 +305,8 @@ def _hr_frame(n: int) -> pd.DataFrame:
 def test_hr_interactive_payload_is_bounded() -> None:
     """A 30-degree cone is ~25 000 stars; the figure must stay small.
 
-    marimo ships every trace to the browser, so the guard is on the serialised
-    figure (what the page carries), not on the point count alone.
+    The figure travels to the browser as JSON, so the guard is on the serialised
+    figure (what the notebook carries), not on the point count alone.
     """
     n = 30_000
     df = _hr_frame(n)
@@ -317,7 +317,7 @@ def test_hr_interactive_payload_is_bounded() -> None:
     }
     fig = hr_interactive(df, masks, "T", highlight="combined")
     assert len(fig.data) == 4
-    # fig.to_json() is the payload marimo hands to the browser
+    # fig.to_json() is the payload the notebook hands to the browser
     payload = len(fig.to_json())
     assert payload < 400_000, f"{payload:,} bytes of figure JSON"
     # every highlighted member is still drawn (both panels), with hover text

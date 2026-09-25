@@ -122,12 +122,12 @@ def main() -> None:
             lambda: umap_lib.UMAP(n_neighbors=15, random_state=None, n_jobs=-1).fit_transform(X),
         )
 
-    print("(run_benchmark as a whole, for reference — the notebook memoises this with mo.cache:)")
+    print("(run_benchmark as a whole, for reference — the notebook memoises this call:)")
     phase("run_benchmark(prepared) — the full §3 cell", lambda: run_benchmark(prepared, settings))
 
     print(
-        "\nStages at ~1 core are serial by construction: the cache and mo.cache exist\n"
-        "so that editing a plot does not pay for them again."
+        "\nStages at ~1 core are serial by construction: the on-disk cache and the\n"
+        "notebook's memo exist so that editing a plot does not pay for them again."
     )
 
 
