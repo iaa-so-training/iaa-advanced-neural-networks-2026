@@ -1,0 +1,127 @@
+[project]
+name = "cluster"
+version = "0.1.0"
+description = "Chemical tagging of star clusters: benchmark t-SNE vs UMAP vs EVoC"
+readme = "README.md"
+authors = [
+    { name = "R. Garcia-Dias", email = "rafaelagd@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "astropy>=6",
+    "numpy>=2",
+    "scipy>=1.11",
+    "pandas>=2",
+    "scikit-learn>=1.5",
+    "umap-learn>=0.5",
+    "hdbscan>=0.8",
+    "evoc>=0.1",
+    "matplotlib>=3.9",
+    "click>=8",
+    "pydantic>=2.10",
+    "pandera>=0.30",
+    "mlflow>=3",
+    "marimo>=0.24",
+    "opentsne>=1.0.4",
+    "astroquery>=0.4.11",
+    "plotly<6",
+    "asteca>=0.7.0",
+    "emcee>=3.1.6",
+    "requests>=2.34.2",
+    "lxml>=6.1.2",
+    "huggingface_hub>=0.34",
+]
+
+[project.optional-dependencies]
+# Only the spectral re-embedding / figure scripts need torch:
+#   uv sync --extra torch
+torch = ["torch>=2.6"]
+
+# The Jupyter front end — the A/B alternative to the marimo notebooks:
+#   uv run --extra jupyter jupyter lab --ip=0.0.0.0 --port=8888 --no-browser
+# Kept optional so `pip install cluster` and the lean image do not drag a
+# second notebook stack in; the published image builds with it while the
+# comparison runs (see Dockerfile WITH_JUPYTER).
+jupyter = [
+    "jupyterlab>=4.2",
+    "ipykernel>=6.29",
+    "ipywidgets>=8.1",
+    "ipympl>=0.9.4",
+    "nbformat>=5.10",
+    "nbclient>=0.10",
+    "nbconvert>=7.16",
+]
+
+# PyPI's default torch wheel for Linux bundles ~3 GB of CUDA libraries; the
+# workshop needs none of it. Pinning the extra to the CPU wheel index keeps the
+# install ~200 MB on Linux, macOS and Windows alike.
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+
+[project.scripts]
+cluster = "cluster.cli:main"
+
+[dependency-groups]
+dev = [
+    "pyrefly>=1.2",
+    "pytest>=9",
+    "pytest-cov>=6",
+    "coverage>=7",
+]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# --------------------------------------------------------------------------- #
+# Type checking (pyrefly)
+# --------------------------------------------------------------------------- #
+[tool.pyrefly]
+preset = "strict"
+python-version = "3.13"
+project-includes = ["src/**/*.py", "scripts/**/*.py", "tests/**/*.py"]
+project-excludes = [
+    "**/__pycache__",
+    ".venv/**",
+    "data/**",
+    "results/**",
+    "docs/**",
+    "ref/**",
+    "mlruns/**",
+    # WIP deck-generation assets (untyped by design)
+    "scripts/teaching_assets/**",
+    "scripts/make_teaching_assets.py",
+    # vendored third-party CMD downloader (untyped)
+    "src/cluster/_parsec.py",
+    # hand-run downloader for the upstream DR17 spectra (network + optional deps)
+    "scripts/parallel_download.py",
+]
+search-path = ["src"]
+
+# --------------------------------------------------------------------------- #
+# Tests + coverage
+# --------------------------------------------------------------------------- #
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.coverage.run]
+source = ["cluster"]
+branch = true
+omit = [
+    # vendored third-party CMD downloader
+    "**/_parsec.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 85

@@ -1,0 +1,35 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Data (large, downloaded)
+data/
+*.fits
+*.fits.gz
+
+# Results
+results/
+mlruns/
+
+# Notebooks outputs
+.ipynb_checkpoints/
+
+# Test / coverage artifacts
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+
+# marimo autosave session state
+__marimo__/
+notebooks/layouts/
+
+# Ralph loop state
+.ralph/

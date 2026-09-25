@@ -1,0 +1,39 @@
+name: day4 tests
+
+# The Day 4 package has 206 tests (5 need the optional torch extra, 2 the PARSEC
+# grid) that need no real data — synthetic fixtures only — so this is a cheap gate
+# on every change under day_4_clustering/. Cold JIT caches make a first run ~7 min.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "day_4_clustering/**"
+      - ".github/workflows/day4-tests.yml"
+  push:
+    branches: [main]
+    paths:
+      - "day_4_clustering/**"
+
+jobs:
+  pytest:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: day_4_clustering
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: install
+        run: uv sync --frozen
+
+      - name: tests
+        run: uv run pytest -q
+
+      - name: type check (informational — strict mode is not clean yet)
+        continue-on-error: true
+        run: uv run pyrefly check
