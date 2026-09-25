@@ -1005,18 +1005,61 @@ pre {
 }
 
 .site-footer {
-  padding-block: 26px 34px;
+  padding-block: 12px 34px;
   color: var(--muted);
-  font-size: 0.76rem;
 }
 
 .site-footer .shell {
+  display: grid;
+  gap: 20px;
+}
+
+.funding-acknowledgement {
+  padding: clamp(28px, 5vw, 52px);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: var(--surface-strong);
+  box-shadow: var(--shadow-soft);
+}
+
+.funding-copy {
+  max-width: 900px;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.funding-label {
+  margin-bottom: 10px;
+  color: var(--indigo);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.funding-statement {
+  margin-bottom: 0;
+  color: var(--ink);
+  font-size: clamp(0.9rem, 1.35vw, 1rem);
+  line-height: 1.7;
+}
+
+.funding-logos {
+  width: min(100%, 1040px);
+  height: auto;
+  margin: clamp(18px, 3vw, 30px) auto 0;
+}
+
+.footer-meta {
   display: flex;
   justify-content: space-between;
   gap: 24px;
+  padding-inline: 4px;
+  font-size: 0.76rem;
 }
 
-.site-footer p {
+.footer-meta p {
   margin-bottom: 0;
 }
 
@@ -1230,7 +1273,15 @@ pre {
     margin: -8px 0 14px;
   }
 
-  .site-footer .shell {
+  .footer-meta {
     display: grid;
+    justify-content: stretch;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .funding-acknowledgement {
+    padding: 26px 18px;
+    border-radius: 25px;
   }
 }
