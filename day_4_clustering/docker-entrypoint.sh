@@ -34,9 +34,8 @@ if [ "$(id -u)" = "0" ] && [ "${DAY4_KEEP_ROOT:-0}" != "1" ]; then
     if [ -n "$target_uid" ]; then
         HOME=/tmp/day4-home
         MPLCONFIGDIR=/tmp/day4-mpl
-        MARIMO_HOME=/tmp/day4-marimo
         UV_CACHE_DIR=/tmp/day4-uv
-        export HOME MPLCONFIGDIR MARIMO_HOME UV_CACHE_DIR
+        export HOME MPLCONFIGDIR UV_CACHE_DIR
         exec setpriv --reuid "$target_uid" --regid "$target_gid" --clear-groups "$@"
     fi
 fi

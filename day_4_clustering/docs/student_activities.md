@@ -77,10 +77,9 @@ docker run --rm -it $DAY4 $IMG uv run cluster run --cluster "M 67" --region-scal
 Or use the tuning notebook — same loop, with widgets:
 
 ```bash
-docker run --rm -it -p 2718:2718 $DAY4 $IMG uv run marimo edit notebooks/tuning_template.py --host 0.0.0.0 --no-token
-# or the JupyterLab version of the same lab → http://localhost:8888
-docker run --rm -it -p 8888:8888 $DAY4 $IMG \
-  uv run --extra jupyter jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --IdentityProvider.token=""
+docker run --rm -it -p 8889:8889 $DAY4 $IMG \
+  uv run jupyter lab --ip=0.0.0.0 --port=8889 --no-browser --IdentityProvider.token=""
+# open notebooks/tuning_template.ipynb → http://localhost:8889
 ```
 
 Open `docs/region_sweep_results.md` and find your cluster's row. Your numbers
@@ -145,7 +144,7 @@ docker run --rm -it $DAY4 $IMG uv run cluster head-to-head \
     --arm "masked AE 256-d=data/embeddings/masked_latent.parquet"
 ```
 
-§0c of `notebooks/chemical_tagging.py` runs that comparison interactively and
+§0c of `notebooks/chemical_tagging.ipynb` runs that comparison interactively and
 explains why the shared-population rule matters.
 
 ### Track B — Isochrone + red-clump distance

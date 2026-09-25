@@ -15,7 +15,7 @@
 #   ./run.sh download --all          # catalogue + embeddings (~2.2 GB, once)
 #   ./run.sh run --fast              # the ~2 min warm-up run
 #   ./run.sh run --spectral          # the same clustering on spectral embeddings
-#   ./run.sh marimo                  # the notebook, http://localhost:2718
+#   ./run.sh lab                     # JupyterLab, http://localhost:8889
 #   ./run.sh python scripts/red_clump.py --clusters "NGC 6819"
 #   ./run.sh shell                   # a shell inside the image
 # ---------------------------------------------------------------------------
@@ -79,17 +79,12 @@ case "${1:-}" in
     shift
     exec docker run "${COMMON_ARGS[@]}" ${TTY_ARGS[@]+"${TTY_ARGS[@]}"} "$TAG" bash "$@"
     ;;
-  marimo|notebook)
+  lab|jupyter|notebook)
     ensure_image
     shift
-    NOTEBOOK="chemical_tagging.py"
-    if [ $# -gt 0 ] && [ "${1#-}" = "$1" ]; then   # a path, not a flag
-      NOTEBOOK="$(basename "$1")"
-      shift
-    fi
-    echo "▸ Notebook starting — open http://localhost:2718 (no password). Ctrl-C to stop."
-    exec docker run "${COMMON_ARGS[@]}" ${TTY_ARGS[@]+"${TTY_ARGS[@]}"} -p 2718:2718 "$TAG" \
-      uv run marimo edit "notebooks/$NOTEBOOK" --host 0.0.0.0 --no-token "$@"
+    echo "▸ JupyterLab starting — open http://localhost:8889 (no password). Ctrl-C to stop."
+    exec docker run "${COMMON_ARGS[@]}" ${TTY_ARGS[@]+"${TTY_ARGS[@]}"} -p 8889:8889 "$TAG" \
+      uv run jupyter lab --ip=0.0.0.0 --port=8889 --no-browser --IdentityProvider.token="" notebooks "$@"
     ;;
   python|python3|pytest)
     ensure_image

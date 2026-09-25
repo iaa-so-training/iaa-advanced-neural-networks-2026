@@ -1,8 +1,9 @@
 name: day4 tests
 
-# The Day 4 package has 206 tests (5 need the optional torch extra, 2 the PARSEC
-# grid) that need no real data — synthetic fixtures only — so this is a cheap gate
-# on every change under day_4_clustering/. Cold JIT caches make a first run ~7 min.
+# The Day 4 package has 229 tests; this workflow runs the ones that need no real
+# data — synthetic fixtures only — so it is a cheap gate on every change under
+# day_4_clustering/. (The optional torch extra and the PARSEC grid are skipped
+# here.) Cold JIT caches make a first run ~7 min.
 
 on:
   workflow_dispatch:

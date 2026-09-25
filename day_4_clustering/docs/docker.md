@@ -22,9 +22,9 @@ docker run --rm -it $DAY4 $IMG uv run cluster run --cluster "M 67" --region-scal
 docker run --rm -it $DAY4 $IMG uv run python scripts/red_clump.py --clusters "NGC 6819"
 docker run --rm -it $DAY4 $IMG bash                                   # a shell inside the image
 
-# the notebook → http://localhost:2718
-docker run --rm -it -p 2718:2718 $DAY4 $IMG \
-  uv run marimo edit notebooks/chemical_tagging.py --host 0.0.0.0 --no-token
+# the notebook → http://localhost:8889
+docker run --rm -it -p 8889:8889 $DAY4 $IMG \
+  uv run jupyter lab --ip=0.0.0.0 --port=8889 --no-browser --IdentityProvider.token=""
 ```
 
 Windows (PowerShell) — same commands, array splatting instead of `$DAY4`:
@@ -45,52 +45,40 @@ The embedding/checkpoint bundle is public on the Hub —
 `download --assets` commands above fetch the same files into `./data` and verify
 them against the sha256 recorded in the dataset's `MANIFEST.json`.
 
-## The notebooks: marimo (default) and Jupyter
+## The notebooks
 
-The material ships in **two front ends that call the same library with the same
-seeds**, so you can compare them on your own laptop:
+`notebooks/chemical_tagging.ipynb` (the end-to-end demo) and
+`notebooks/tuning_template.ipynb` (the knob-turning lab) are JupyterLab notebooks
+over the same library the CLI uses — same calls, same seeds, same numbers.
 
-| notebook | front end | open it with |
-| --- | --- | --- |
-| `notebooks/chemical_tagging.py` | **marimo** (reactive; the default) | `docker run --rm -it -p 2718:2718 $DAY4 $IMG uv run marimo edit notebooks/chemical_tagging.py --host 0.0.0.0 --no-token` → http://localhost:2718 |
-| `notebooks/chemical_tagging.ipynb` | **JupyterLab** | `docker run --rm -it -p 8888:8888 $DAY4 $IMG uv run --extra jupyter jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --IdentityProvider.token=""` → http://localhost:8888 |
+```bash
+docker run --rm -it -p 8889:8889 $DAY4 $IMG \
+  uv run jupyter lab --ip=0.0.0.0 --port=8889 --no-browser --IdentityProvider.token=""
+```
 
-The tuning lab is the same pair (`tuning_template.py` / `tuning_template.ipynb`).
-In JupyterLab, open the `.ipynb` from the file browser (you start in `/app`, the
-notebooks are under `notebooks/`).
+`8889`, not Jupyter's default `8888`: on the workshop laptop `8888` is glance, and
+the collision is silent — Jupyter starts, and the browser shows the other service.
+To move it, change the left-hand number (`-p 18889:8889`) and browse to that port.
+Open the notebook from the file browser; you start in `/app`, the notebooks are
+under `notebooks/`.
 
-What actually differs:
+Cells run top to bottom. Each widget cell re-runs a single render callback in
+place when a control changes, and the notebooks memoise their expensive calls on
+top of the on-disk prepared-sample cache, so re-picking a configuration you tried
+before is instant while a genuinely new one is a real computation.
 
-| | marimo | Jupyter |
-| --- | --- | --- |
-| execution | dependency graph: touching a widget re-runs that cell and everything that depends on it | you run cells; the widget cells re-run one render callback in place |
-| memoisation | `mo.cache` per argument set | no built-in cell cache — the .ipynb memoises its expensive calls itself (and still uses the on-disk prepared-sample cache) |
-| outputs | all cells shipped with the single-page app | outputs live in the notebook document; JupyterLab renders the ones you scroll to |
-| extra | default image | `uv run --extra jupyter …` (the published image carries the extra) |
+Measured on the workshop laptop (16 cores, warm data cache): the main notebook
+executes end to end in **3 min 6 s** and the tuning lab in **2 min 51 s**, over
+**1.48 MB of cell outputs** — heaviest figure 391 kB (the file with its widget
+state is 2.13 MB). The figures are capped exactly as the CLI's are
+(`CLUSTER_PLOT_MAX_POINTS`; every member is always drawn — see *A sluggish
+notebook is usually the page, not the CPU* below).
 
-Both front ends cap the interactive figures identically — same
-`CLUSTER_PLOT_MAX_POINTS`, same "every member is always drawn" rule (see
-*A sluggish notebook is usually the page, not the CPU* below) — so the figures
-themselves are not a variable in the comparison.
-
-Measured on the workshop laptop (16 cores, warm data cache, both front ends
-running the same cells end to end):
-
-| | marimo | Jupyter |
-| --- | --- | --- |
-| full run, headless | `marimo export html`: **3 min 10 s** | executed `.ipynb`: **3 min 6 s** (main), **2 min 51 s** (tuning) |
-| what the browser gets | 1.71 MB single page, heaviest figure 376 kB | 1.48 MB of cell outputs, heaviest figure 391 kB (2.13 MB file on disk) |
-| interactivity | widget change re-runs the cell and its dependents through the dependency graph | widget change re-runs one render callback in place |
-| run order | the graph heals a cell run out of order | cells must be run top to bottom, as usual |
-
-Two Jupyter-specific notes: a *saved* notebook (one someone else executed, like
-the copy in `results/`) shows the widgets as their plain-text repr until you
-trust it (`File → Trust Notebook`; live output has no such gate), and `nbconvert`
-only persists widget state when it drives the whole notebook — a hand-rolled
+Two notes. A *saved* notebook (one someone else executed, like the copy in
+`results/`) shows the widgets as their plain-text repr until you trust it
+(`File → Trust Notebook`; live output has no such gate). And `nbconvert` only
+persists widget state when it drives the whole notebook — a hand-rolled
 cell-by-cell driver has to call `client.set_widgets_metadata()`.
-
-Prefer a lean image without the Jupyter stack? Build with
-`--build-arg WITH_JUPYTER=` (measured: 1.75 GB → 1.61 GB without it).
 
 ## Why `uv run` inside the container
 
@@ -107,7 +95,7 @@ are all the same interpreter.
 |---|---|---|
 | `./data` | `/app/data` | the 1.17 GB SDSS catalogue, the ~1 GB embeddings/checkpoints bundle |
 | `./results` | `/app/results` | the score tables, `benchmark_grid.png`, the prepared-sample cache (`cache/prepared/`), and `mlruns/` — the image sets `MLFLOW_TRACKING_URI=file:///app/results/mlruns`, so container runs keep their MLflow record here (a *native* run writes to `./mlruns` instead) |
-| `./notebooks` | `/app/notebooks` | the marimo notebooks, so your edits are saved in your checkout |
+| `./notebooks` | `/app/notebooks` | the notebooks, so your edits are saved in your checkout |
 
 The image starts as root, then the entrypoint **drops to the uid that owns
 `./data`**, so every file it writes belongs to you and needs no `sudo` to delete.
@@ -175,9 +163,9 @@ The two levers that keep iteration cheap, both on by default:
   (`tests/test_data_cache.py`). `cluster doctor` reports the cache;
   `cluster run --no-cache` (or `CLUSTER_NO_CACHE=1`) forces a real read;
   `CLUSTER_CACHE_DIR=<dir>` moves it.
-- the **notebooks memoise their expensive calls with `mo.cache`**, so re-running
-  a cell whose arguments have not changed returns instantly instead of
-  recomputing minutes.
+- the **notebooks memoise their expensive calls** on the full configuration, so
+  re-running a cell whose arguments have not changed returns instantly instead
+  of recomputing minutes.
 
 Deliberately *not* cached: the benchmark itself. A new configuration means a
 real computation — say so in your report, and remember that scores move ~±0.02
@@ -186,13 +174,13 @@ the same sample) when you are exploring rather than quoting.
 
 ### A sluggish notebook is usually the page, not the CPU
 
-Slow *interaction* is a different layer: marimo ships every trace — and every
-hover string — to the browser, so a figure with 25 000 stars that each carry
-hover text is megabytes of JSON. Measured on the shipped notebook (30° cone
-around M 67): three cells carried 6.2 MB of the 7.1 MB page, and the mouse
-stopped responding long before the machine was busy. With the cap in place the
-same notebook exports to **1.71 MB** (from 7.11 MB) — those three figures fall
-from 2.51, 2.46 and 1.25 MB to 0.38, 0.36 and 0.13 MB, with every member still
+Slow *interaction* is a different layer: a figure ships every trace — and every
+hover string — to the browser, so 25 000 stars that each carry hover text are
+megabytes of JSON. Measured on the shipped notebook (30° cone around M 67):
+three figures carried **6.2 MB** and the mouse stopped responding long before the
+machine was busy. With the cap in place those three fall from 2.51, 2.46 and
+1.25 MB to **0.38, 0.36 and 0.13 MB**, the whole executed notebook is **1.48 MB**
+of cell outputs, and no figure exceeds **391 kB** — with every member still
 plotted. The plots cap the grey field at `CLUSTER_PLOT_MAX_POINTS` (default
 **3000**) points per panel:
 
@@ -209,10 +197,9 @@ for the full crowd.
 ## What's inside / not inside
 
 - **In**: the code (`src/`, `scripts/`, `notebooks/`, `hf/`), all runtime deps
-  (astropy, scikit-learn, umap-learn, hdbscan, EVoC, marimo, asteca, emcee,
-  astroquery, huggingface_hub…), pinned by `uv.lock`. The Jupyter stack
-  (`--extra jupyter`: jupyterlab, ipykernel, ipywidgets, ipympl) is in the
-  published image too, so one pull serves both front ends.
+  (astropy, scikit-learn, umap-learn, hdbscan, EVoC, asteca, emcee, astroquery,
+  huggingface_hub, and the notebook stack: jupyterlab, ipykernel, ipywidgets,
+  ipympl), pinned by `uv.lock` — one pull serves the CLI and the notebooks.
 - **Not in** (keeps it small): the 1.17 GB catalogue, the ~1 GB embedding
   bundle, docs, tests, dev tooling, and the optional `torch` extra for the
   re-embedding extension — add that with
@@ -284,12 +271,13 @@ f(100); print('layer:', numba.threading_layer())"   # want: omp (or tbb), never 
   entrypoint derives your uid from that folder's owner. Fix once with
   `sudo chown -R "$USER" data results`, or run as root deliberately with
   `docker run -e DAY4_KEEP_ROOT=1 …`.
-- **marimo doesn't open** — the `--host 0.0.0.0 --no-token` flags are
-  required inside the container, and remember `-p 2718:2718`; browse to
-  `http://localhost:2718`.
+- **JupyterLab doesn't open, or shows something else** — inside the container it
+  needs `--ip=0.0.0.0` and an empty token (`--IdentityProvider.token=""`), and the
+  port must be published: `-p 8889:8889`. If 8889 is taken on your machine, change
+  the left number only (`-p 18889:8889`) and browse to `http://localhost:18889`.
 - **`./run.sh` says "permission denied"** — `chmod +x run.sh` (git preserves the
   bit, but zip downloads may not), or run `bash run.sh …`. You can always fall
   back to the plain `docker run` commands above.
-- **Out of disk** — the image (~1.6 GB) + the catalogue (1.17 GB) + the asset
+- **Out of disk** — the image (~1.6 GB, measured on `day4-v10`) + the catalogue (1.17 GB) + the asset
   bundle (1.0 GB) ≈ 3.9 GB, plus what Docker itself keeps. Delete `data/` to
   reclaim the downloads; `results/` holds only figures and MLflow runs.

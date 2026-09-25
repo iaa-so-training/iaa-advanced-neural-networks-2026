@@ -14,7 +14,7 @@
 #
 #   .\run.ps1 download --all         # catalogue + embeddings (~2.2 GB, once)
 #   .\run.ps1 run --fast             # the ~2 min warm-up run
-#   .\run.ps1 marimo                 # the notebook, http://localhost:2718
+#   .\run.ps1 lab                    # JupyterLab, http://localhost:8889
 #   .\run.ps1 python scripts/red_clump.py --clusters "NGC 6819"
 #   .\run.ps1 shell                  # a shell inside the image
 # ---------------------------------------------------------------------------
@@ -77,16 +77,10 @@ switch ($Command) {
         docker run @Common -t $Tag bash @($Rest | Select-Object -Skip 1)
         exit $LASTEXITCODE
     }
-    { $_ -in "marimo", "notebook" } {
+    { $_ -in "lab", "jupyter", "notebook" } {
         Ensure-Image
-        $Notebook = "chemical_tagging.py"
-        $RestArgs = @($Rest | Select-Object -Skip 1)
-        if ($RestArgs.Count -gt 0 -and -not $RestArgs[0].StartsWith("-")) {
-            $Notebook = Split-Path -Leaf $RestArgs[0]
-            $RestArgs = @($RestArgs | Select-Object -Skip 1)
-        }
-        Write-Host "Notebook starting - open http://localhost:2718 (no password). Ctrl-C to stop."
-        docker run @Common -t -p 2718:2718 $Tag uv run marimo edit "notebooks/$Notebook" --host 0.0.0.0 --no-token @RestArgs
+        Write-Host "JupyterLab starting - open http://localhost:8889 (no password). Ctrl-C to stop."
+        docker run @Common -t -p 8889:8889 $Tag uv run jupyter lab --ip=0.0.0.0 --port=8889 --no-browser "--IdentityProvider.token=" notebooks @($Rest | Select-Object -Skip 1)
         exit $LASTEXITCODE
     }
     { $_ -in "python", "python3", "pytest" } {
