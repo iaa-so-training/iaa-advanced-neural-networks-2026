@@ -81,6 +81,14 @@
             >
               Open the course README
             </a>
+            <a
+              class="button button-quiet"
+              href="resources/software-installation-guide.pdf"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Software installation guide
+            </a>
           </div>
         </div>
 
@@ -122,7 +130,7 @@
                 data-session="day1"
               >
                 <span class="tab-number">01</span>
-                <span><strong>Radio skies</strong><small>Images</small></span>
+                <span><strong>Radio skies</strong><small>Images</small><span class="tab-tutor">Dr. Andrea DeMarco</span></span>
               </button>
               <button
                 class="session-tab"
@@ -135,7 +143,7 @@
                 data-session="day2"
               >
                 <span class="tab-number">02</span>
-                <span><strong>Cosmic webs</strong><small>Graphs</small></span>
+                <span><strong>Cosmic webs</strong><small>Graphs</small><span class="tab-tutor">Dr. Farida Farsian</span></span>
               </button>
               <button
                 class="session-tab"
@@ -148,7 +156,7 @@
                 data-session="day3"
               >
                 <span class="tab-number">03</span>
-                <span><strong>Gamma rays</strong><small>CNNs</small></span>
+                <span><strong>Gamma rays</strong><small>CNNs</small><span class="tab-tutor">Dr. Tjark Miener</span></span>
               </button>
               <button
                 class="session-tab"
@@ -161,7 +169,7 @@
                 data-session="day4"
               >
                 <span class="tab-number">04</span>
-                <span><strong>Star clusters</strong><small>Clustering</small></span>
+                <span><strong>Star clusters</strong><small>Clustering</small><span class="tab-tutor">Dr. Rafael Garcia-Dias</span></span>
               </button>
               <button
                 class="session-tab"
@@ -174,7 +182,7 @@
                 data-session="day5"
               >
                 <span class="tab-number">05</span>
-                <span><strong>M87*</strong><small>Imaging</small></span>
+                <span><strong>M87*</strong><small>Imaging</small><span class="tab-tutor">Dr. Joel Sánchez Bermúdez</span></span>
               </button>
             </div>
           </div>
@@ -191,6 +199,11 @@
               <header class="panel-hero">
                 <div>
                   <p class="panel-kicker">Day 1 · Radio survey pipelines</p>
+                  <p class="session-tutor">
+                    <span>Tutor</span>
+                    <strong>Dr. Andrea DeMarco</strong>
+                    <small>Institute of Space Sciences and Astronomy (ISSA), University of Malta, Malta</small>
+                  </p>
                   <h3>From raw LoTSS images to trustworthy model evidence</h3>
                   <p>
                     Learn why the choices made before training—scaling, splitting, augmentation,
@@ -285,6 +298,11 @@ git lfs pull</code></pre>
               <header class="panel-hero">
                 <div>
                   <p class="panel-kicker">Day 2 · Graph neural networks for cosmology</p>
+                  <p class="session-tutor">
+                    <span>Tutor</span>
+                    <strong>Dr. Farida Farsian</strong>
+                    <small>Italian National Institute for Astrophysics (INAF), Osservatorio Astrofisico di Catania (OACT), Italy</small>
+                  </p>
                   <h3>Turn the cosmic web into something a network can read</h3>
                   <p>
                     Build graphs from dark-matter halos, use their connections to identify
@@ -361,6 +379,11 @@ git lfs pull</code></pre>
               <header class="panel-hero panel-hero-with-image">
                 <div>
                   <p class="panel-kicker">Day 3 · Gamma-ray event reconstruction</p>
+                  <p class="session-tutor">
+                    <span>Tutor</span>
+                    <strong>Dr. Tjark Miener</strong>
+                    <small>University of Geneva, Switzerland / IAA-CSIC, Granada, Spain</small>
+                  </p>
                   <h3>Follow an atmospheric shower from camera pixels to predictions</h3>
                   <p>
                     Explore Cherenkov-telescope data, train CTLearn models for three reconstruction
@@ -444,6 +467,11 @@ mamba create -n vitables -c conda-forge python==3.12 vitables</code></pre>
               <header class="panel-hero">
                 <div>
                   <p class="panel-kicker">Day 4 · Clustering and chemical tagging</p>
+                  <p class="session-tutor">
+                    <span>Tutor</span>
+                    <strong>Dr. Rafael Garcia-Dias</strong>
+                    <small>King’s College London, United Kingdom</small>
+                  </p>
                   <h3>Find stellar families in a crowded chemical space</h3>
                   <p>
                     Compare t-SNE, UMAP, and EVoC on APOGEE abundances, score them against
@@ -529,6 +557,11 @@ docker run --rm -it $DAY4 $IMG uv run cluster run --fast</code></pre>
               <header class="panel-hero">
                 <div>
                   <p class="panel-kicker">Day 5 · Imaging interferometry</p>
+                  <p class="session-tutor">
+                    <span>Tutor</span>
+                    <strong>Dr. Joel Sánchez Bermúdez</strong>
+                    <small>Instituto de Astronomía (IA-UNAM), Mexico</small>
+                  </p>
                   <h3>Reconstruct M87* with a deep image prior</h3>
                   <p>
                     Turn sparse Event Horizon Telescope observables into an image, then ask the
