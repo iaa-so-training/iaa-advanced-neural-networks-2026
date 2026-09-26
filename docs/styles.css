@@ -490,6 +490,10 @@ a:focus-visible {
   opacity: 0.74;
 }
 
+.session-tab > span:last-child {
+  min-width: 0;
+}
+
 .session-tab strong,
 .session-tab small {
   display: block;
@@ -506,6 +510,18 @@ a:focus-visible {
   margin-top: 1px;
   font-size: 0.66rem;
   opacity: 0.7;
+}
+
+.session-tab .tab-tutor {
+  display: block;
+  margin-top: 4px;
+  overflow: visible;
+  font-size: 0.58rem;
+  font-weight: 800;
+  line-height: 1.2;
+  opacity: 0.88;
+  text-overflow: clip;
+  white-space: normal;
 }
 
 .js .session-panel:not(.is-active) {
@@ -591,6 +607,38 @@ a:focus-visible {
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.session-tutor {
+  display: grid;
+  gap: 2px;
+  margin: 0 0 18px;
+  padding-left: 12px;
+  border-left: 3px solid var(--accent);
+  line-height: 1.35;
+}
+
+.session-tutor > span {
+  color: color-mix(in srgb, var(--accent) 55%, white);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.session-tutor strong,
+.session-tutor small {
+  display: block;
+}
+
+.session-tutor strong {
+  color: white;
+  font-size: 0.9rem;
+}
+
+.session-tutor small {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.75rem;
 }
 
 .session-meta {

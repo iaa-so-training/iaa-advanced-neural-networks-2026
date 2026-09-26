@@ -13,13 +13,20 @@ cosmic-web graphs, gamma-ray events, stellar chemistry, and black-hole imaging.
 
 ## Sessions at a glance
 
-| Day | Theme | What you will build or investigate | Start here |
-|---|---|---|---|
-| 1 | Radio survey pipelines | A defensible LoTSS image pipeline and a transfer-learning experiment | [`day1_radio_surveys/README.md`](day1_radio_surveys/README.md) |
-| 2 | GNNs for cosmology | Node classification and graph-level Ω_m regression on halo catalogues | [`day2_GNN_LSS/README.md`](day2_GNN_LSS/README.md) |
-| 3 | Gamma-ray astronomy | CTLearn training and inference for Cherenkov-telescope events | [`day3_ctlearn_gammaray/README.rst`](day3_ctlearn_gammaray/README.rst) |
-| 4 | Clustering and chemical tagging | t-SNE, UMAP, and EVoC benchmarks on stellar abundances | [`day_4_clustering/README.md`](day_4_clustering/README.md) |
-| 5 | Imaging interferometry | A deep-image-prior reconstruction of M87* | [`day5_imaging_interferometry/README.md`](day5_imaging_interferometry/README.md) |
+| Day | Theme | Tutor | What you will build or investigate | Start here |
+|---|---|---|---|---|
+| Monday (Day 1) | Radio survey pipelines | **Dr. Andrea DeMarco**<br>Institute of Space Sciences and Astronomy (ISSA), University of Malta, Malta | A defensible LoTSS image pipeline and a transfer-learning experiment | [`day1_radio_surveys/README.md`](day1_radio_surveys/README.md) |
+| Tuesday (Day 2) | GNNs for cosmology | **Dr. Farida Farsian**<br>Italian National Institute for Astrophysics (INAF), Osservatorio Astrofisico di Catania (OACT), Italy | Node classification and graph-level Ω_m regression on halo catalogues | [`day2_GNN_LSS/README.md`](day2_GNN_LSS/README.md) |
+| Wednesday (Day 3) | Gamma-ray astronomy | **Dr. Tjark Miener**<br>University of Geneva, Switzerland / IAA-CSIC, Granada, Spain | CTLearn training and inference for Cherenkov-telescope events | [`day3_ctlearn_gammaray/README.rst`](day3_ctlearn_gammaray/README.rst) |
+| Thursday (Day 4) | Clustering and chemical tagging | **Dr. Rafael Garcia-Dias**<br>King’s College London, United Kingdom | t-SNE, UMAP, and EVoC benchmarks on stellar abundances | [`day_4_clustering/README.md`](day_4_clustering/README.md) |
+| Friday (Day 5) | Imaging interferometry | **Dr. Joel Sánchez Bermúdez**<br>Instituto de Astronomía (IA-UNAM), Mexico | A deep-image-prior reconstruction of M87* | [`day5_imaging_interferometry/README.md`](day5_imaging_interferometry/README.md) |
+
+## Before you arrive: software setup
+
+Complete the **[Software Installation Guide](docs/resources/software-installation-guide.pdf)**
+on the computer you will bring to the school. It covers Google Colab, Docker,
+Git, Git LFS, Miniforge, CTLearn, and ViTables, with checks to confirm that each
+tool is working before the first session.
 
 ## Download the repository
 
