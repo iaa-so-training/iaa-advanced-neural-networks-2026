@@ -328,13 +328,11 @@ def isochrone_cell(
     cluster_name: str,
     method: str,
     settings: Any,
-    mo: Any = None,
 ) -> Any:
     """Full isochrone fit + plot for the notebook (region cut + masks + emcee).
 
-    ``mo`` is the marimo module when called from the marimo notebook; both front
-    ends get the same figure, and the "too few members" note comes back as plain
-    text when there is no marimo to render it (the Jupyter notebook).
+    Returns the figure, or the "too few members" note as plain text when the
+    selection is too small to fit.
     """
     from .catalog import membership_masks_for
     from .clusters import CLUSTER_BY_NAME
@@ -353,7 +351,7 @@ def isochrone_cell(
     members = df[masks[method]]
     if len(members) < 25:
         note = f"⚠ only {len(members)} members in '{method}' — need ≥ 25 for a fit"
-        return mo.md(note) if mo is not None else note
+        return note
     fit = fit_isochrone(
         members,
         seed=settings.isofit_seed,

@@ -40,11 +40,7 @@ COPY hf ./hf
 # optional torch extra (CPU wheels, ~200 MB) for the re-embedding extension —
 # it is left out by default so the pull 30 students do stays ~1.5 GB.
 ARG WITH_TORCH=""
-# Jupyter is on by default while the marimo-vs-jupyter comparison runs, so the
-# published image can serve both front ends from one pull; build with
-# `--build-arg WITH_JUPYTER=` for the lean marimo-only image.
-ARG WITH_JUPYTER="1"
-RUN uv sync --frozen --no-dev ${WITH_TORCH:+--extra torch} ${WITH_JUPYTER:+--extra jupyter} --no-cache
+RUN uv sync --frozen --no-dev ${WITH_TORCH:+--extra torch} --no-cache
 
 # --- runtime: the slim image students pull ---------------------------------
 FROM python:3.13.15-slim
@@ -93,9 +89,9 @@ COPY --from=builder /app /app
 COPY --from=builder /bin/uv /bin/uvx /bin/
 
 # Scratch dirs, all writable by whatever uid the entrypoint drops to: HOME and
-# the caches matplotlib/numba/uv/marimo want, plus the mount points so the
+# the caches matplotlib/numba/jupyter/uv want, plus the mount points so the
 # documented `docker run -v "$PWD/data:/app/data" …` works without `-w` flags.
-RUN install -d -m 777 /tmp/day4-home /tmp/day4-mpl /tmp/day4-marimo /tmp/day4-uv \
+RUN install -d -m 777 /tmp/day4-home /tmp/day4-mpl /tmp/day4-uv \
         /app/data /app/results
 
 # Runs the command as the owner of the mounted folders, so the files you get on

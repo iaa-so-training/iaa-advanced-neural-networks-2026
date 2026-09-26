@@ -26,7 +26,7 @@ from .seeding import thread_report
 #: Distribution names as installed, which is what importlib.metadata wants.
 _DISTRIBUTIONS = (
     "numpy", "pandas", "scikit-learn", "umap-learn", "hdbscan", "evoc",
-    "numba", "marimo", "torch", "opentsne",
+    "numba", "jupyterlab", "torch", "opentsne",
 )
 
 
