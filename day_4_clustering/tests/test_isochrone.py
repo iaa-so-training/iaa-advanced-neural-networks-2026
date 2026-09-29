@@ -228,7 +228,6 @@ def test_download_grid_mock(monkeypatch: Any, tmp_path: Any) -> None:
 
 
 def test_isochrone_cell_full_path(monkeypatch: Any) -> None:
-    import types
 
     import cluster.catalog as cat
     import cluster.data as data_mod

@@ -117,7 +117,6 @@ def solve(
     index, table, _ = search_for_inversion(n_datasets)
     X, labels = construction(index if index is not None else 0)
 
-    n_neighbors = int(settings().umap["n_neighbors"])
     neighbours = NearestNeighbors(n_neighbors=2).fit(X[:50])
     distances, _ = neighbours.kneighbors(X[:50])
     gap = float(distances[:, 1].max())

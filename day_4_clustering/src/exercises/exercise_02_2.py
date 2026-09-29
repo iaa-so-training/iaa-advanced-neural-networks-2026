@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 
 from exercises.citations import cite, reference_list
-from exercises.utils import DataNotAvailable, settings
+from exercises.utils import settings
 
 #: The floor the exercise asks for: every one of the 16 elements finite.
 STRICT_FLOOR = 16

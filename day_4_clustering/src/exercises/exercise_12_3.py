@@ -89,7 +89,7 @@ def solve(seeds: tuple[int, ...] = SEEDS_USED) -> dict[str, object]:
     from exercises.utils import member_field
 
     data = member_field()
-    X, labels, is_member = data.X, data.labels, data.is_member
+    X, is_member = data.X, data.is_member
     cfg = settings()
 
     tables: dict[int, pd.DataFrame] = {}

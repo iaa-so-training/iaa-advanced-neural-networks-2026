@@ -59,7 +59,7 @@ print("-" * 72)
 print(f"total {len(rows)}  ok {sum(1 for r in rows if r[1] == 'ok')}  "
       f"answer-only {sum(1 for r in rows if r[1] == 'no-solve')}  "
       f"failed {len(bad)}")
-print("TOTAL RUNTIME %.0f s" % sum(r[2] for r in rows))
+print(f"TOTAL RUNTIME {sum(r[2] for r in rows):.0f} s")
 if bad:
     print("\nFAILURES:")
     for label, status, _, detail in bad:

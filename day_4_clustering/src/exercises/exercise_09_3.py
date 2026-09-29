@@ -20,7 +20,6 @@ import numpy as np
 import pandas as pd
 
 from exercises.citations import cite, reference_list
-
 from exercises.utils import SEEDS, settings
 
 #: Column holding the star identifier. 34 member rows carry an empty string.
@@ -90,7 +89,7 @@ def collapse(df: pd.DataFrame, elements: list[str]) -> pd.DataFrame:
     key = np.where(ids == "", [f"__row_{i}" for i in range(len(df))], ids)
     work = df.copy()
     work["_star"] = key
-    aggregation: dict[str, str] = {e: "median" for e in elements}
+    aggregation: dict[str, str] = dict.fromkeys(elements, "median")
     aggregation["cluster"] = "first"
     return pd.DataFrame(work.groupby("_star", as_index=False).agg(aggregation))
 
@@ -137,7 +136,10 @@ def solve(seeds: tuple[int, ...] = SEEDS) -> dict[str, object]:
     """Audit, collapse, re-score, and re-run the M 3 ablation on both."""
     from cluster.baseline import separation_scores
     from cluster.benchmark import (
-        cluster_embedding, fit_evoc, fit_tsne, fit_umap,
+        cluster_embedding,
+        fit_evoc,
+        fit_tsne,
+        fit_umap,
     )
     from cluster.stability import degeneracy
     from exercises.utils import knn_purity_raw, members

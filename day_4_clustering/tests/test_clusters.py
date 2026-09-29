@@ -5,7 +5,7 @@ from __future__ import annotations
 import pydantic
 import pytest
 
-from cluster.clusters import CLUSTER_BY_NAME, CLUSTERS, Cluster
+from cluster.clusters import CLUSTER_BY_NAME, CLUSTERS
 
 
 def test_catalogue_length() -> None:

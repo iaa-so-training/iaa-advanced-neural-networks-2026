@@ -98,8 +98,8 @@ def test_spectral_prepared_swaps_matrix(tmp_path: Any) -> None:
 
 def test_baseline_labels_with_spectral_elements(monkeypatch: Any) -> None:
     """Regression: baseline_labels must build from latent columns, not abundances."""
-    from cluster.baseline import baseline_labels
     import cluster.baseline as baseline_mod
+    from cluster.baseline import baseline_labels
 
     n = 12
     rng = np.random.default_rng(3)

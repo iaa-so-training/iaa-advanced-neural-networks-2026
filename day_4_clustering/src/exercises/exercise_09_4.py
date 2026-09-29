@@ -20,7 +20,6 @@ import numpy as np
 import pandas as pd
 
 from exercises.citations import cite, reference_list
-
 from exercises.utils import SEEDS, settings
 
 #: Clipping thresholds swept by :func:`solve`. The point of sweeping is that

@@ -350,8 +350,7 @@ def isochrone_cell(
     masks = membership_masks_for(df, cluster, X, settings)
     members = df[masks[method]]
     if len(members) < 25:
-        note = f"⚠ only {len(members)} members in '{method}' — need ≥ 25 for a fit"
-        return note
+        return f"⚠ only {len(members)} members in '{method}' — need ≥ 25 for a fit"
     fit = fit_isochrone(
         members,
         seed=settings.isofit_seed,

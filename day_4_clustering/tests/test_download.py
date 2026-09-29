@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import http.server
 import json
-import subprocess
 import threading
 from pathlib import Path
 from types import SimpleNamespace
@@ -15,7 +14,6 @@ import pytest
 
 from cluster import download as download_module
 from cluster.download import _already_downloaded, download_allstar, stream_to_file
-
 
 # --------------------------------------------------------------------------- #
 # A local HTTP server that speaks Range requests, so the resumable downloader

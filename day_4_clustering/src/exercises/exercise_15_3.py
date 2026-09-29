@@ -70,7 +70,11 @@ def _assets() -> tuple[Any, Any]:
     import asteca
 
     from cluster.isochrone import (
-        _COLOR, _COLOR_EFFL, _MAG, _MAG_EFFL, ensure_isochrones,
+        _COLOR,
+        _COLOR_EFFL,
+        _MAG,
+        _MAG_EFFL,
+        ensure_isochrones,
     )
 
     try:

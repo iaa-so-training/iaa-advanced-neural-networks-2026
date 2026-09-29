@@ -40,9 +40,10 @@ def fused_fit(
     of the layer it returned — the internals of ``cluster.layers`` that
     \\S 12.3 says the user normally cannot see.
     """
+    from evoc import EVoC
+
     from cluster.baseline import separation_scores
     from cluster.stability import degeneracy
-    from evoc import EVoC
 
     cfg = settings()
     rows = []

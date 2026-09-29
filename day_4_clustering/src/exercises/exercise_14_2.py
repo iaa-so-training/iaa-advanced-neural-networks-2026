@@ -24,7 +24,7 @@ import numpy as np
 import pandas as pd
 
 from exercises.citations import cite, reference_list
-from exercises.utils import DataNotAvailable, embedding_path, member_field, members
+from exercises.utils import embedding_path, member_field, members
 
 #: The mixed latent the §14.5 disaster was measured on: DR19 ``apStar`` spectra
 #: for the field plus a DR17 ``aspcapStar`` backfill for members.
@@ -64,7 +64,7 @@ def _embedding(path_name: str) -> pd.DataFrame:
 
 def _members() -> pd.DataFrame:
     """The member frame, one row per star."""
-    members().df  # ensure the shared cache is warm before the fields are used
+    _ = members().df  # ensure the shared cache is warm before the fields are used
     frame = member_field().df
     frame = pd.DataFrame(frame[frame["cluster"] != "field"]).copy()
     frame["APOGEE_ID"] = frame["APOGEE_ID"].astype(str)
@@ -91,7 +91,9 @@ def probe(
     field is a different population".
     """
     from cluster.provenance import (
-        PROVENANCE_AUC_CEILING, provenance_auc, separating_dimensions,
+        PROVENANCE_AUC_CEILING,
+        provenance_auc,
+        separating_dimensions,
     )
 
     frame = _members()

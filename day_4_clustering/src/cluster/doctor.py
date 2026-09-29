@@ -16,7 +16,7 @@ import importlib.metadata
 import os
 import platform
 import subprocess
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -177,7 +177,7 @@ def cache_report() -> dict[str, Any]:
         "dir": str(directory),
         "entries": len(entries),
         "bytes": sum(p.stat().st_size for p in entries),
-        "newest": datetime.fromtimestamp(newest, tz=timezone.utc).isoformat(timespec="seconds") if newest else None,
+        "newest": datetime.fromtimestamp(newest, tz=UTC).isoformat(timespec="seconds") if newest else None,
     }
 
 

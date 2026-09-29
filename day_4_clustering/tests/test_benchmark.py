@@ -268,7 +268,10 @@ def test_run_benchmark_returns_three_results_and_logs(
         calls["hdbscan"] += 1
         return np.array([0, 0, 0, 0, 1, 1, 1, 1], dtype=int)
 
-    def fake_purity(embedding: np.ndarray, true_labels: np.ndarray, k: int = 10, min_members: int = 5) -> dict[str, float]:
+    def fake_purity(
+        embedding: np.ndarray, true_labels: np.ndarray,
+        k: int = 10, min_members: int = 5,
+    ) -> dict[str, float]:
         return {"A": 1.0, "B": 1.0}
 
     def fake_log_metrics(metrics: dict[str, float]) -> None:
@@ -312,7 +315,10 @@ def test_run_benchmark_skips_evoc_on_import_error(
     def fake_hdbscan(Z: np.ndarray, params: dict[str, Any]) -> np.ndarray:
         return np.array([0, 0, 0, 0, 1, 1, 1, 1], dtype=int)
 
-    def fake_purity(embedding: np.ndarray, true_labels: np.ndarray, k: int = 10, min_members: int = 5) -> dict[str, float]:
+    def fake_purity(
+        embedding: np.ndarray, true_labels: np.ndarray,
+        k: int = 10, min_members: int = 5,
+    ) -> dict[str, float]:
         return {"A": 1.0, "B": 1.0}
 
     monkeypatch.setattr(benchmark, "fit_tsne", fake_tsne)

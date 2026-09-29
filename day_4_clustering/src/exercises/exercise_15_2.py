@@ -110,8 +110,14 @@ def _isochrones(two_colour: bool) -> Any:
     import asteca
 
     from cluster.isochrone import (
-        ISOCHRONE_DIR, _COLOR, _COLOR2, _COLOR2_EFFL, _COLOR_EFFL, _MAG,
-        _MAG_EFFL, ensure_isochrones,
+        _COLOR,
+        _COLOR2,
+        _COLOR2_EFFL,
+        _COLOR_EFFL,
+        _MAG,
+        _MAG_EFFL,
+        ISOCHRONE_DIR,
+        ensure_isochrones,
     )
 
     if two_colour:

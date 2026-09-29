@@ -110,8 +110,9 @@ def high_dimensional_p(
     X: np.ndarray, perplexity: float = 15.0,
 ) -> np.ndarray:
     """Symmetrised P of \\textbf{Equation~\\ref{eq:phigh}} (reuses ex. 10.1)."""
-    from exercises.exercise_10_1 import binary_search_sigma
     from scipy.spatial.distance import pdist, squareform
+
+    from exercises.exercise_10_1 import binary_search_sigma
 
     sq = squareform(pdist(X)) ** 2
     n = len(X)

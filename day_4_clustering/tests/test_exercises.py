@@ -10,7 +10,6 @@ clean checkout still enforces the structural contract.
 
 from __future__ import annotations
 
-import importlib
 import inspect
 import json
 import re
@@ -170,9 +169,10 @@ def test_every_notebook_cell_is_valid_python(deck: Path) -> None:
     once shipped telling students to ``import as``. Nothing else in this suite
     looks at the text a student is asked to run, so this compiles it.
     """
+    from typing import cast
+
     import nbformat
     from IPython.core.inputtransformer2 import TransformerManager
-    from typing import cast
 
     # The setup cell uses ``%matplotlib inline``, so the cell text goes through
     # IPython's transformer before Python sees it.

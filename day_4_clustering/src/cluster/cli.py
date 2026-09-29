@@ -263,8 +263,14 @@ def run(
 
 
 @main.command()
-@click.option("--kinematics", is_flag=True, help="Append standardised kinematics (parallax / PM / RV) to the abundance features.")
-@click.option("--min-members", type=int, default=5, show_default=True, help="Drop clusters with fewer members (paper's >=5 rule).")
+@click.option(
+    "--kinematics", is_flag=True,
+    help="Append standardised kinematics (parallax / PM / RV) to the abundance features.",
+)
+@click.option(
+    "--min-members", type=int, default=5, show_default=True,
+    help="Drop clusters with fewer members (paper's >=5 rule).",
+)
 @click.option("--allstar", default="data/astraAllStarASPCAP-0.6.0.fits.gz", show_default=True)
 @click.option("--outdir", default=None, help="If set, save a confusion-matrix figure per method here.")
 @click.option(
@@ -603,11 +609,11 @@ def ablate(
     could just mean "we separate a globular from open clusters". Dropping it
     tests whether the signal is real chemical tagging.
     """
+    import pandas as pd
+
     from .baseline import baseline_matrix, cluster_only
     from .spectral import spectral_prepared
     from .stability import format_stability, stability
-
-    import pandas as pd
 
     settings = config.Settings()
     if spectral_path is not None:

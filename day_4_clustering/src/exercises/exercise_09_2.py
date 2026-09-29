@@ -20,7 +20,6 @@ import numpy as np
 import pandas as pd
 
 from exercises.citations import cite, reference_list
-
 from exercises.utils import SEEDS, settings
 
 #: The fixed seed the row-order experiment holds constant (\\S 9.4 rule 2's
@@ -170,7 +169,7 @@ def plot(result: dict[str, object] | None = None):  # pragma: no cover — figur
     assert isinstance(sweeps, dict)
 
     fig, ax = plt.subplots(figsize=(7.0, 4.0))
-    for i, (name, table) in enumerate(sweeps.items()):
+    for i, (_name, table) in enumerate(sweeps.items()):
         values = table["homogeneity"].to_numpy(dtype=float)
         ax.scatter(np.full(len(values), i) + np.random.default_rng(0).normal(
             0, 0.04, len(values)), values, s=26, alpha=0.8)

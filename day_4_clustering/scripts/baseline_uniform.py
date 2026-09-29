@@ -32,6 +32,8 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from headtohead_extras import ARMS  # noqa: E402
+
 from cluster import config  # noqa: E402
 from cluster.baseline import (  # noqa: E402
     _fit_all,
@@ -46,8 +48,6 @@ from cluster.cli import _prepared_for  # noqa: E402
 from cluster.headtohead import Arm, _arm_frame, common_population  # noqa: E402
 from cluster.spectral import ID_COLUMN  # noqa: E402
 from cluster.stability import DEFAULT_SEEDS  # noqa: E402
-
-from headtohead_extras import ARMS  # noqa: E402
 
 N_ORDERS = 8
 METRICS = ("homogeneity", "completeness", "v_measure", "accuracy")

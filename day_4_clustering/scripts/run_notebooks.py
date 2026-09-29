@@ -83,7 +83,7 @@ def _read_deck(path: Path) -> NotebookNode:
 def _by_seconds(result: Result) -> float:
     """Sort key: slowest notebook first."""
     seconds = result["seconds"]
-    return -seconds if isinstance(seconds, (int, float)) else 0.0
+    return -seconds if isinstance(seconds, int | float) else 0.0
 
 
 def _by_cell_seconds(item: tuple[int, float]) -> float:
@@ -231,7 +231,7 @@ def main() -> int:
 
         ok = not result["failures"] and not result["crashed"]
         seconds = result["seconds"]
-        shown = f"{seconds:.1f} s" if isinstance(seconds, (int, float)) else "n/a"
+        shown = f"{seconds:.1f} s" if isinstance(seconds, int | float) else "n/a"
         print(
             f"  {'OK' if ok else 'FAIL':>4}  {result['notebook']:<34}{shown:>12}"
             f"  failures={len(result['failures'])}"
@@ -249,7 +249,7 @@ def main() -> int:
     print(f"{'notebook':<34}{'seconds':>12}{'cells':>7}  result")
     for result in sorted(results, key=_by_seconds):
         seconds = result["seconds"]
-        shown = f"{seconds:.1f}" if isinstance(seconds, (int, float)) else "n/a"
+        shown = f"{seconds:.1f}" if isinstance(seconds, int | float) else "n/a"
         ok = not result["failures"] and not result["crashed"]
         print(f"{result['notebook']:<34}{shown:>12}"
               f"{str(result['code_cells']):>7}  {'OK' if ok else 'FAIL'}")

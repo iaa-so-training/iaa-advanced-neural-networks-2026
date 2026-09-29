@@ -72,8 +72,8 @@ def row_order_spread(
     which the seed loop cannot see because ``init='pca'`` makes the run
     deterministic once the row order is fixed.
     """
-    from cluster.benchmark import cluster_embedding, fit_tsne
     from cluster.baseline import separation_scores
+    from cluster.benchmark import cluster_embedding, fit_tsne
 
     cfg = settings()
     params = {k: v for k, v in cfg.tsne.items() if k != "method"}

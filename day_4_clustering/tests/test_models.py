@@ -61,7 +61,7 @@ def test_models_package_is_lazy() -> None:
     assert module.MaskedSpectralAE is MaskedSpectralAE
     assert module.CnnLstmAttention is CnnLstmAttention
     with pytest.raises(AttributeError):
-        module.does_not_exist
+        module.does_not_exist  # noqa: B018 — the point is that it raises
 
 
 def test_block_mask_marks_contiguous_blocks() -> None:

@@ -7,11 +7,12 @@ For each APO cluster with spectral members: n_members, per-method homogeneity
 from __future__ import annotations
 
 import argparse
+
 import numpy as np
 import pandas as pd
 
 from cluster import config
-from cluster.baseline import baseline_labels, cluster_only, separation_scores
+from cluster.baseline import cluster_only
 from cluster.clusters import CLUSTERS
 from cluster.data import prepare
 from cluster.spectral import spectral_prepared
@@ -47,7 +48,7 @@ def main() -> None:
 
     true = sub["cluster"].to_numpy()
     # reuse the baseline's fitting (t-SNE/UMAP/EVoC on the embedding matrix)
-    from cluster.baseline import baseline_matrix, _fit_all
+    from cluster.baseline import _fit_all, baseline_matrix
     X = baseline_matrix(sub, settings, use_kinematics=False, elements=list(prep.elements))
     preds = _fit_all(X, settings)
 
@@ -67,9 +68,7 @@ def main() -> None:
 
     df = pd.DataFrame(rows).sort_values("n_members", ascending=False)
     print(df.to_string(index=False))
-    out = f"results/per_cluster_{Path(args.embeddings).stem}.csv" if False else None
 
 
 if __name__ == "__main__":
-    from pathlib import Path
     main()

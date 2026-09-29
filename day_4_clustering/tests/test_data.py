@@ -22,6 +22,8 @@ from cluster.data import (
     prepare,
     stratified_field_sample,
 )
+
+
 def _write_fits(path: Path, df: pd.DataFrame) -> Path:
     from astropy.io import fits
 

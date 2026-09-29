@@ -218,7 +218,7 @@ def plot(result: dict[str, object] | None = None):  # pragma: no cover — figur
 
     fig, axes = plt.subplots(2, 1, figsize=(6.4, 5.0))
     ax = axes[0]
-    for j, (partition, colour, label, offset) in enumerate((
+    for _j, (partition, colour, label, offset) in enumerate((
         (((0, 1), (2,)), "#4c72b0", "global optimum  J = 0.500", 0.1),
         (((0,), (1, 2)), "#c44e52", "Lloyd local optimum  J = 1.125", -0.1),
     )):

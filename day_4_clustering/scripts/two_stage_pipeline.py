@@ -152,7 +152,8 @@ def main() -> None:
     if len(table):
         gain = table["prec_after"] - table["prec_before"]
         print(f"\n=== summary (n={len(table)}) ===")
-        print(f"  precision {table['prec_before'].mean():.2f} -> {table['prec_after'].mean():.2f}  (+{gain.mean():.2f})")
+        before, after = table["prec_before"].mean(), table["prec_after"].mean()
+        print(f"  precision {before:.2f} -> {after:.2f}  (+{gain.mean():.2f})")
         print(f"  recall    {table['rec_before'].mean():.2f} -> {table['rec_after'].mean():.2f}")
 
 

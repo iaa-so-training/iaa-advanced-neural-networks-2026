@@ -28,7 +28,6 @@ from .clusters import Cluster
 from .config import Settings, astra_h_col
 from .schemas import ABUNDANCE_SCHEMA, ALLSTAR_SCHEMA
 
-
 _ASTRA_BASE = [
     "sdss_id", "sdss4_apogee_id", "gaia_dr3_source_id", "ra", "dec", "snr",
     "flag_bad", "spectrum_flags",
@@ -344,7 +343,7 @@ def _store_prepared(key: str, directory: Path, prepared: PreparedData, meta: dic
     try:
         directory.mkdir(parents=True, exist_ok=True)
         frame = prepared.df.copy()
-        for i, element in enumerate(prepared.elements):
+        for i, _element in enumerate(prepared.elements):
             frame[f"__x{i:02d}"] = prepared.X[:, i]
         frame.to_parquet(directory / f"{key}.parquet", index=False)
         (directory / f"{key}.json").write_text(

@@ -40,6 +40,7 @@ sys.path.insert(0, str(REPO / "scripts"))
 sys.path.insert(0, str(REPO / "src"))
 
 from baseline_uniform import row_orders, uniform_population  # noqa: E402
+
 from cluster import config  # noqa: E402
 from cluster.baseline import _fit_all, baseline_matrix, recovery_fraction  # noqa: E402
 from cluster.benchmark import cluster_embedding, fit_tsne  # noqa: E402

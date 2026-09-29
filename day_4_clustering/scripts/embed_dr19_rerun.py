@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import argparse
 import subprocess
-import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -29,7 +28,8 @@ import numpy as np
 import pandas as pd
 from astropy.io import fits
 
-MODEL_PATH = "data/embeddings/masked_ae_rerun.pt"  # MaskedSpectralAE checkpoint (not model_dr19.pt, which is the supervised net)
+# MaskedSpectralAE checkpoint -- not model_dr19.pt, which is the supervised net.
+MODEL_PATH = "data/embeddings/masked_ae_rerun.pt"
 URL_LIST = "data/dr19_rerun_members.csv"
 MWM_DIR = Path("data/mwmstar")
 OUT_PATH = "data/embeddings/masked_latent_dr19_rerun.parquet"
@@ -39,6 +39,7 @@ BATCH = 256
 
 def load_model():
     import torch  # the `torch` extra: uv sync --extra torch
+
     from cluster.models.masked_spectral_ae import MaskedSpectralAE
 
     model = MaskedSpectralAE(n_features=N_BINS, latent_dim=256)

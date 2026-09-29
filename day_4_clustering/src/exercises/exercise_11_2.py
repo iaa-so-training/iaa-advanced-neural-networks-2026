@@ -41,7 +41,7 @@ def neighbour_sets(Z: np.ndarray, k: int = K) -> list[set[int]]:
     index = NearestNeighbors(n_neighbors=k + 1).fit(Z).kneighbors(
         Z, return_distance=False,
     )[:, 1:]
-    return [set(int(j) for j in row) for row in index]
+    return [{int(j) for j in row} for row in index]
 
 
 def agreement(a: list[set[int]], b: list[set[int]], k: int = K) -> float:
@@ -85,7 +85,6 @@ def solve(
     embeddings = layouts(X, INITIALISATIONS, seeds, k)
 
     sets = {key: neighbour_sets(Z, k) for key, Z in embeddings.items()}
-    keys = list(sets)
 
     within: dict[str, list[float]] = {init: [] for init in INITIALISATIONS}
     for init in INITIALISATIONS:

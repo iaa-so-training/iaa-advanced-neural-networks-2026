@@ -105,8 +105,10 @@ def scaling(sizes: tuple[int, ...] = SIZES, k: int = K) -> pd.DataFrame:
     from sklearn.neighbors import NearestNeighbors
 
     data = member_field()
-    NNDescent(data.X[:500], n_neighbors=k + 1, metric="euclidean",
-              random_state=0, n_jobs=1).neighbor_graph  # warm the JIT
+    # Warm pynndescent's numba JIT so the timings below measure the graph
+    # build, not compilation.
+    _ = NNDescent(data.X[:500], n_neighbors=k + 1, metric="euclidean",
+                  random_state=0, n_jobs=1).neighbor_graph
 
     rows = []
     for n in sizes:
@@ -122,7 +124,7 @@ def scaling(sizes: tuple[int, ...] = SIZES, k: int = K) -> pd.DataFrame:
         t_auto = time.perf_counter() - start
 
         start = time.perf_counter()
-        NNDescent(X, n_neighbors=k + 1, metric="euclidean", random_state=42,
+        _ = NNDescent(X, n_neighbors=k + 1, metric="euclidean", random_state=42,
                   n_jobs=1).neighbor_graph
         t_approx = time.perf_counter() - start
 

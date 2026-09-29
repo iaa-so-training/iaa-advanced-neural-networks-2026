@@ -103,7 +103,7 @@ def solve(
 
     comparison = pd.DataFrame([
         {
-            "arm": "EVoC, seed varies (n=%d)" % len(e),
+            "arm": f"EVoC, seed varies (n={len(e)})",
             "mean": round(float(e.mean()), 4),
             "std": round(float(e.std(ddof=0)), 4),
             "min": round(float(e.min()), 4),
@@ -112,7 +112,7 @@ def solve(
             "coef_variation": round(float(e.std(ddof=0) / e.mean()), 4),
         },
         {
-            "arm": "t-SNE, row order varies (n=%d)" % len(t),
+            "arm": f"t-SNE, row order varies (n={len(t)})",
             "mean": round(float(t.mean()), 4),
             "std": round(float(t.std(ddof=0)), 4),
             "min": round(float(t.min()), 4),

@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 
 from exercises.citations import cite, reference_list
-from exercises.utils import DataNotAvailable, member_field, settings
+from exercises.utils import member_field, settings
 
 #: Simbad ``main_id`` per workbook cluster, verified against the cached
 #: ``data/simbad/simbad_*.csv`` filenames. Resolving these through
@@ -55,8 +55,8 @@ def simbad_masks(
     the map above instead of the network. Returns an object array of cluster
     names with ``'field'`` where Simbad lists no member within the tolerance.
     """
-    from astropy.coordinates import SkyCoord
     import astropy.units as u
+    from astropy.coordinates import SkyCoord
 
     from cluster.catalog import query_members
 

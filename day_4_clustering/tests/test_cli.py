@@ -8,10 +8,10 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-import pytest
 from click.testing import CliRunner
 
-from cluster import cli, download as download_module, tracking
+from cluster import cli, tracking
+from cluster import download as download_module
 from cluster.data import PreparedData
 
 

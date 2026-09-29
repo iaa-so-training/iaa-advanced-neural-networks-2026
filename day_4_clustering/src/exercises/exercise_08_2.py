@@ -49,7 +49,7 @@ def fit(min_cluster_size: int, seed: int = 42) -> dict[str, object]:
     labels = model.labels_
     persistence = np.asarray(model.cluster_persistence_, dtype=float)
 
-    tiny_labels = set(int(v) for v in labels[:TINY_N])
+    tiny_labels = {int(v) for v in labels[:TINY_N]}
     survived = tiny_labels != {-1} and len(tiny_labels - {-1}) == 1
     tiny_persistence = float("nan")
     if survived:

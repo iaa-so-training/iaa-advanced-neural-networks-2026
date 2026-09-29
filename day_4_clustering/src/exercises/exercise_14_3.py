@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 
 from exercises.citations import cite, reference_list
-from exercises.utils import SEEDS, embedding_path, member_field, members
+from exercises.utils import embedding_path, member_field, members
 
 #: The two artifacts carrying the *same stars* through different pipelines.
 #: 253 stars are in both (the figure §14.5 quotes); the second is the DR19
@@ -113,7 +113,7 @@ def replicate_control() -> dict[str, object]:
 
     replicate = np.linalg.norm(X[index[:, 0]] - X[index[:, 1]], axis=1)
     same_cluster = []
-    for i, j in index:
+    for i, _ in index:
         candidates = np.flatnonzero((labels == labels[i]) & (ids != ids[i]))
         if candidates.size:
             same_cluster.append(float(np.linalg.norm(X[i] - X[rng.choice(candidates)])))

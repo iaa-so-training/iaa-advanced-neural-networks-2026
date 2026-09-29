@@ -24,7 +24,8 @@ from __future__ import annotations
 import argparse
 import os
 import time
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 os.environ.setdefault("PYTHONHASHSEED", "42")
 
@@ -32,9 +33,9 @@ os.environ.setdefault("PYTHONHASHSEED", "42")
 def cpu_seconds_all_threads() -> float:
     """CPU time summed over every thread of this process (across all cores on Linux)."""
     total = 0.0
-    for task in os.listdir("/proc/self/task"):
+    for task in os.listdir("/proc/self/task"):  # noqa: PTH208 — procfs, not a real FS
         try:
-            with open(f"/proc/self/task/{task}/stat") as fh:
+            with open(f"/proc/self/task/{task}/stat") as fh:  # noqa: PTH123 — procfs
                 fields = fh.read().rsplit(") ", 1)[1].split()
             utime, stime = int(fields[11]), int(fields[12])
             total += (utime + stime) / os.sysconf("SC_CLK_TCK")

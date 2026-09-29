@@ -108,7 +108,10 @@ def main() -> None:
     # [X/H] -> [X/Fe]
     out = {"APOGEE_ID": df["apogee_id"].astype(str)}
     for target, xh in TARGETS.items():
-        out[target] = df[xh].to_numpy(dtype=float) - fe_h[df.index] if target != "FE_H" else df["fe_h"].to_numpy(dtype=float)
+        out[target] = (
+            df["fe_h"].to_numpy(dtype=float) if target == "FE_H"
+            else df[xh].to_numpy(dtype=float) - fe_h[df.index]
+        )
     out["TEFF"] = df["teff"].to_numpy(dtype=float)
     out["LOGG"] = df["logg"].to_numpy(dtype=float)
     out["telescope"] = df["telescope"].astype(str)

@@ -71,7 +71,13 @@ def _standardized_kinematics(merged: pd.DataFrame) -> np.ndarray:
     return (kin - med) / scale
 
 
-def sweep(allstar_path: Path, embeddings_path: Path, settings: config.Settings, kinematics: bool = False, kin_only: bool = False) -> pd.DataFrame:
+def sweep(
+    allstar_path: Path,
+    embeddings_path: Path,
+    settings: config.Settings,
+    kinematics: bool = False,
+    kin_only: bool = False,
+) -> pd.DataFrame:
     import hdbscan
     import umap
     from evoc import EVoC
@@ -155,8 +161,15 @@ def main() -> None:
 
     settings = config.Settings()
     settings.require_aspcap_flag_clean = False
-    print("🧪 spectral region sweep (scaled regions)" + (" + kinematics" if args.kinematics else "") + (" [kin-only]" if args.kin_only else ""))
-    table = sweep(Path(args.allstar), Path(args.embeddings), settings, kinematics=args.kinematics, kin_only=args.kin_only)
+    print(
+        "🧪 spectral region sweep (scaled regions)"
+        + (" + kinematics" if args.kinematics else "")
+        + (" [kin-only]" if args.kin_only else "")
+    )
+    table = sweep(
+        Path(args.allstar), Path(args.embeddings), settings,
+        kinematics=args.kinematics, kin_only=args.kin_only,
+    )
 
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     table.to_csv(args.out, index=False)

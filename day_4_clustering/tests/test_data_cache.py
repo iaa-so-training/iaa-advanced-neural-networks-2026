@@ -100,7 +100,9 @@ def test_no_cache_switch_computes_again_and_writes_nothing(
     assert cache_dir(enabled=False) is None
 
 
-def test_cluster_no_cache_env_disables_it(astra_fits_path: Path, cache_on: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_cluster_no_cache_env_disables_it(
+    astra_fits_path: Path, cache_on: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setenv("CLUSTER_NO_CACHE", "1")
     assert cache_dir() is None
     prepare(astra_fits_path, _settings(), [CLUSTER_BY_NAME["Pleiades"]], **_seed_kwargs())

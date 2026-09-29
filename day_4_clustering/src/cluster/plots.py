@@ -143,7 +143,6 @@ def plot_method_grid(
     """
     import matplotlib.pyplot as plt
 
-    from .benchmark import BenchmarkResult
 
     assert benchmark.df is not None
     df = benchmark.df
@@ -161,7 +160,7 @@ def plot_method_grid(
             assert umap_z is not None
             # colour EVoC's labels on the shared UMAP canvas
             tmp = df.copy()
-            tmp["_evoc"] = [f"c{int(l)}" if l >= 0 else "noise" for l in r.labels]
+            tmp["_evoc"] = [f"c{int(lab)}" if lab >= 0 else "noise" for lab in r.labels]
             scatter_embedding(
                 umap_z, tmp, "_evoc", ax=ax,
                 title=f"{name} (labels on UMAP canvas)", legend=False,
@@ -436,7 +435,10 @@ def cluster_panels(
     import plotly.graph_objects as go
     from plotly.subplots import make_subplots
 
-    apogee_mask = np.asarray(apogee_mask, dtype=bool) if apogee_mask is not None else np.zeros(len(df_apogee), dtype=bool)
+    apogee_mask = (
+        np.asarray(apogee_mask, dtype=bool) if apogee_mask is not None
+        else np.zeros(len(df_apogee), dtype=bool)
+    )
     gaia_mask = np.asarray(gaia_mask, dtype=bool) if gaia_mask is not None else np.zeros(len(df_gaia), dtype=bool)
     # cap the grey field in every panel; members are never dropped
     keep_apogee = thin_field(apogee_mask)

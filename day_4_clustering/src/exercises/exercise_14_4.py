@@ -182,7 +182,7 @@ def capacity_share(
         Z = (Z - Z.mean(axis=0)) / np.where(Z.std(axis=0) == 0, 1.0, Z.std(axis=0))
         total = float(np.sum(Z ** 2))
 
-        def share(features: np.ndarray) -> float:
+        def share(features: np.ndarray, Z: np.ndarray = Z, total: float = total) -> float:
             prediction = cross_val_predict(
                 design(), features, Z, cv=KFold(5, shuffle=True, random_state=seed),
             )

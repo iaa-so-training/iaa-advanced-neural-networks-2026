@@ -34,8 +34,6 @@ from cluster.catalog import attach_referee
 from cluster.clusters import CLUSTERS
 from cluster.data import PreparedData, make_matrix, prepare
 from cluster.spectral import (
-    embedding_matrix,
-    load_embedding_frame,
     spectral_prepared,
 )
 
@@ -66,7 +64,6 @@ def build_feature_matrices(
     """Build one PreparedData per feature set, all aligned on the spectral rows."""
     prep_spec = spectral_prepared(prep_ab, embeddings_path, settings)
     spec_df = prep_spec.df
-    spec_cols = list(prep_spec.elements)
 
     # abundance matrix on the same rows (dedup + inner-join on APOGEE_ID)
     ab_df = prep_ab.df.drop_duplicates(subset=["APOGEE_ID"], keep="first")

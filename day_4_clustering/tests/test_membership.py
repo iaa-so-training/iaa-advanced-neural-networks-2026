@@ -55,7 +55,7 @@ def test_kinematic_members_pleiades_special_case(allstar_frame: pd.DataFrame) ->
 
 def _tight_frame() -> pd.DataFrame:
     n = 8
-    df = pd.DataFrame(
+    return pd.DataFrame(
         {
             "RA": [100.0, 100.1, 100.2, 130.0, 150.0, 80.0, 120.0, 70.0],
             "DEC": [20.0, 20.0, 20.1, 40.0, -30.0, 50.0, 0.0, -40.0],
@@ -65,7 +65,6 @@ def _tight_frame() -> pd.DataFrame:
             "VHELIO_AVG": [20.0, 20.2, 19.8, 0.0, 50.0, 30.0, -10.0, -5.0],
         }
     )
-    return df
 
 
 def _tight_cluster() -> Cluster:

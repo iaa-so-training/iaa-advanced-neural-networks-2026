@@ -69,8 +69,9 @@ def fit_with_layers(
     embedding dimension to the input's own rank is the minimum change needed
     to run the experiment at all; every other setting is the workbook default.
     """
-    from cluster.benchmark import _score_one
     from evoc import EVoC
+
+    from cluster.benchmark import _score_one
 
     cfg = settings()
     model = EVoC(node_embedding_dim=2, **cfg.evoc, random_state=seed)

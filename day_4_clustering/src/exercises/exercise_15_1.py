@@ -195,8 +195,15 @@ def posterior_chain(
     import emcee
 
     from cluster.isochrone import (
-        _COLOR, _COLOR_EFFL, _GRID_MET, _MAG, _MAG_EFFL, _PARAMS,
-        _distance_modulus, ensure_isochrones, ensure_isochrones_metal_poor,
+        _COLOR,
+        _COLOR_EFFL,
+        _GRID_MET,
+        _MAG,
+        _MAG_EFFL,
+        _PARAMS,
+        _distance_modulus,
+        ensure_isochrones,
+        ensure_isochrones_metal_poor,
     )
 
     g = np.asarray(members["GAIAEDR3_PHOT_G_MEAN_MAG"], dtype=float)
@@ -310,7 +317,6 @@ def _fit_arm(
 
 def solve(seeds: tuple[int, ...] = DEFAULT_SEEDS) -> dict[str, object]:
     """The four-arm sweep with and without the red-clump prior."""
-    cluster = target_cluster()
     lit = literature()
     clump = red_clump_distance()
 

@@ -77,7 +77,15 @@ def _purity(Z: np.ndarray, true_labels: np.ndarray, cluster: str, k: int = 10) -
     return float((neigh == cluster).mean())
 
 
-def sweep(allstar_path: Path, radius: float, settings: config.Settings, scaled: bool = False, kinematics: bool = False, embeddings: str | None = None, names: list[str] | None = None) -> pd.DataFrame:
+def sweep(
+    allstar_path: Path,
+    radius: float,
+    settings: config.Settings,
+    scaled: bool = False,
+    kinematics: bool = False,
+    embeddings: str | None = None,
+    names: list[str] | None = None,
+) -> pd.DataFrame:
     import hdbscan
     import umap
     from evoc import EVoC
@@ -85,10 +93,8 @@ def sweep(allstar_path: Path, radius: float, settings: config.Settings, scaled: 
     from cluster import spectral
 
     emb_frame = None
-    emb_cols = None
     if embeddings is not None:
         emb_frame = spectral.load_embedding_frame(embeddings)
-        emb_cols = spectral.embedding_columns(emb_frame)
 
     df = load_allstar(allstar_path, settings.elements)
     df = apply_quality_cuts(df, settings)
@@ -174,8 +180,16 @@ def main() -> None:
 
     settings = config.Settings()
     settings.require_aspcap_flag_clean = False  # match the spectral sweep
-    print(f"🧪 region sweep  radius={'scaled' if args.scaled else args.radius}  SNR_MIN={settings.snr_min}" + (" + kinematics" if args.kinematics else ""))
-    table = sweep(Path(args.allstar), args.radius, settings, scaled=args.scaled, kinematics=args.kinematics, embeddings=args.embeddings, names=names)
+    radius_label = "scaled" if args.scaled else args.radius
+    print(
+        f"🧪 region sweep  radius={radius_label}  SNR_MIN={settings.snr_min}"
+        + (" + kinematics" if args.kinematics else "")
+    )
+    table = sweep(
+        Path(args.allstar), args.radius, settings,
+        scaled=args.scaled, kinematics=args.kinematics,
+        embeddings=args.embeddings, names=names,
+    )
 
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     table.to_csv(args.out, index=False)

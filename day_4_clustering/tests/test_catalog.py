@@ -8,7 +8,6 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from cluster import catalog
 from cluster.clusters import Cluster

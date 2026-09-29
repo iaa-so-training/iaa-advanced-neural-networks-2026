@@ -42,7 +42,7 @@ def prepared(settings: Settings) -> PreparedData:
     rng = np.random.default_rng(0)
     rows: list[str] = []
     ids: list[str] = []
-    for k, name in enumerate(CLUSTERS):
+    for _k, name in enumerate(CLUSTERS):
         for i in range(N_PER_CLUSTER):
             rows.append(name)
             ids.append(f"{name}{i:03d}")

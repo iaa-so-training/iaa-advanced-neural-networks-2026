@@ -12,11 +12,10 @@ literature table reports the gap and the notebooks print a note.
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FutureTimeout
-from typing import Any, Callable, TypeVar
-
-T = TypeVar("T")
+from typing import Any
 
 #: seconds a single archive call may take before we give up on it
 NETWORK_TIMEOUT_S = float(os.environ.get("CLUSTER_NET_TIMEOUT", "30"))
@@ -26,7 +25,7 @@ class NetworkTimeout(RuntimeError):
     """A remote archive did not answer inside the time budget."""
 
 
-def call_with_timeout(
+def call_with_timeout[T](
     fn: Callable[..., T],
     *args: Any,
     what: str = "the archive",

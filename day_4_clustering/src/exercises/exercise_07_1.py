@@ -81,8 +81,8 @@ def check_axioms(matrix: np.ndarray, tol: float = 1e-12) -> dict[str, object]:
     """Test the four metric axioms exhaustively on a distance matrix."""
     n = len(matrix)
     violations = [
-        (i, j, l) for i, j, l in itertools.product(range(n), repeat=3)
-        if matrix[i, l] > matrix[i, j] + matrix[j, l] + tol
+        (i, j, m) for i, j, m in itertools.product(range(n), repeat=3)
+        if matrix[i, m] > matrix[i, j] + matrix[j, m] + tol
     ]
     off_diagonal_zeros = [
         (i, j) for i in range(n) for j in range(n)
@@ -124,8 +124,8 @@ def random_triangle_test(
             (mutual_reachability(points, k), "mreach"),
             (floored_distance(points), "floored"),
         ):
-            for i, j, l in itertools.product(range(n), repeat=3):
-                slack = float(matrix[i, j] + matrix[j, l] - matrix[i, l])
+            for i, j, m in itertools.product(range(n), repeat=3):
+                slack = float(matrix[i, j] + matrix[j, m] - matrix[i, m])
                 if which == "mreach":
                     worst_mreach = min(worst_mreach, slack)
                     bad_mreach += slack < -1e-9

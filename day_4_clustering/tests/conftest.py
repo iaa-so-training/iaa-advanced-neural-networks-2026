@@ -139,9 +139,7 @@ def write_allstar_fits(path: str | Path, df: pd.DataFrame) -> Path:
         values = df[name].to_numpy()
         if values.dtype.kind == "f":
             columns.append(fits.Column(name=name, array=values.astype(np.float64), format="D"))
-        elif values.dtype.kind in "iu":
-            columns.append(fits.Column(name=name, array=values.astype(np.int64), format="K"))
-        elif values.dtype.kind == "b":
+        elif values.dtype.kind in "iu" or values.dtype.kind == "b":
             columns.append(fits.Column(name=name, array=values.astype(np.int64), format="K"))
         else:
             columns.append(

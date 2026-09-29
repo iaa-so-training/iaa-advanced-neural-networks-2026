@@ -527,8 +527,7 @@ def build_chapter(chapter: int, standalone: bool) -> nbformat.NotebookNode:
     for number, statement in enumerate(statements, start=1):
         cells.extend(exercise_cells(chapter, number, statement))
 
-    nb = new_notebook(cells=cells, metadata=KERNEL_META)
-    return nb
+    return new_notebook(cells=cells, metadata=KERNEL_META)
 
 
 def build_master() -> nbformat.NotebookNode:

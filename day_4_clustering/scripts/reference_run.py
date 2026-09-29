@@ -82,7 +82,7 @@ def main() -> None:
     name = Path(args.spectral).stem if args.spectral else ("fast" if args.fast else "full")
     payload = {
         "name": name,
-        "measured_utc": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+        "measured_utc": dt.datetime.now(dt.UTC).isoformat(timespec="seconds"),
         "command": (
             "uv run python scripts/reference_run.py "
             + ("--fast" if args.fast else "--full")

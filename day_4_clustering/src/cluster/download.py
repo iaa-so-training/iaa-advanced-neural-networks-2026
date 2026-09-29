@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-import subprocess
+import subprocess  # noqa: F401 — tests monkeypatch download.subprocess to assert wget never runs
 from pathlib import Path
 
 import click

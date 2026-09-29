@@ -38,8 +38,8 @@ def _macro_scores(
     X: np.ndarray, labels: np.ndarray, seeds: tuple[int, ...] = SEEDS,
 ) -> pd.DataFrame:
     """Homogeneity per method, mean ± std over ``seeds``."""
-    from exercises.utils import settings
     from cluster.stability import stability
+    from exercises.utils import settings
 
     return stability(X, labels, settings(), seeds=seeds)
 

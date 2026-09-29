@@ -78,8 +78,7 @@ def cluster_properties() -> pd.DataFrame:
             "track_C_available": bool(cluster.dec_deg <= TRACK_C_DEC_LIMIT),
             "rich_enough_for_clump": bool(n_stars >= 20),
         })
-    table = pd.DataFrame(rows).sort_values("n_members_sample", ascending=False)
-    return table
+    return pd.DataFrame(rows).sort_values("n_members_sample", ascending=False)
 
 
 def solve() -> dict[str, object]:

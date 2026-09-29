@@ -15,10 +15,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+import astropy.units as u
 import numpy as np
 import pandas as pd
 from astropy.coordinates import SkyCoord
-import astropy.units as u
 
 from .clusters import Cluster
 from .config import Settings

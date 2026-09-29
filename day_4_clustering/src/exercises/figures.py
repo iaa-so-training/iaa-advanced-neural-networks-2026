@@ -170,10 +170,7 @@ def cmd_diagram(
         fig = ax.figure
 
     finite = np.isfinite(colour) & np.isfinite(mag)
-    if member_mask is None:
-        members = np.ones(len(df), dtype=bool)
-    else:
-        members = np.asarray(member_mask, dtype=bool)
+    members = np.ones(len(df), dtype=bool) if member_mask is None else np.asarray(member_mask, dtype=bool)
 
     field = finite & ~members
     if field.any():
@@ -340,10 +337,7 @@ def sky_cutout(
 
     ra = df["RA"].to_numpy(dtype=float)
     dec = df["DEC"].to_numpy(dtype=float)
-    if member_mask is None:
-        members = np.ones(len(df), dtype=bool)
-    else:
-        members = np.asarray(member_mask, dtype=bool)
+    members = np.ones(len(df), dtype=bool) if member_mask is None else np.asarray(member_mask, dtype=bool)
     if not members.any():
         raise ValueError(f"no members selected for {cluster_name}")
 

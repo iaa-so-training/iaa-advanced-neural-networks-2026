@@ -89,7 +89,7 @@ class SizePrior:
         }
 
 
-def size_distribution() -> "SizeCensus":
+def size_distribution() -> SizeCensus:
     """The size classes of Table 1, counted from the data.
 
     The table's counts are truth-side counts from the full-sky run; this reads

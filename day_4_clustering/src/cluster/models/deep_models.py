@@ -21,14 +21,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
 
 import numpy as np
 import torch  # type: ignore[import-not-found]
 import torch.nn as nn  # type: ignore[import-not-found]
 import torch.nn.functional as F  # type: ignore[import-not-found]
-from pandas.core.frame import DataFrame
 from torch.utils.data import DataLoader, TensorDataset  # type: ignore[import-not-found]
+
 
 def _device() -> torch.device:
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -176,7 +175,9 @@ class CnnLstmAttentionModel:
         elif self.loss == "weighted_mse":
             _w = (1.0 / (t_std ** 2)).to(device)
             _w = _w / _w.mean()
-            loss_fn = lambda out, yb: ((out - yb) ** 2 * _w).mean()
+
+            def loss_fn(out: torch.Tensor, yb: torch.Tensor) -> torch.Tensor:
+                return ((out - yb) ** 2 * _w).mean()
         else:
             loss_fn = nn.MSELoss()
 

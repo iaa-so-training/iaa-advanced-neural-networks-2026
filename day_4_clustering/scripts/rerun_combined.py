@@ -99,8 +99,15 @@ def rerun(cluster_names: list[str], settings: config.Settings) -> pd.DataFrame:
                 "tsne": _best_overlap(true, hdbscan.HDBSCAN(**settings.hdbscan).fit_predict(
                     fit_tsne(X, settings.tsne, settings.random_state)), c.name),
                 "umap": _best_overlap(true, hdbscan.HDBSCAN(**settings.hdbscan).fit_predict(
-                    umap.UMAP(n_components=2, random_state=settings.random_state, **settings.umap).fit_transform(X)), c.name),
-                "evoc": _best_overlap(true, EVoC(random_state=settings.random_state, **settings.evoc).fit_predict(X), c.name),
+                    umap.UMAP(
+                        n_components=2, random_state=settings.random_state,
+                        **settings.umap,
+                    ).fit_transform(X)), c.name),
+                "evoc": _best_overlap(
+                    true,
+                    EVoC(random_state=settings.random_state, **settings.evoc).fit_predict(X),
+                    c.name,
+                ),
             }
             for mth, mask in masks.items():
                 rec, prec = _score(mask, true, c.name)

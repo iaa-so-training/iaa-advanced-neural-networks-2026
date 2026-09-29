@@ -196,8 +196,8 @@ def _sklearn_cross_check(
     X: np.ndarray, target_perplexity: float,
 ) -> dict[str, float]:
     """Compare our P matrix with sklearn's on a small slice — trust, verify."""
-    from sklearn.manifold import _utils
     from scipy.spatial.distance import pdist, squareform
+    from sklearn.manifold import _utils
 
     small = X[: min(120, len(X))]
     sq = squareform(pdist(small)) ** 2
