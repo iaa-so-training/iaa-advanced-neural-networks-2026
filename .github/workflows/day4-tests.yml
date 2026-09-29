@@ -60,6 +60,31 @@ jobs:
       - name: notebook decks match the exercise modules
         run: uv run python scripts/make_exercise_notebooks.py --check
 
-      - name: type check (informational — strict mode is not clean yet)
-        continue-on-error: true
-        run: uv run pyrefly check
+      - name: lint
+        run: uv run ruff check src scripts tests
+
+      # Pyrefly's strict preset is not clean on this codebase yet, so a plain
+      # `pyrefly check` would be red on every PR and quickly ignored. Instead it
+      # is a ratchet: the count may fall freely, but a PR that raises it fails.
+      # Lower PYREFLY_CEILING whenever you drive the number down — that is the
+      # whole mechanism, and it only works if the ceiling follows the floor.
+      - name: type check (ratchet — the error count may not rise)
+        env:
+          PYREFLY_CEILING: "59"
+        run: |
+          set -o pipefail
+          out=$(uv run pyrefly check 2>&1) || true
+          echo "$out"
+          errors=$(printf '%s\n' "$out" | sed -n 's/.*INFO \([0-9]\+\) error.*/\1/p' | tail -1)
+          if [ -z "$errors" ]; then
+            echo "::error::could not parse an error count from pyrefly — treating as a failure"
+            exit 1
+          fi
+          echo "pyrefly errors: $errors (ceiling $PYREFLY_CEILING)"
+          if [ "$errors" -gt "$PYREFLY_CEILING" ]; then
+            echo "::error::pyrefly errors rose to $errors, above the ceiling of $PYREFLY_CEILING"
+            exit 1
+          fi
+          if [ "$errors" -lt "$PYREFLY_CEILING" ]; then
+            echo "::notice::pyrefly errors down to $errors — lower PYREFLY_CEILING in this workflow"
+          fi

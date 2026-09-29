@@ -66,6 +66,7 @@ dev = [
     "pytest>=9",
     "pytest-cov>=6",
     "coverage>=7",
+    "ruff>=0.11",
 ]
 
 [build-system]
@@ -99,6 +100,54 @@ project-excludes = [
     "scripts/parallel_download.py",
 ]
 search-path = ["src"]
+
+# --------------------------------------------------------------------------- #
+# Linting (ruff)
+# --------------------------------------------------------------------------- #
+# Tuned to the code that exists rather than to ruff's defaults: the rules turned
+# off below all fire on deliberate, correct choices in this codebase, and a gate
+# that flags correct code is a gate people learn to ignore.
+[tool.ruff]
+target-version = "py313"
+# The code is written to ~79 columns (95th percentile is exactly 79). This cap
+# is the runaway-line gate, not a style target — tightening it to 79 would flag
+# 1,609 existing lines and teach everyone to add noqa.
+line-length = 120
+extend-exclude = [
+    "scripts/teaching_assets",
+    "scripts/make_teaching_assets.py",
+    "src/cluster/_parsec.py",
+    "scripts/parallel_download.py",
+]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "C4", "SIM", "RET", "UP", "PTH", "PLE"]
+ignore = [
+    # The cluster catalogue in src/cluster/clusters.py is a column-aligned
+    # table; the alignment is what makes 25 rows of coordinates readable.
+    "E221", "E241",
+    # `zip()` without strict= is fine where the lengths are established by
+    # construction a line or two above.
+    "B905",
+    # `dict(arrowstyle=…, color=…)` is how matplotlib kwargs are conventionally
+    # written; rewriting 34 of them as literals buys nothing.
+    "C408",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests bind intermediates for readability and shadow names deliberately.
+"tests/**" = ["F841"]
+# Figure scripts are plotting DSLs: long styling calls and os.path are normal.
+"scripts/make_*_figures.py" = ["E501", "PTH"]
+# __all__ is built from the lazy-import table, so it is a sorted() list rather
+# than a literal. Valid at runtime; ruff only wants one it can read statically.
+"src/cluster/models/__init__.py" = ["PLE0605"]
+# The float counter is incremented before use and read after the loop body
+# branches; enumerate() would obscure that.
+"scripts/make_exercise_notebooks.py" = ["SIM113"]
+# The nested `if` mirrors the FITS structure being walked (is it a table? does
+# it have rows? is it the biggest so far?) and reads better split.
+"src/cluster/data.py" = ["SIM102"]
 
 # --------------------------------------------------------------------------- #
 # Tests + coverage
