@@ -61,6 +61,6 @@ whether the environment changed.
   they agree would destroy the lesson.
 - Reference-run JSON is append-only in spirit: add a new dated file rather than
   overwriting an old reading, so the history of what was measured survives.
-- Some files mention marimo in recorded run metadata. That is historical — the
-  project ships Jupyter decks now — and rewriting the record of a past run to
-  match present tooling would be falsifying it.
+  Environment *metadata* may be corrected — a package that never touched the
+  numbers was dropped from the recorded version list — but a measured value
+  never is: re-run and record a new file instead.

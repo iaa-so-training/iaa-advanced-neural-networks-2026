@@ -100,7 +100,7 @@ are all the same interpreter.
 
 The image starts as root, then the entrypoint **drops to the uid that owns
 `./data`**, so every file it writes belongs to you and needs no `sudo` to delete.
-It also sets `HOME`, `MPLCONFIGDIR`, `MARIMO_HOME` and `UV_CACHE_DIR` to scratch
+It also sets `HOME`, `MPLCONFIGDIR` and `UV_CACHE_DIR` to scratch
 directories inside the container, which is what makes the plain `docker run`
 above work without `-u`/`-e` flags. `DAY4_KEEP_ROOT=1 docker run …` opts out.
 
