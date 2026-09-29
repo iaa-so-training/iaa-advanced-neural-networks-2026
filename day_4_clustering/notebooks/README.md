@@ -26,7 +26,8 @@ Each exercise gets three or four cells:
    solution uses, which is the hint that the repository already contains the
    machinery;
 3. the **answer**, printed from `ANSWER` in the module;
-4. for computational exercises, a **recompute** cell that calls `solve()`.
+4. for computational exercises, a **recompute** cell that calls `solve()`;
+5. where seeing the result matters, a **figure** cell that calls `plot()`.
 
 The scratch-cell imports are read out of the module that solves the exercise,
 parsed rather than copied: a module that aliases what it imports (say
@@ -144,6 +145,14 @@ arguments, that no module touches data at import time, that no LaTeX reaches a
 student's cell, and that the notebooks are up to date. The data-backed tests
 are marked `needs_data` and skip automatically on a clean checkout.
 
+Figures carry the same contract. `plot()` must be callable bare, and a module
+that defines one must have a cell calling it in **both** the master deck and
+its chapter deck. That guard exists because 52 `plot()` functions were once
+written, committed, and never wired to anything: no cell imported them, no
+test ran them, and five had quietly rotted — two of them calling a
+`cluster.baseline` symbol that did not exist, which also broke their `solve()`.
+Nothing noticed, because nothing ever called them.
+
 ```bash
 uv run pytest tests/test_exercises.py -q
 ```
@@ -224,10 +233,41 @@ def solve() -> dict[str, object]:
     ...
 
 
+def plot(result: dict[str, object] | None = None):
+    """Draw the result. Also callable bare; pass solve()'s output to reuse it."""
+    ...
+
+
 ANSWER: dict[str, object] = {
     "the finding": "...",
 }
 ```
+
+### Figures
+
+`src/exercises/figures.py` holds the three families the exercises draw, so a
+module says *what* to plot and never *how*:
+
+| helper | what it draws |
+|---|---|
+| `embedding_scatter` | a 2-D embedding (t-SNE / UMAP / EVoC) coloured by cluster, with an optional `highlight=` to dim everything but one |
+| `cmd_diagram` | a Gaia colour-magnitude diagram, optionally with a fitted isochrone over it |
+| `sky_cutout` | a real survey image of the field with the members circled, through astropy's WCS |
+
+They return matplotlib figures. Nothing is interactive: the decks are executed
+headless in CI and shipped as static artifacts, so a plotly widget would render
+as an empty div for anyone reading the committed notebook.
+
+`embedding_scatter` reuses the workshop's own palette (`cluster.plots`), so an
+exercise figure and the corresponding workbook figure colour M 67 the same.
+
+`sky_cutout` fetches from SkyView and caches the FITS under
+`results/exercise_cache/skyview/`, because the decks are re-run constantly and
+SkyView is a shared public service. With no connection — CI, or a student on a
+train — it falls back to a plainly-labelled RA/Dec scatter built from the
+astrometry already in the catalogue, so the cell still renders. Force that path
+with `EXERCISES_NO_NETWORK=1`; the fetch timeout is `EXERCISES_SKYVIEW_TIMEOUT`
+(30 s by default), because a deck must never hang on a remote service.
 
 One rule above all others, and the workbook's own subject: **never write a
 number into `ANSWER` that you have not run.** Compute it, read the output, then

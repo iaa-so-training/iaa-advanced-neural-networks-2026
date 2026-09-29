@@ -325,10 +325,37 @@ def exercise_cells(
                 f"# it reads the same data you have on disk.\n"
                 f"from exercises.{name} import solve\n"
                 "\n"
+                "result = None  # a failure below must not leak into the plot\n"
                 "result = solve()\n"
                 "for key, value in result.items():\n"
                 "    show({key: value})",
             ))
+        if module_has_figure(chapter, number):
+            reuse = (
+                module_has_solve(chapter, number)
+                and plot_takes_result(chapter, number)
+            )
+            if reuse:
+                body = (
+                    f"# --- Exercise {chapter}.{number} — the picture "
+                    f"-----------------\n"
+                    f"# plot() draws what solve() just computed. The result is\n"
+                    f"# handed straight over, so nothing is computed twice.\n"
+                    f"from exercises.{name} import plot\n"
+                    "\n"
+                    "plot(result)"
+                )
+            else:
+                body = (
+                    f"# --- Exercise {chapter}.{number} — the picture "
+                    f"-----------------\n"
+                    f"# plot() draws the result. Like solve(), it computes in\n"
+                    f"# the module, not here.\n"
+                    f"from exercises.{name} import plot\n"
+                    "\n"
+                    "plot()"
+                )
+            cells.append(new_code_cell(body))
         return cells
 
     # pragma: no cover — every exercise ships a module
@@ -346,6 +373,50 @@ def module_source(chapter: int, number: int) -> str:
 
 def module_has_solve(chapter: int, number: int) -> bool:
     return "def solve(" in module_source(chapter, number)
+
+
+def plot_takes_result(chapter: int, number: int) -> bool:
+    """Whether ``plot()`` can be handed the result ``solve()`` already computed.
+
+    Requires *both* that the first parameter is named ``result`` and that it is
+    annotated as a dict. Neither test alone is enough:
+
+    - arity alone is wrong, because some plots take a tuning parameter
+      (``plot(min_pts: int)``) that is not a result at all;
+    - the annotation alone is wrong, because ``exercise_03_1.plot`` takes
+      ``curve: dict[str, np.ndarray]`` — a *different* dict, built by its own
+      ``concentration_curve()``, which raises ``KeyError`` if handed
+      ``solve()``'s output.
+
+    This matters for more than tidiness: with a bare ``plot()`` every exercise
+    computes twice — once in the ``solve()`` cell and again in the plot cell —
+    which took the master deck from 14 minutes to over ten hours.
+    """
+    source = module_source(chapter, number)
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:  # pragma: no cover - a module that will not parse
+        return False
+    for node in tree.body:
+        if isinstance(node, ast.FunctionDef) and node.name == "plot":
+            parameters = node.args.posonlyargs + node.args.args
+            if not parameters or parameters[0].arg != "result":
+                return False
+            annotation = parameters[0].annotation
+            if annotation is None:
+                return False
+            return "dict" in ast.unparse(annotation)
+    return False
+
+
+def module_has_figure(chapter: int, number: int) -> bool:
+    """Whether this exercise draws its result.
+
+    Figures are opt-in and use the name the modules already use: ``plot()``.
+    Detected the same way as ``solve()`` — by source inspection, so generating
+    the decks never imports an exercise or touches the catalogue.
+    """
+    return re.search(r"^def plot\(", module_source(chapter, number), re.M) is not None
 
 
 #: Helpers in :mod:`exercises.utils` that actually load the catalogue or the

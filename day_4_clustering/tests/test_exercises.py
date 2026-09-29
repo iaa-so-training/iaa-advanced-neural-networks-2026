@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import importlib
 import inspect
+import json
 import re
 from pathlib import Path
 
@@ -414,6 +415,217 @@ def test_cited_exercises_carry_a_reference_list(chapter: int, number: int) -> No
     assert answer["references"], (
         f"exercise {chapter}.{number} has an empty 'references' entry"
     )
+
+
+# --------------------------------------------------------------------------- #
+# Figures
+# --------------------------------------------------------------------------- #
+
+def _modules_with_plot() -> list[tuple[int, int]]:
+    """Every exercise whose module defines ``plot()``."""
+    found = []
+    for chapter, number, _ in iter_exercises():
+        source = (
+            Path(__file__).resolve().parents[1]
+            / "src" / "exercises" / f"{module_name(chapter, number)}.py"
+        ).read_text()
+        if re.search(r"^def plot\(", source, re.M):
+            found.append((chapter, number))
+    return found
+
+
+@pytest.mark.parametrize(("chapter", "number"), _modules_with_plot())
+def test_plot_is_callable_with_no_arguments(chapter: int, number: int) -> None:
+    """``plot()`` takes no *required* argument.
+
+    The generated deck cell calls it bare, exactly as it calls ``solve()``. A
+    plot that needs a hand-built argument cannot be presented by a notebook,
+    which is the whole contract of this package.
+    """
+    module = load(chapter, number)
+    plot = module.plot
+    parameters = inspect.signature(plot).parameters
+    required = [
+        name for name, p in parameters.items()
+        if p.default is inspect.Parameter.empty
+        and p.kind not in (p.VAR_POSITIONAL, p.VAR_KEYWORD)
+    ]
+    assert not required, (
+        f"exercise {chapter}.{number} plot() requires {required}; "
+        f"give them defaults so the notebook can call plot()"
+    )
+
+
+@pytest.mark.parametrize(("chapter", "number"), _modules_with_plot())
+def test_every_plot_reaches_a_notebook_cell(chapter: int, number: int) -> None:
+    """A module that defines ``plot()`` has a cell calling it.
+
+    52 plot functions were once written, committed, and never wired to
+    anything: no deck cell imported them, no test ran them, and five had
+    rotted (two calling a `cluster.baseline` symbol that did not exist) with
+    nothing to notice. This is the guard that a plot reaches a student.
+    """
+    name = module_name(chapter, number)
+    wanted = f"from exercises.{name} import plot"
+    decks = _shipped_decks()
+    assert decks, "no shipped decks found"
+    hits = {
+        deck.name for deck in decks
+        if wanted in deck.read_text(encoding="utf-8")
+    }
+    assert hits, (
+        f"exercise {chapter}.{number} defines plot() but no deck calls it — "
+        f"re-run scripts/make_exercise_notebooks.py"
+    )
+    # Both decks, not either: a student working through one chapter must get
+    # the same figures as one working through the master deck. Checking "any
+    # deck" hides a plot that dropped out of its chapter deck alone.
+    master = "workbook_exercises.ipynb"
+    chapter_decks = {deck for deck in hits if deck != master}
+    assert master in hits, (
+        f"exercise {chapter}.{number} plot() is missing from the master deck"
+    )
+    assert chapter_decks, (
+        f"exercise {chapter}.{number} plot() reaches only the master deck, "
+        f"not its chapter deck — re-run scripts/make_exercise_notebooks.py"
+    )
+
+
+@pytest.mark.parametrize(("chapter", "number"), ALL_EXERCISES)
+def test_scripts_an_exercise_names_actually_exist(chapter: int, number: int) -> None:
+    """A module that tells you to run a script must name one that is here.
+
+    Exercise error messages double as instructions — ``DataNotAvailable``
+    tells the student which command regenerates the missing file. Two such
+    scripts were left behind when this work was migrated between repositories,
+    so the advice pointed at nothing: the exercise failed, named a fix, and the
+    fix did not exist. Nothing caught it, because the message is only produced
+    on the machine that lacks the data.
+    """
+    root = Path(__file__).resolve().parents[1]
+    source = (
+        root / "src" / "exercises" / f"{module_name(chapter, number)}.py"
+    ).read_text()
+    # The path usually sits mid-string, after a runner: "uv run python
+    # scripts/foo.py" or ".venv/bin/python scripts/foo.py" — so anchor on the
+    # directory, not on a quote.
+    named = set(re.findall(r"((?:article/)?scripts/[a-z0-9_]+\.py)", source))
+    missing = sorted(path for path in named if not (root / path).is_file())
+    assert not missing, (
+        f"exercise {chapter}.{number} points the student at {missing}, "
+        f"which is not in this repository"
+    )
+
+
+def test_no_source_file_hardcodes_an_absolute_home_path() -> None:
+    """Nothing may hardcode a path from the machine it was written on.
+
+    ``scripts/casamiquela_comparison.py`` arrived from another repository with
+    ``REPO = Path("/home/<user>/git/…-draft")`` baked in. It imported fine on
+    the machine that still had that checkout and would have failed for every
+    student — the worst kind of defect, because it is invisible to the author.
+    Resolve paths from ``Path(__file__)`` instead.
+    """
+    root = Path(__file__).resolve().parents[1]
+    trees = [root / "src", root / "scripts", root / "tests"]
+    offenders: list[str] = []
+    for tree in trees:
+        for path in tree.rglob("*.py"):
+            for number, line in enumerate(
+                path.read_text(encoding="utf-8").splitlines(), start=1,
+            ):
+                if re.search(r"""["']/home/\w+""", line):
+                    offenders.append(f"{path.relative_to(root)}:{number}")
+    assert not offenders, (
+        f"absolute home paths are not portable: {offenders}"
+    )
+
+
+@pytest.mark.parametrize("deck", _shipped_decks(), ids=lambda p: p.name)
+def test_solve_cells_reset_result_before_computing(deck: Path) -> None:
+    """A failed ``solve()`` must not leave the previous exercise's result bound.
+
+    The decks run top to bottom in one kernel. When ``solve()`` raises —
+    routinely, for exercises whose data is not on disk — a bare
+    ``result = solve()`` leaves ``result`` holding the *previous* exercise's
+    dict, and the plot cell below then draws the wrong exercise's data and dies
+    with a meaningless ``KeyError: 'scatter'`` instead of the
+    ``DataNotAvailable`` that names the missing file. Each solve cell therefore
+    resets ``result`` first.
+    """
+    notebook = json.loads(deck.read_text(encoding="utf-8"))
+    sources = [
+        "".join(cell.get("source", []))
+        for cell in notebook["cells"]
+        if cell.get("cell_type") == "code"
+    ]
+    solve_cells = [source for source in sources if "import solve" in source]
+    assert solve_cells, f"{deck.name} has no solve cells"
+    missing = [
+        source.splitlines()[2] for source in solve_cells
+        if "result = None" not in source
+    ]
+    assert not missing, (
+        f"{deck.name}: {len(missing)} solve cell(s) bind result without "
+        f"resetting it first — a raising solve() would leak the previous "
+        f"exercise's result into the plot cell: {missing[:3]}"
+    )
+
+
+def test_figures_module_exposes_the_three_families() -> None:
+    """The shared figure helpers the exercises build their plots from."""
+    from exercises import figures
+
+    for name in ("embedding_scatter", "cmd_diagram", "sky_cutout"):
+        assert callable(getattr(figures, name)), f"figures.{name} missing"
+
+
+def test_sky_cutout_survives_having_no_network(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Offline, ``sky_cutout`` draws the RA/Dec fallback instead of raising.
+
+    The decks run in CI and on student laptops with no connection; a figure
+    that needs SkyView must degrade to the astrometry the catalogue already
+    carries rather than fail the cell.
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import pandas as pd
+
+    from exercises import figures
+
+    monkeypatch.setattr(figures, "NO_NETWORK", True)
+    frame = pd.DataFrame({
+        "RA": [10.0, 10.1, 10.2, 99.0],
+        "DEC": [-5.0, -5.1, -5.2, 42.0],
+    })
+    mask = [True, True, True, False]
+    fig = figures.sky_cutout(frame, "NGC test", member_mask=mask)
+    axes = fig.get_axes()[0]
+    assert axes.get_xlabel() == "RA (deg)"
+    # RA increases eastwards, i.e. leftwards on the sky
+    assert axes.get_xlim()[0] > axes.get_xlim()[1]
+
+
+def test_cmd_diagram_refuses_an_isochrone_on_absolute_axes() -> None:
+    """A fit is in apparent magnitude; overlaying it on M_G would be wrong."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import pandas as pd
+
+    from exercises import figures
+
+    frame = pd.DataFrame({
+        "GAIAEDR3_PHOT_G_MEAN_MAG": [12.0, 13.0],
+        "GAIAEDR3_PHOT_BP_MEAN_MAG": [12.5, 13.6],
+        "GAIAEDR3_PHOT_RP_MEAN_MAG": [11.4, 12.3],
+        "GAIAEDR3_PARALLAX": [1.0, 1.2],
+    })
+    with pytest.raises(ValueError, match="apparent magnitude"):
+        figures.cmd_diagram(
+            frame, absolute=True, curve_color=[1.0], curve_mag=[12.0],
+        )
 
 
 # --------------------------------------------------------------------------- #

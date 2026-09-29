@@ -51,8 +51,10 @@ def mwmstar_files(limit: int = DEFAULT_N_SPECTRA) -> list[Path]:
     if not files:
         raise DataNotAvailable(
             f"no DR19 mwmStar spectra under {directory}\n\n"
-            "They ship in the asset bundle (736 files) and are fetched with\n\n"
-            "    uv run cluster download --assets\n",
+            "They ship as the optional archive in the asset bundle (736 "
+            "spectra, ~240 MB), which is not fetched by default:\n\n"
+            "    uv run cluster download --assets --with-optional\n"
+            "    tar -xf data/mwmstar.tar -C data/\n",
         )
     return files[:limit]
 

@@ -117,7 +117,9 @@ def published_comparison() -> pd.DataFrame:
     if not path.is_file():
         raise DataNotAvailable(
             f"{path} is not on disk; regenerate it with\n\n"
-            "    .venv/bin/python scripts/casamiquela_comparison.py\n",
+            "    uv run python scripts/casamiquela_comparison.py\n\n"
+            "It needs the DR19 catalogue (uv run cluster download) and takes "
+            "a while: it refits every method and seed.\n",
         )
     frame = pd.read_csv(path)
     return (
