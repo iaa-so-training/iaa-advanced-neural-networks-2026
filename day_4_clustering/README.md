@@ -49,6 +49,11 @@ Garcia-Dias et al. (2019, A&A 629, A34) — 23 from the paper, plus the Pleiades
 (Kos et al. 2017) and the two southern sweet-spots NGC 2243 and Collinder 261 —
 and scores each method's cluster recovery against **kinematic ground truth**.
 
+Contributing a change? Read [`CONTRIBUTING.md`](CONTRIBUTING.md) first — it
+covers the fork/branch/draft-PR flow, the four checks CI enforces, and where
+your change belongs among the pipeline, the workbook, the exercise notebooks
+and the separately-hosted slide deck.
+
 ## Quick start (Docker — all you need is Docker and git)
 
 Docker is section B of the School Software Installation Guide, so it is already

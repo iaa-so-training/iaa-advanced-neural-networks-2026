@@ -53,6 +53,12 @@ day 4; each tree's own `AGENTS.md` carries the rest:
 | `docs/AGENTS.md` | Result documents and the recorded reference runs |
 | `hf/AGENTS.md` | Dataset publishing to the Hub |
 
+Human-facing contribution rules — the fork/branch/draft-PR flow, what CI
+enforces, and the four-way split between pipeline, workbook, exercises and the
+separately-hosted slide deck — are in [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Follow it when opening a PR; it is the same set of gates described above,
+written for a person rather than an agent.
+
 ## Tech Stack
 
 | Layer | Technology |
