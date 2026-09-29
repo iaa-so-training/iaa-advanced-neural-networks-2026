@@ -117,6 +117,53 @@ def separation_scores(true_labels: np.ndarray, pred_labels: np.ndarray) -> dict[
     }
 
 
+def recovery_fraction(
+    true_labels: np.ndarray, pred_labels: np.ndarray, threshold: float = 0.4,
+) -> dict[str, Any]:
+    """Recovery fraction of Casamiquela et al. (2021, A&A 654, A151, Sect. 4.1).
+
+    Each true cluster is matched to the predicted group that holds most of its
+    stars (the best-overlap rule of ``benchmark._score_one``). The cluster is
+    *recovered* at ``threshold`` when that group holds at least that fraction
+    of the cluster (their per-cluster "completeness", our recall) and at least
+    that fraction of the group is the cluster (their per-cluster
+    "homogeneity", our precision). HDBSCAN noise (label ``-1``) is never a
+    group; stars labelled ``"field"`` are not a cluster but do count towards a
+    group's size, so the rule also works with field stars present.
+
+    ``statistical_fraction`` is the share of predicted groups that recover no
+    cluster: their "statistical groups" (22 of 31 in their best run). Like
+    their count, it includes pure groups that are too small to pass.
+    """
+    true = np.asarray(true_labels)
+    pred = np.asarray(pred_labels)
+    groups = [g for g in np.unique(pred) if str(g) != "-1"]
+    masks = {g: pred == g for g in groups}
+    sizes = {g: int(m.sum()) for g, m in masks.items()}
+    recovered: list[str] = []
+    recovering: set[Any] = set()
+    clusters = [c for c in np.unique(true) if str(c) != "field"]
+    for c in clusters:
+        in_c = true == c
+        n_c = int(in_c.sum())
+        best, best_overlap = None, 0
+        for g in groups:
+            overlap = int((in_c & masks[g]).sum())
+            if overlap > best_overlap:
+                best, best_overlap = g, overlap
+        if best is not None and best_overlap >= threshold * max(n_c, sizes[best]):
+            recovered.append(str(c))
+            recovering.add(best)
+    n_groups = len(groups)
+    return {
+        "rf": len(recovered) / len(clusters) if clusters else float("nan"),
+        "recovered": recovered,
+        "n_clusters": len(clusters),
+        "n_groups": n_groups,
+        "statistical_fraction": 1.0 - len(recovering) / n_groups if n_groups else float("nan"),
+    }
+
+
 def _fit_all(X: np.ndarray, settings: Settings) -> dict[str, np.ndarray]:
     """Run t-SNE/UMAP -> HDBSCAN and EVoC; return ``{method: labels}``."""
     out: dict[str, np.ndarray] = {}
